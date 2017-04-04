@@ -99,9 +99,12 @@ unix {
 macx {
 
 DEFINES += "_MacOSX"
-LIBS += /Users/fmk/lib/libLapack.a
-LIBS += /Users/fmk/lib/libBlas.a
-LIBS += /usr/local/llvm-gcc/lib/libgfortran.a
+#LIBS += /Users/fmk/lib/libLapack.a
+#LIBS += /Users/fmk/lib/libBlas.a
+#LIBS += /usr/local/llvm-gcc/lib/libgfortran.a
+win32:
+unix: LIBS += -llapack
+unix: LIBS += -lblas
 
 
 INCLUDEPATH += .include "./ops"
