@@ -20,7 +20,7 @@
    <item>
     <widget class="QPushButton" name="pushButton_OK">
      <property name="text">
-      <string>OK</string>
+      <string>Run the Application</string>
      </property>
     </widget>
    </item>
