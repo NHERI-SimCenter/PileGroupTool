@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MaterialDBInterface</class>
+ <widget class="QWidget" name="MaterialDBInterface">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>529</width>
+    <height>540</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="0" column="0">
+    <widget class="QComboBox" name="cb_selectDB">
+     <item>
+      <property name="text">
+       <string>-- select database --</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>LocalDB (default)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>SimCenter GeoDB</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QListWidget" name="lst_materialSelection">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>1</verstretch>
+      </sizepolicy>
+     </property>
+     <item>
+      <property name="text">
+       <string>Create new material definition</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>material 1</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>material 2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>material 3</string>
+      </property>
+      <property name="flags">
+       <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QStackedWidget" name="stackedWidget">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tab_knownMaterial">
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QTableWidget" name="tbl_materialProperties">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>1</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+         <row>
+          <property name="text">
+           <string>prop 1</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>prop 2</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>prop 3</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>prop 4</string>
+          </property>
+         </row>
+         <column>
+          <property name="text">
+           <string>property</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>value</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>unit</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>description</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_newMaterial">
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="0">
+        <widget class="QTableWidget" name="tbl_materialProperties_2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>1</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+         <row>
+          <property name="text">
+           <string>prop 1</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>prop 2</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>prop 3</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>prop 4</string>
+          </property>
+         </row>
+         <column>
+          <property name="text">
+           <string>property</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>value</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>unit</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>description</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QSplitter" name="splitter">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>name:</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="lned_materialName">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>3</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string># of properties:</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="lned_numProperties">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>35</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>35</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QSplitter" name="splitter_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <widget class="QPushButton" name="pb_reset">
+          <property name="text">
+           <string>reset</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="pb_commit">
+          <property name="text">
+           <string>commit</string>
+          </property>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
