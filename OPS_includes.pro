@@ -116,10 +116,12 @@ INCLUDEPATH += .include "./ops"
 DEFINES += "_LINUX"
 
 
+INCLUDEPATH += "./ops"
 INCLUDEPATH += "/apps/rappture/dev/include"
 INCLUDEPATH += "$(HOME)/OpenSees/DEVELOPER/core"
 
 SRC += ./ops/Domain.cpp
+LIBS += -llapack -lblas
 
 }
 }

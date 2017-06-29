@@ -54,7 +54,7 @@
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap resource="qtpileresources.qrc">:/images/PileSchematic@0,5x.png</pixmap>
+         <pixmap>:/images/PileSchematic@0,5x.png</pixmap>
         </property>
         <property name="scaledContents">
          <bool>true</bool>
@@ -72,7 +72,7 @@
          </font>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="pileProperties">
          <attribute name="title">
@@ -232,130 +232,7 @@
          </attribute>
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="0" column="0">
-           <widget class="QLabel" name="gammmaLabel">
-            <property name="text">
-             <string>gamma</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="gammaValue">
-            <property name="minimum">
-             <double>1.000000000000000</double>
-            </property>
-            <property name="value">
-             <double>17.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="phiLabel">
-            <property name="text">
-             <string>phi</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="phiValue">
-            <property name="value">
-             <double>36.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="gSoilLabel">
-            <property name="text">
-             <string>Gsoil</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="gSoilValue">
-            <property name="decimals">
-             <number>0</number>
-            </property>
-            <property name="minimum">
-             <double>10.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>100001.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>100.000000000000000</double>
-            </property>
-            <property name="value">
-             <double>15000.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="puLabel">
-            <property name="text">
-             <string>pu</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QComboBox" name="puValue">
-            <property name="currentText">
-             <string notr="true">API</string>
-            </property>
-            <property name="currentIndex">
-             <number>0</number>
-            </property>
-            <item>
-             <property name="text">
-              <string>API</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Hansen</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="kLabel">
-            <property name="text">
-             <string>k</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QComboBox" name="kValue">
-            <item>
-             <property name="text">
-              <string>API</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Boulanger</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="gwtLabel">
-            <property name="text">
-             <string>gwt</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QComboBox" name="gwtValue">
-            <item>
-             <property name="text">
-              <string>above</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>below</string>
-             </property>
-            </item>
-           </widget>
+           <widget class="QTableWidget" name="matTable"/>
           </item>
          </layout>
         </widget>
@@ -414,7 +291,7 @@
      <x>0</x>
      <y>0</y>
      <width>789</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOpenSeesPile">
@@ -461,8 +338,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="qtpileresources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

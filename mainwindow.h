@@ -3,6 +3,10 @@
 
 #include <QMainWindow>
 
+// forward declaration of classes
+class soilLayer;
+class QTableWidgetItem;
+
 namespace Ui {
 class MainWindow;
 }
@@ -41,6 +45,9 @@ private slots:
     void on_Emodulus_valueChanged(double arg1);
     void on_groundWaterTable_valueChanged(double arg1);
 
+    // material table slots
+    void updateInfo(QTableWidgetItem *);
+
 private:
     Q_OBJECT
     Ui::MainWindow *ui;
@@ -66,6 +73,12 @@ private:
 
     // load parameter
     double displacementRatio;
+
+    // soil layers and related methods
+    QVector<soilLayer> soilLayers;
+
+    void setupLayers();
+    void reDrawTable();
 
 };
 
