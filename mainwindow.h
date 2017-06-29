@@ -21,20 +21,14 @@ public:
     void doAnalysis(void);
 
 private slots:
-    // parameter values entered/changed
-    void on_puValue_activated(const QString &arg1);
-    void on_fixedHead_clicked(bool checked);
-    void on_pinnedHead_clicked(bool checked);
-    void on_pValue_valueChanged(double arg1);
-    void on_l1Value_valueChanged(double arg1);
-    void on_l2Value_valueChanged(double arg1);
-    void on_dValue_valueChanged(double arg1);
-    void on_eValue_valueChanged(double arg1);
+    // soil parameter values entered/changed
     void on_gammaValue_valueChanged(double arg1);
     void on_phiValue_valueChanged(double arg1);
     void on_gSoilValue_valueChanged(double arg1);
     void on_gammaValue_editingFinished();
-    void on_analyzeButton_clicked();
+
+    // program controls
+    //void on_analyzeButton_clicked();
 
     // menu actions
     void on_actionExit_triggered();
@@ -43,7 +37,13 @@ private slots:
     void on_chkBox_assume_rigid_cap_clicked(bool checked);
     void on_chkBox_include_toe_resistance_clicked(bool checked);
 
+    // geometry parameters entered/changed
     void on_displacementSlider_sliderMoved(int position);
+    void on_pileDiameter_valueChanged(double arg1);
+    void on_embeddedLength_valueChanged(double arg1);
+    void on_freeLength_valueChanged(double arg1);
+    void on_Emodulus_valueChanged(double arg1);
+    void on_groundWaterTable_valueChanged(double arg1);
 
     // material table slots
     void updateInfo(QTableWidgetItem *);
@@ -58,7 +58,6 @@ private:
     double L2;
     double D;
     double E;
-    bool fixHead;
     int numEle;
     double gamma;
     double phi;
@@ -66,6 +65,7 @@ private:
     int puSwitch;
     int kSwitch;
     int gwtSwitch;
+    double gwtDepth;
 
     // states
     bool assumeRigidPileHead = false;
