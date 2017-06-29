@@ -59,22 +59,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // setup table of soil layers
-    QStringList matTableLabels;
-    matTableLabels << "Thickness" << "Unit Weight" << "Friction Angle" << "Shear Modulus";
-    ui->matTable->setRowCount(4);
-    ui->matTable->setColumnCount(1);
-    ui->matTable->setVerticalHeaderLabels(matTableLabels);
-    ui->matTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
-    ui->matTable->setItemPrototype(ui->matTable->item(3,0));
-    ui->matTable->setItemDelegate(new QItemDelegate());
-    connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
-          this, SLOT(updateInfo(QTableWidgetItem*)));
-    connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)),
-          this, SLOT(updateInfo(QTableWidgetItem*)));
-    setupLayers();
-    reDrawTable();    
-
     // setup data
     P        = 0.0;
     L1       = 1.0;
@@ -107,8 +91,23 @@ MainWindow::MainWindow(QWidget *parent) :
     // analysis parameters
     displacementRatio = 0.0;
 
-    this->doAnalysis();
+    // setup table of soil layers
+    QStringList matTableLabels;
+    matTableLabels << "Thickness" << "Wet Unit Weight" << "Saturated Unit Weight" << "Friction Angle" << "Shear Modulus";
+    ui->matTable->setRowCount(5);
+    ui->matTable->setColumnCount(1);
+    ui->matTable->setVerticalHeaderLabels(matTableLabels);
+    ui->matTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
+    ui->matTable->setItemPrototype(ui->matTable->item(3,0));
+    ui->matTable->setItemDelegate(new QItemDelegate());
+    connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
+          this, SLOT(updateInfo(QTableWidgetItem*)));
+    connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)),
+          this, SLOT(updateInfo(QTableWidgetItem*)));
+    setupLayers();
+    reDrawTable();    
 
+    this->doAnalysis();
 }
 void
 MainWindow::doAnalysis(void)
@@ -471,9 +470,20 @@ void MainWindow::on_groundWaterTable_valueChanged(double arg1)
 void MainWindow::setupLayers()
 {
     soilLayers.clear();
-    soilLayers.push_back(soilLayer("Layer 1", 3.0, 18.0, 2.0e5, 30, QColor(100,0,0,100)));
-    soilLayers.push_back(soilLayer("Layer 2", 3.0, 19.0, 2.0e5, 35, QColor(0,100,0,100)));
-    soilLayers.push_back(soilLayer("Layer 3", 4.0, 17.0, 2.0e5, 25, QColor(0,0,100,100)));
+    soilLayers.push_back(soilLayer("Layer 1", 3.0, 15.0, 18.0, 2.0e5, 30, QColor(100,0,0,100)));
+    soilLayers.push_back(soilLayer("Layer 2", 3.0, 16.0, 19.0, 2.0e5, 35, QColor(0,100,0,100)));
+    soilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 25, QColor(0,0,100,100)));
+
+    // set the GWT depth for each layer
+    int numLayers = soilLayers.size();
+    double layerDepthFromSurface = 0.0;
+    for (int ii = 0; ii < numLayers; ii++)
+    {
+        soilLayers[ii].setGWTdepth(gwtDepth - layerDepthFromSurface);
+        layerDepthFromSurface += soilLayers[ii].getLayerThickness();
+        if (ii > 0)
+            soilLayers[ii].setLayerTopStress(soilLayers[ii-1].getLayerBottomStress());
+    }
 }
 
 void MainWindow::reDrawTable()
@@ -487,14 +497,15 @@ void MainWindow::reDrawTable()
         matTableHeaders << soilLayers[ii].getLayerName();
         ui->matTable->setItem(0, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerThickness())));
         ui->matTable->setItem(1, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerUnitWeight())));
-        ui->matTable->setItem(2, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerFrictionAng())));
-        ui->matTable->setItem(3, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerStiffness())));
+        ui->matTable->setItem(2, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerSatUnitWeight())));
+        ui->matTable->setItem(3, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerFrictionAng())));
+        ui->matTable->setItem(4, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerStiffness())));
     }
 
     ui->matTable->setHorizontalHeaderLabels(matTableHeaders);
 
     for (int ii = 0; ii < ui->matTable->rowCount(); ii++)
-	for (int jj = 1; jj < ui->matTable->columnCount(); jj++)
+	for (int jj = 0; jj < ui->matTable->columnCount(); jj++)
 		ui->matTable->item(ii,jj)->setTextAlignment(Qt::AlignHCenter);
 
 }
@@ -507,8 +518,10 @@ void MainWindow::updateInfo(QTableWidgetItem * item)
       else if (item->row() == 1)
          soilLayers[item->column()].setLayerUnitWeight(item->text().toDouble());
       else if (item->row() == 2)
-         soilLayers[item->column()].setLayerFrictionAng(item->text().toDouble());
+         soilLayers[item->column()].setLayerSatUnitWeight(item->text().toDouble());
       else if (item->row() == 3)
+         soilLayers[item->column()].setLayerFrictionAng(item->text().toDouble());
+      else if (item->row() == 4)
          soilLayers[item->column()].setLayerStiffness(item->text().toDouble());
   }
   return;
