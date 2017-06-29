@@ -8,7 +8,7 @@ class soilLayer
 {
 public:
   soilLayer();
-  soilLayer(QString lName, double nThick, double lUnitWeight, double lStiffness,double lFrictionAng, QColor color);
+  soilLayer(QString, double, double, double, double, double, QColor);
    ~soilLayer();
 
   void setLayerName(QString name) {layerName = name;}
@@ -17,9 +17,11 @@ public:
   void setLayerStiffness(double G){layerG = G;}
   void setLayerFrictionAng(double Phi){layerPhi = Phi;}
   void setLayerUnitWeight(double gamma){layerGamma = gamma;}
-  void setLayerTopStress(double stress){topStress = stress;}
+  void setLayerSatUnitWeight(double gamma){layerGammaSat = gamma;}
+  void setLayerTopStress(double stress){layerTopStress = stress;}
+  void setGWTdepth(double gwt){layerGWT = gwt;}
+  void setWaterUnitWeight(double gamma){waterUnitWeight = gamma;}
   void setLayerColor(QColor color){layerColor = color;}
-  void update();
 
   QString getLayerName(){ return layerName;}
   QColor getLayerColor(){return layerColor;}
@@ -27,24 +29,25 @@ public:
   double getLayerStiffness(){return layerG;}
   double getLayerFrictionAng(){return layerPhi;}
   double getLayerUnitWeight(){return layerGamma;}
-  double getLayerTopStress(){return topStress;}
-  double getLayerBottomStress(){return botStress;}
+  double getLayerSatUnitWeight(){return layerGammaSat;}
+  double getLayerGWTdepth(){return layerGWT;}
+  double getLayerTopStress();
+  double getLayerBottomStress();
+  double getEffectiveStress(double depth);
 
 private:
-  void calcStress();
-
   QString layerName;
+  double layerTopStress;
   double layerH;
   double layerGamma;
+  double layerGammaSat;
   double layerG;
   double layerPhi;
   double layerSigma0;
+  double layerGWT;
+  double waterUnitWeight;
   QColor layerColor;
 
-  double topStress;
-  double botStress;
-
-static int numLayers;
 };
 
 #endif // SOILMAT_H

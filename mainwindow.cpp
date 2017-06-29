@@ -59,26 +59,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // setup table of soil layers
-    QStringList matTableLabels;
-    matTableLabels << "Thickness" << "Unit Weight" << "Friction Angle" << "Shear Modulus";
-    ui->matTable->setRowCount(4);
-    ui->matTable->setColumnCount(1);
-    ui->matTable->setVerticalHeaderLabels(matTableLabels);
-    ui->matTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
-    ui->matTable->setItemPrototype(ui->matTable->item(3,0));
-    ui->matTable->setItemDelegate(new QItemDelegate());
-
-    // set up initial values before activating live analysis (= connecting the slots)
-    //    or the program will fail in the analysis due to missing information
-    setupLayers();
-    reDrawTable();
-
-    connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
-          this, SLOT(updateInfo(QTableWidgetItem*)));
-    connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)),
-          this, SLOT(updateInfo(QTableWidgetItem*)));
-
     // setup data
     P        = 0.0;
     L1       = 1.0;
@@ -111,6 +91,26 @@ MainWindow::MainWindow(QWidget *parent) :
     // analysis parameters
     displacementRatio = 0.0;
 
+    // setup table of soil layers
+    QStringList matTableLabels;
+    matTableLabels << "Thickness" << "Wet Unit Weight" << "Saturated Unit Weight" << "Friction Angle" << "Shear Modulus";
+    ui->matTable->setRowCount(5);
+    ui->matTable->setColumnCount(1);
+    ui->matTable->setVerticalHeaderLabels(matTableLabels);
+    ui->matTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
+    ui->matTable->setItemPrototype(ui->matTable->item(3,0));
+    ui->matTable->setItemDelegate(new QItemDelegate());
+    
+    // set up initial values before activating live analysis (= connecting the slots)
+    //    or the program will fail in the analysis due to missing information
+    setupLayers();
+    reDrawTable();    
+
+    connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
+          this, SLOT(updateInfo(QTableWidgetItem*)));
+    connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)),
+          this, SLOT(updateInfo(QTableWidgetItem*)));
+      
     this->doAnalysis();
 }
 
@@ -388,68 +388,234 @@ void MainWindow::doAnalysis(void)
         if (disp[i-1] < minDisp) minDisp = disp[i-1];
     }
 
+    if (i != 1) {
+      SP_Constraint *theSP = 0;
+      theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
+      theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
+      theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
+}
+  }
 
-    for (int i=1; i<=numEle; i++) {
-        Element *theEle = theDomain.getElement(i+200);
-        const Vector &eleForces = theEle->getResistingForce();
-        moment[i] = eleForces(10);
-        if (moment[i] > maxMoment) maxMoment = moment[i];
-        if (moment[i] < minMoment) minMoment = moment[i];
-        shear[i] = eleForces(6);
-    }
+  //
+  // constrain spring and pile nodes with equalDOF (identity constraints)
+  //
+  static Matrix Ccr (2, 2);
+  Ccr.Zero(); Ccr(0,0)=1.0; Ccr(1,1)=1.0;
+  static ID rcDof (2);
+  rcDof(0) = 0;
+  rcDof(1) = 2;
+  for (int i=1; i<=numNodeEmbedded; i++)  {
+    MP_Constraint *theMP = new MP_Constraint(i+200, i+100, Ccr, rcDof, rcDof);
+    theDomain.addMP_Constraint(theMP);
+  }
 
-    // plot results
-    // plot displacemenet
-    QCPCurve *dispCurve = new QCPCurve(ui->displPlot->xAxis, ui->displPlot->yAxis);
-    dispCurve->setData(disp,loc);
-    dispCurve->setPen(QPen(Qt::blue));
-    ui->displPlot->clearPlottables();
-    ui->displPlot->addGraph();
-    ui->displPlot->graph(0)->setData(zero,loc);
-    ui->displPlot->graph(0)->setPen(QPen(Qt::black));
-    ui->displPlot->addPlottable(dispCurve);
-    ui->displPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    ui->displPlot->axisRect()->setupFullAxesBox();
-    ui->displPlot->rescaleAxes();
-    ui->displPlot->replot();
+  //
+  // create soil-spring materials
+  //
+
+  // # p-y spring material
+  for (int i=1; i <= numNodeEmbedded; i++) {
+    double pyDepth = L2 - eleSize*(i - 1);
+    double pult, y50;
+    getPyParam(pyDepth, pyDepth * gamma, phi, D, eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
+    UniaxialMaterial *theMat = new PySimple1(i, 0, 2, pult, y50, 0.0, 0.0);
+    OPS_addUniaxialMaterial(theMat);
+  }
 
 
-    QCPCurve *shearCurve = new QCPCurve(ui->shearPlot->xAxis, ui->shearPlot->yAxis);
-    shearCurve->setData(shear,loc);
-    shearCurve->setPen(QPen(Qt::blue));
-    ui->shearPlot->clearPlottables();
-    ui->shearPlot->addGraph();
-    ui->shearPlot->graph(0)->setData(zero,loc);
-    ui->shearPlot->graph(0)->setPen(QPen(Qt::black));
-    ui->shearPlot->addPlottable(shearCurve);
-    ui->shearPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    ui->shearPlot->axisRect()->setupFullAxesBox();
-    ui->shearPlot->rescaleAxes();
-    ui->shearPlot->replot();
+  // t-z spring material
+  for (int i=2; i <= numNodeEmbedded; i++) {
+    double pyDepth = eleSize*(i - 1);
+    double sigV = gamma*pyDepth;
+    double tult, z50;
+    getTzParam(phi, D,  sigV,  eleSize, &tult, &z50);
+    UniaxialMaterial *theMat = new TzSimple1(i+100, 0, 2, tult, z50, 0.0);
+    OPS_addUniaxialMaterial(theMat);
+  }
 
-    QCPCurve *momCurve = new QCPCurve(ui->momentPlot->xAxis, ui->momentPlot->yAxis);
-    momCurve->setData(moment,loc);
-    momCurve->setPen(QPen(Qt::blue));
-    ui->momentPlot->clearPlottables();
-    ui->momentPlot->addGraph();
-    ui->momentPlot->graph(0)->setData(zero,loc);
-    ui->momentPlot->graph(0)->setPen(QPen(Qt::black));
-    ui->momentPlot->addPlottable(momCurve);
-    ui->momentPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    ui->momentPlot->axisRect()->setupFullAxesBox();
-    ui->momentPlot->rescaleAxes();
-    ui->momentPlot->replot();
+  // # q-z spring material
+  // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
+  double sigVq  = gamma*L2;
+  double qult, z50q;
+  getQzParam(phi, D,  sigVq,  gSoil, &qult, &z50q);
+  UniaxialMaterial *theMat = new QzSimple1(1+100, 2, qult, z50q, 0.0, 0.0);
+  OPS_addUniaxialMaterial(theMat);
 
-    // ui->momentPlot->clearGraphs();
-    // ui->momentPlot->addGraph();
-    // ui->momentPlot->graph(0)->setData(zero,loc);
-    // ui->momentPlot->graph(0)->setPen(QPen(Qt::black));
-    // ui->momentPlot->addGraph();
-    // ui->momentPlot->graph(1)->setData(moment,loc);
-    // ui->momentPlot->graph(1)->setPen(QPen(Qt::blue));
-    // ui->momentPlot->xAxis->setRange(minMoment,maxMoment);
-    // ui->momentPlot->yAxis->setRange(-L2,L1);
-    // ui->momentPlot->replot();
+
+  //
+  // create soil spring elements
+  //
+
+  // create the vectors for the element orientation
+  static Vector x(3); x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
+  static Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
+
+  UniaxialMaterial *theMaterials[2];
+  theMaterials[0] = OPS_getUniaxialMaterial(1);
+  theMaterials[1] = OPS_getUniaxialMaterial(1+100);
+  ID direction(2);
+  direction(0) = 0;
+  direction[1] = 2;
+  Element *theEle = new ZeroLength(10001, 3, 1, 1+100, x, y, 2, theMaterials, direction);
+  theDomain.addElement(theEle);
+
+
+  for (int i=2; i<=numNodeEmbedded; i++) {
+      theMaterials[0] = OPS_getUniaxialMaterial(i);
+      theMaterials[1] = OPS_getUniaxialMaterial(i+100);
+      Element *theEle = new ZeroLength(i+1000, 3, i, i+100, x, y, 2, theMaterials, direction);
+      theDomain.addElement(theEle);
+  }
+
+  //
+  // create pile elements
+  //
+
+  static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
+  CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
+
+  for (int i=1; i<=numEle; i++) {
+     BeamIntegration *theIntegration = new LegendreBeamIntegration();
+     SectionForceDeformation *theSections[3];
+     SectionForceDeformation *theSection = new ElasticSection3d(1, E, A, Iz, Iz, G, J);
+     theSections[0] = theSection;
+     theSections[1] = theSection;
+     theSections[2] = theSection;
+     Element *theEle = new DispBeamColumn3d(i+200, i+200, i+201, 3, theSections, *theIntegration, *theTransformation);
+     theDomain.addElement(theEle);
+     delete theSection;
+     delete theIntegration;
+  }
+
+ //
+ // create load pattern and add loads
+ //
+
+ LinearSeries *theTimeSeries = new LinearSeries(1, 1.0);
+ LoadPattern *theLoadPattern = new LoadPattern(1);
+ theLoadPattern->setTimeSeries(theTimeSeries);
+ static Vector load(6); load.Zero(); load(0) = P;
+ NodalLoad *theLoad = new NodalLoad(0, numNodePile+200, load);
+ theLoadPattern->addNodalLoad(theLoad);
+ theDomain.addLoadPattern(theLoadPattern);
+
+ //
+ // create the analysis
+ //
+
+ AnalysisModel     *theModel = new AnalysisModel();
+ CTestNormDispIncr *theTest = new CTestNormDispIncr(1.0e-3, 20, 0);
+ EquiSolnAlgo      *theSolnAlgo = new NewtonRaphson();
+ StaticIntegrator  *theIntegrator = new LoadControl(0.05, 1, 0.05, 0.05);
+ //ConstraintHandler *theHandler = new TransformationConstraintHandler();
+ ConstraintHandler *theHandler = new PenaltyConstraintHandler(1.0e14, 1.0e14);
+ RCM               *theRCM = new RCM();
+ DOF_Numberer      *theNumberer = new DOF_Numberer(*theRCM);
+ BandGenLinSolver  *theSolver = new BandGenLinLapackSolver();
+ LinearSOE         *theSOE = new BandGenLinSOE(*theSolver);
+
+ StaticAnalysis    theAnalysis(theDomain,
+                   *theHandler,
+                   *theNumberer,
+                   *theModel,
+                   *theSolnAlgo,
+                   *theSOE,
+                   *theIntegrator);
+ theSolnAlgo->setConvergenceTest(theTest);
+
+ //
+ //analyze & get results
+ //
+ theAnalysis.analyze(20);
+ theDomain.calculateNodalReactions(0);
+
+
+
+ QVector<double> loc(numNodePile);
+ QVector<double> disp(numNodePile);
+ QVector<double> moment(numNodePile);
+ QVector<double> shear(numNodePile);
+ QVector<double> zero(numNodePile);
+
+
+ double maxDisp = 0;
+ double minDisp = 0;
+ double maxMoment = 0;
+ double minMoment = 0;
+
+ for (int i=1; i<=numNodePile; i++) {
+     zero[i-1] = 0.0;
+     Node *theNode = theDomain.getNode(i+200);
+     const Vector &nodeCoord = theNode->getCrds();
+     loc[i-1] = nodeCoord(2)-L2;
+     const Vector &nodeDisp = theNode->getDisp();
+     disp[i-1] = nodeDisp(0);
+     if (disp[i-1] > maxDisp) maxDisp = disp[i-1];
+     if (disp[i-1] < minDisp) minDisp = disp[i-1];
+ }
+
+
+ for (int i=1; i<=numEle; i++) {
+     Element *theEle = theDomain.getElement(i+200);
+     const Vector &eleForces = theEle->getResistingForce();
+     moment[i] = eleForces(10);
+     if (moment[i] > maxMoment) maxMoment = moment[i];
+     if (moment[i] < minMoment) minMoment = moment[i];
+     shear[i] = eleForces(6);
+ }
+ 
+// plot results
+// plot displacemenet
+ QCPCurve *dispCurve = new QCPCurve(ui->displPlot->xAxis, ui->displPlot->yAxis);
+ dispCurve->setData(disp,loc);
+ dispCurve->setPen(QPen(Qt::blue));
+ ui->displPlot->clearPlottables();
+ ui->displPlot->addGraph();
+ ui->displPlot->graph(0)->setData(zero,loc);
+ ui->displPlot->graph(0)->setPen(QPen(Qt::black));
+ ui->displPlot->addPlottable(dispCurve);
+ ui->displPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+ ui->displPlot->axisRect()->setupFullAxesBox();
+ ui->displPlot->rescaleAxes();
+ ui->displPlot->replot();
+
+ 
+ QCPCurve *shearCurve = new QCPCurve(ui->shearPlot->xAxis, ui->shearPlot->yAxis);
+ shearCurve->setData(shear,loc);
+ shearCurve->setPen(QPen(Qt::blue));
+ ui->shearPlot->clearPlottables();
+ ui->shearPlot->addGraph();
+ ui->shearPlot->graph(0)->setData(zero,loc);
+ ui->shearPlot->graph(0)->setPen(QPen(Qt::black));
+ ui->shearPlot->addPlottable(shearCurve);
+ ui->shearPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+ ui->shearPlot->axisRect()->setupFullAxesBox();
+ ui->shearPlot->rescaleAxes();
+ ui->shearPlot->replot();
+ 
+ QCPCurve *momCurve = new QCPCurve(ui->momentPlot->xAxis, ui->momentPlot->yAxis);
+ momCurve->setData(moment,loc);
+ momCurve->setPen(QPen(Qt::blue));
+ ui->momentPlot->clearPlottables();
+ ui->momentPlot->addGraph();
+ ui->momentPlot->graph(0)->setData(zero,loc);
+ ui->momentPlot->graph(0)->setPen(QPen(Qt::black));
+ ui->momentPlot->addPlottable(momCurve);
+ ui->momentPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+ ui->momentPlot->axisRect()->setupFullAxesBox();
+ ui->momentPlot->rescaleAxes();
+ ui->momentPlot->replot();
+
+// ui->momentPlot->clearGraphs();
+// ui->momentPlot->addGraph();
+// ui->momentPlot->graph(0)->setData(zero,loc);
+// ui->momentPlot->graph(0)->setPen(QPen(Qt::black));
+// ui->momentPlot->addGraph();
+// ui->momentPlot->graph(1)->setData(moment,loc);
+// ui->momentPlot->graph(1)->setPen(QPen(Qt::blue));
+// ui->momentPlot->xAxis->setRange(minMoment,maxMoment);
+// ui->momentPlot->yAxis->setRange(-L2,L1);
+// ui->momentPlot->replot();
 
 }
 
@@ -575,9 +741,20 @@ void MainWindow::on_groundWaterTable_valueChanged(double arg1)
 void MainWindow::setupLayers()
 {
     soilLayers.clear();
-    soilLayers.push_back(soilLayer("Layer 1", 3.0, 18.0, 2.0e5, 30, QColor(100,0,0,100)));
-    soilLayers.push_back(soilLayer("Layer 2", 3.0, 19.0, 2.0e5, 35, QColor(0,100,0,100)));
-    soilLayers.push_back(soilLayer("Layer 3", 4.0, 17.0, 2.0e5, 25, QColor(0,0,100,100)));
+    soilLayers.push_back(soilLayer("Layer 1", 3.0, 15.0, 18.0, 2.0e5, 30, QColor(100,0,0,100)));
+    soilLayers.push_back(soilLayer("Layer 2", 3.0, 16.0, 19.0, 2.0e5, 35, QColor(0,100,0,100)));
+    soilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 25, QColor(0,0,100,100)));
+
+    // set the GWT depth for each layer
+    int numLayers = soilLayers.size();
+    double layerDepthFromSurface = 0.0;
+    for (int ii = 0; ii < numLayers; ii++)
+    {
+        soilLayers[ii].setGWTdepth(gwtDepth - layerDepthFromSurface);
+        layerDepthFromSurface += soilLayers[ii].getLayerThickness();
+        if (ii > 0)
+            soilLayers[ii].setLayerTopStress(soilLayers[ii-1].getLayerBottomStress());
+    }
 }
 
 void MainWindow::reDrawTable()
@@ -591,29 +768,30 @@ void MainWindow::reDrawTable()
         matTableHeaders << soilLayers[ii].getLayerName();
         ui->matTable->setItem(0, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerThickness())));
         ui->matTable->setItem(1, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerUnitWeight())));
-        ui->matTable->setItem(2, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerFrictionAng())));
-        ui->matTable->setItem(3, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerStiffness())));
+        ui->matTable->setItem(2, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerSatUnitWeight())));
+        ui->matTable->setItem(3, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerFrictionAng())));
+        ui->matTable->setItem(4, ii, new QTableWidgetItem(QString::number(soilLayers[ii].getLayerStiffness())));
     }
 
     ui->matTable->setHorizontalHeaderLabels(matTableHeaders);
 
     for (int ii = 0; ii < ui->matTable->rowCount(); ii++)
-	for (int jj = 1; jj < ui->matTable->columnCount(); jj++)
+	for (int jj = 0; jj < ui->matTable->columnCount(); jj++)
 		ui->matTable->item(ii,jj)->setTextAlignment(Qt::AlignHCenter);
 }
 
 void MainWindow::updateInfo(QTableWidgetItem * item)
 {
-    if (item && item == ui->matTable->currentItem()) {
-        if(item->row() == 0)
-            soilLayers[item->column()].setLayerThickness(item->text().toDouble());
-        else if (item->row() == 1)
-            soilLayers[item->column()].setLayerUnitWeight(item->text().toDouble());
-        else if (item->row() == 2)
-            soilLayers[item->column()].setLayerFrictionAng(item->text().toDouble());
-        else if (item->row() == 3)
-            soilLayers[item->column()].setLayerStiffness(item->text().toDouble());
-    }
-
-    this->doAnalysis();
+ if (item && item == ui->matTable->currentItem()) {
+      if(item->row() == 0)
+         soilLayers[item->column()].setLayerThickness(item->text().toDouble());
+      else if (item->row() == 1)
+         soilLayers[item->column()].setLayerUnitWeight(item->text().toDouble());
+      else if (item->row() == 2)
+         soilLayers[item->column()].setLayerSatUnitWeight(item->text().toDouble());
+      else if (item->row() == 3)
+         soilLayers[item->column()].setLayerFrictionAng(item->text().toDouble());
+      else if (item->row() == 4)
+         soilLayers[item->column()].setLayerStiffness(item->text().toDouble());
+  }
 }
