@@ -53,9 +53,9 @@ getPyParam(double pyDepth,
   //----------------------------------------------------------
   //  define ultimate lateral resistance, pult 
   //----------------------------------------------------------
-   //  qDebug() << pyDepth << " " << gamma << " " << phiDegree << " " << b << " " << pEleLength << " " << puSwitch << " " << kSwitch << " " << gwtSwitch;
+  // qDebug() << pyDepth << " " << gamma << " " << phiDegree << " " << b << " " << pEleLength << " " << puSwitch << " " << kSwitch << " " << gwtSwitch;
   // pult is defined per API recommendations (Reese and Van Impe, 2001 or API, 1987) for puSwitch = 1
-  //  OR per the method of Brinch Hansen (1961) for puSwitch = 2
+  // OR per the method of Brinch Hansen (1961) for puSwitch = 2
   
   double pi = 3.14159265358979;
   double phi = phiDegree*(pi/180.);

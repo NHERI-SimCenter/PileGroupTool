@@ -63,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent) :
     P        = 0.0;
     L1       = 1.0;
     L2       = 20.0;
-    D        = 1.0;
+    pileDiameter = 1.0;
     gwtDepth = 3.00;
     E        = 25.0e6;
     numEle   = 80;
@@ -75,15 +75,15 @@ MainWindow::MainWindow(QWidget *parent) :
     gwtSwitch= 1;
 
     ui->appliedForce->setValue(P);
-    ui->pileDiameter->setValue(D);
+    ui->pileDiameter->setValue(pileDiameter);
     ui->freeLength->setValue(L1);
     ui->embeddedLength->setValue(L2);
     ui->Emodulus->setValue(E);
     ui->groundWaterTable->setValue(gwtDepth);
 
     // set initial state of check boxes
-    useToeResistance    = true;
-    assumeRigidPileHead = true;
+    useToeResistance    = false;
+    assumeRigidPileHead = false;
 
     ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHead?Qt::Checked:Qt::Unchecked);
     ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
@@ -100,62 +100,294 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->matTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
     ui->matTable->setItemPrototype(ui->matTable->item(3,0));
     ui->matTable->setItemDelegate(new QItemDelegate());
+    
+    // set up initial values before activating live analysis (= connecting the slots)
+    //    or the program will fail in the analysis due to missing information
+    setupLayers();
+    reDrawTable();    
+
     connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
           this, SLOT(updateInfo(QTableWidgetItem*)));
     connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)),
           this, SLOT(updateInfo(QTableWidgetItem*)));
-    setupLayers();
-    reDrawTable();    
-
+      
     this->doAnalysis();
 }
-void
-MainWindow::doAnalysis(void)
+
+void MainWindow::doAnalysis(void)
 {
-  // clear existing model
-  theDomain.clearAll();
-  OPS_clearAllUniaxialMaterial();
-  ops_Dt = 0.0;
+    // clear existing model
+    theDomain.clearAll();
+    OPS_clearAllUniaxialMaterial();
+    ops_Dt = 0.0;
 
-  double eleSize = (L1+L2)/(1.0*numEle);
-  int numNodePile = 1+numEle;
+    //
+    // find meshing parameters
+    //
+    //
+    QVector<int>    elemsInLayer = QVector<int>(3,minElementsPerLayer);
+    QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
 
-  //
-  // create spring nodes
-  //
+    int numNodePile = numElementsInAir+1;
 
-  int numNodeEmbedded;
-  for (int i=1; i<=numNodePile; i++) {
-    double zCoord = eleSize*(i-1);
-    if (zCoord <= L2) {
-        Node *theNode = 0;
-        theNode = new Node(    i, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
-        theNode = new Node(i+100, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
+    for (int iLayer=0; iLayer < 3; iLayer++)
+    {
+        int numElemThisLayer = int(soilLayers[iLayer].getLayerThickness()/pileDiameter);
+        if (numElemThisLayer < minElementsPerLayer) numElemThisLayer = minElementsPerLayer;
+        if (numElemThisLayer > maxElementsPerLayer) numElemThisLayer = maxElementsPerLayer;
+        numElemThisLayer += 1; // accounting for the shift of elements such that no spring ends up on an interface
 
-        SP_Constraint *theSP = 0;
-        theSP = new SP_Constraint(i, 0, 0., true);  theDomain.addSP_Constraint(theSP);
-        theSP = new SP_Constraint(i, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-        theSP = new SP_Constraint(i, 2, 0., true);  theDomain.addSP_Constraint(theSP);
-        theSP = new SP_Constraint(i+100, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-        theSP = new SP_Constraint(i+100, 2, 0., true);  theDomain.addSP_Constraint(theSP);
+        // remember number of elements in this layer
+        elemsInLayer[iLayer] = numElemThisLayer;
 
-        numNodeEmbedded=i;
+        // total node count
+        numNodePile += numElemThisLayer + 1;
+
+        // compute bottom of this layer/top of the next layer
+        depthOfLayer[iLayer+1] = depthOfLayer[iLayer] + soilLayers[iLayer].getLayerThickness();
+
+        // update layer information on overburdon stress and water table
+        if (iLayer > 0) {
+            overburdonStress = soilLayer(iLayer-1).getLayerBottomStress();
+        }
+        else {
+            overburdonStress = 0.00;
+        }
+        soilLayer(iLayer).setLayerOverburdenStress(overburdonStress);
+
+        groundWaterHead = gwtDepth - depthOfLayer[iLayer];
+        soilLayer(iLayer).setLayerGWHead(groundWaterHead);
     }
-  }
 
-  //
-  // create pile node
-  //
+    // offset for spring node generation
+    int springNodeNumber = numNodePile;
 
-  for (int i=1; i<=numNodePile; i++) {
-    double zCoord = eleSize*(i-1);
-    Node *theNode = 0;
-    int nodeTag = i+200;
-    theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
-    if (i == numNodePile && assumeRigidPileHead ) {
-      SP_Constraint *theSP = 0;
-      theSP = new SP_Constraint(nodeTag, 4, 0., true); theDomain.addSP_Constraint(theSP);
+    //
+    // compute pile properties (compute once; used for all pile elements)
+    //
+    double PI = 3.14159;
+    double A  = 0.2500 * PI * pileDiameter * pileDiameter;
+    double Iz = 0.0625 *  A * pileDiameter * pileDiameter;
+    double G  = E/(2.0*(1.+0.3));
+    double J  = 1.0e10;
+
+    //
+    // Ready to generate the structure
+    //
+
+    /* portion of the pile above ground */
+
+    /* embedded pile portion */
+
+    for (int iLayer=0; iLayer < 3; iLayer++)
+    {
+
+        double eleSize = (L1+L2)/(1.0*numEle);
+        int numNodePile = 1+numEle;
+
+        //
+        // create spring nodes
+        //
+
+        int numNodeEmbedded;
+        for (int i=1; i<=numNodePile; i++) {
+            double zCoord = eleSize*(i-1);
+            if (zCoord <= L2) {
+                Node *theNode = 0;
+                theNode = new Node(    i, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
+                theNode = new Node(i+100, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
+
+                SP_Constraint *theSP = 0;
+                theSP = new SP_Constraint(i, 0, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(i, 1, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(i, 2, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(i+100, 1, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(i+100, 2, 0., true);  theDomain.addSP_Constraint(theSP);
+
+                numNodeEmbedded=i;
+            }
+        }
+
+        //
+        // create pile node
+        //
+
+        for (int i=1; i<=numNodePile; i++) {
+            double zCoord = eleSize*(i-1);
+            Node *theNode = 0;
+            int nodeTag = i+200;
+            theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
+            if (i == numNodePile && assumeRigidPileHead ) {
+                SP_Constraint *theSP = 0;
+                theSP = new SP_Constraint(nodeTag, 4, 0., true); theDomain.addSP_Constraint(theSP);
+            }
+            if (i != 1) {
+                SP_Constraint *theSP = 0;
+                theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
+            }
+        }
+
+        //
+        // constrain spring and pile nodes with equalDOF (identity constraints)
+        //
+        static Matrix Ccr (2, 2);
+        Ccr.Zero(); Ccr(0,0)=1.0; Ccr(1,1)=1.0;
+        static ID rcDof (2);
+        rcDof(0) = 0;
+        rcDof(1) = 2;
+        for (int i=1; i<=numNodeEmbedded; i++)  {
+            MP_Constraint *theMP = new MP_Constraint(i+200, i+100, Ccr, rcDof, rcDof);
+            theDomain.addMP_Constraint(theMP);
+        }
+
+        //
+        // create soil-spring materials
+        //
+
+        // # p-y spring material
+        for (int i=1; i <= numNodeEmbedded; i++) {
+            double pyDepth = L2 - eleSize*(i - 1);
+            double pult, y50;
+            getPyParam(pyDepth, gamma, phi, pileDiameter, eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
+            UniaxialMaterial *theMat = new PySimple1(i, 0, 2, pult, y50, 0.0, 0.0);
+            OPS_addUniaxialMaterial(theMat);
+        }
+
+
+        // t-z spring material
+        for (int i=2; i <= numNodeEmbedded; i++) {
+            double pyDepth = eleSize*(i - 1);
+            double sigV = gamma*pyDepth;
+            double tult, z50;
+            getTzParam(phi, pileDiameter,  sigV,  eleSize, &tult, &z50);
+            UniaxialMaterial *theMat = new TzSimple1(i+100, 0, 2, tult, z50, 0.0);
+            OPS_addUniaxialMaterial(theMat);
+        }
+
+        // # q-z spring material
+        // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
+        double sigVq  = gamma*L2;
+        double qult, z50q;
+        getQzParam(phi, pileDiameter,  sigVq,  gSoil, &qult, &z50q);
+        UniaxialMaterial *theMat = new QzSimple1(1+100, 2, qult, z50q, 0.0, 0.0);
+        OPS_addUniaxialMaterial(theMat);
+
+
+        //
+        // create soil spring elements
+        //
+
+        // create the vectors for the element orientation
+        static Vector x(3); x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
+        static Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
+
+        UniaxialMaterial *theMaterials[2];
+        theMaterials[0] = OPS_getUniaxialMaterial(1);
+        theMaterials[1] = OPS_getUniaxialMaterial(1+100);
+        ID direction(2);
+        direction(0) = 0;
+        direction[1] = 2;
+        Element *theEle = new ZeroLength(10001, 3, 1, 1+100, x, y, 2, theMaterials, direction);
+        theDomain.addElement(theEle);
+
+
+        for (int i=2; i<=numNodeEmbedded; i++) {
+            theMaterials[0] = OPS_getUniaxialMaterial(i);
+            theMaterials[1] = OPS_getUniaxialMaterial(i+100);
+            Element *theEle = new ZeroLength(i+1000, 3, i, i+100, x, y, 2, theMaterials, direction);
+            theDomain.addElement(theEle);
+        }
+
+        //
+        // create pile elements
+        //
+
+        static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
+        CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
+
+        for (int i=1; i<=numEle; i++) {
+            BeamIntegration *theIntegration = new LegendreBeamIntegration();
+            SectionForceDeformation *theSections[3];
+            SectionForceDeformation *theSection = new ElasticSection3d(1, E, A, Iz, Iz, G, J);
+            theSections[0] = theSection;
+            theSections[1] = theSection;
+            theSections[2] = theSection;
+            Element *theEle = new DispBeamColumn3d(i+200, i+200, i+201, 3, theSections, *theIntegration, *theTransformation);
+            theDomain.addElement(theEle);
+            delete theSection;
+            delete theIntegration;
+        }
     }
+
+    //
+    // create load pattern and add loads
+    //
+
+    LinearSeries *theTimeSeries = new LinearSeries(1, 1.0);
+    LoadPattern *theLoadPattern = new LoadPattern(1);
+    theLoadPattern->setTimeSeries(theTimeSeries);
+    static Vector load(6); load.Zero(); load(0) = P;
+    NodalLoad *theLoad = new NodalLoad(0, numNodePile+200, load);
+    theLoadPattern->addNodalLoad(theLoad);
+    theDomain.addLoadPattern(theLoadPattern);
+
+    //
+    // create the analysis
+    //
+
+    AnalysisModel     *theModel = new AnalysisModel();
+    CTestNormDispIncr *theTest = new CTestNormDispIncr(1.0e-3, 20, 0);
+    EquiSolnAlgo      *theSolnAlgo = new NewtonRaphson();
+    StaticIntegrator  *theIntegrator = new LoadControl(0.05, 1, 0.05, 0.05);
+    //ConstraintHandler *theHandler = new TransformationConstraintHandler();
+    ConstraintHandler *theHandler = new PenaltyConstraintHandler(1.0e14, 1.0e14);
+    RCM               *theRCM = new RCM();
+    DOF_Numberer      *theNumberer = new DOF_Numberer(*theRCM);
+    BandGenLinSolver  *theSolver = new BandGenLinLapackSolver();
+    LinearSOE         *theSOE = new BandGenLinSOE(*theSolver);
+
+    StaticAnalysis    theAnalysis(theDomain,
+                                  *theHandler,
+                                  *theNumberer,
+                                  *theModel,
+                                  *theSolnAlgo,
+                                  *theSOE,
+                                  *theIntegrator);
+    theSolnAlgo->setConvergenceTest(theTest);
+
+    //
+    //analyze & get results
+    //
+    theAnalysis.analyze(20);
+    theDomain.calculateNodalReactions(0);
+
+
+
+    QVector<double> loc(numNodePile);
+    QVector<double> disp(numNodePile);
+    QVector<double> moment(numNodePile);
+    QVector<double> shear(numNodePile);
+    QVector<double> zero(numNodePile);
+
+
+    double maxDisp = 0;
+    double minDisp = 0;
+    double maxMoment = 0;
+    double minMoment = 0;
+
+    for (int i=1; i<=numNodePile; i++) {
+        zero[i-1] = 0.0;
+        Node *theNode = theDomain.getNode(i+200);
+        const Vector &nodeCoord = theNode->getCrds();
+        loc[i-1] = nodeCoord(2)-L2;
+        const Vector &nodeDisp = theNode->getDisp();
+        disp[i-1] = nodeDisp(0);
+        if (disp[i-1] > maxDisp) maxDisp = disp[i-1];
+        if (disp[i-1] < minDisp) minDisp = disp[i-1];
+    }
+
     if (i != 1) {
       SP_Constraint *theSP = 0;
       theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
@@ -242,13 +474,7 @@ MainWindow::doAnalysis(void)
   static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
   CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
 
-  double  PI= 3.14159;
-  double A  = PI * D * D/4.0;
-  double Iz = A * D * D/16.0;
-  double G = E/(2.0*(1+0.3));
-  double J = 1.0e10;
-
- for (int i=1; i<=numEle; i++) {
+  for (int i=1; i<=numEle; i++) {
      BeamIntegration *theIntegration = new LegendreBeamIntegration();
      SectionForceDeformation *theSections[3];
      SectionForceDeformation *theSection = new ElasticSection3d(1, E, A, Iz, Iz, G, J);
@@ -417,14 +643,42 @@ void MainWindow::on_actionExit_triggered()
 void MainWindow::on_chkBox_assume_rigid_cap_clicked(bool checked)
 {
     assumeRigidPileHead = checked;
+
+    this->doAnalysis();
 }
 
 void MainWindow::on_chkBox_include_toe_resistance_clicked(bool checked)
 {
     useToeResistance = checked;
+
+    this->doAnalysis();
 }
 
-/* ***** analysis parameter changes ***** */
+/* ***** loading parameter changes ***** */
+
+void MainWindow::on_appliedForce_valueChanged(double arg1)
+{
+    P = ui->appliedForce->value();
+
+    int sliderPosition = 10*int(P/3500.0);
+    if (sliderPosition >  10) sliderPosition= 10;
+    if (sliderPosition < -10) sliderPosition=-10;
+    ui->displacementSlider->setValue(sliderPosition);
+
+    this->doAnalysis();
+}
+
+void MainWindow::on_appliedForce_editingFinished()
+{
+    P = ui->appliedForce->value();
+
+    int sliderPosition = 10*int(P/3500.0);
+    if (sliderPosition >  10) sliderPosition= 10;
+    if (sliderPosition < -10) sliderPosition=-10;
+    ui->displacementSlider->setValue(sliderPosition);
+
+    this->doAnalysis();
+}
 
 void MainWindow::on_displacementSlider_sliderMoved(int position)
 {
@@ -433,12 +687,27 @@ void MainWindow::on_displacementSlider_sliderMoved(int position)
 
     P = 3500.0 * displacementRatio;
     ui->appliedForce->setValue(P);
+
     this->doAnalysis();
 }
 
+void MainWindow::on_displacementSlider_actionTriggered(int action)
+{
+    // slider moved -- the number of steps (10) is a parameter to the slider in mainwindow.ui
+    int position = ui->displacementSlider->value();
+    displacementRatio = double(position)/10.0;
+
+    P = 3500.0 * displacementRatio;
+    ui->appliedForce->setValue(P);
+
+    this->doAnalysis();
+}
+
+/* ***** analysis parameter changes ***** */
+
 void MainWindow::on_pileDiameter_valueChanged(double arg1)
 {
-    D = arg1;
+    pileDiameter = arg1;
     this->doAnalysis();
 }
 
@@ -466,6 +735,8 @@ void MainWindow::on_groundWaterTable_valueChanged(double arg1)
     this->doAnalysis();
 }
 
+
+/* ***** soil properties table functions ***** */
 
 void MainWindow::setupLayers()
 {
@@ -507,7 +778,6 @@ void MainWindow::reDrawTable()
     for (int ii = 0; ii < ui->matTable->rowCount(); ii++)
 	for (int jj = 0; jj < ui->matTable->columnCount(); jj++)
 		ui->matTable->item(ii,jj)->setTextAlignment(Qt::AlignHCenter);
-
 }
 
 void MainWindow::updateInfo(QTableWidgetItem * item)
@@ -524,22 +794,4 @@ void MainWindow::updateInfo(QTableWidgetItem * item)
       else if (item->row() == 4)
          soilLayers[item->column()].setLayerStiffness(item->text().toDouble());
   }
-  return;
-}
-
-
-void MainWindow::on_appliedForce_valueChanged(double arg1)
-{
-}
-
-void MainWindow::on_appliedForce_editingFinished()
-{
-    P = ui->appliedForce->value();
-
-    int sliderPosition = 10*int(P/3500.0);
-    if (sliderPosition >  10) sliderPosition= 10;
-    if (sliderPosition < -10) sliderPosition=-10;
-    ui->displacementSlider->setValue(sliderPosition);
-
-    this->doAnalysis();
 }
