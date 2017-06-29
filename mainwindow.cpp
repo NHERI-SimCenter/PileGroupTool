@@ -4,15 +4,15 @@
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
 extern int getPyParam(double pyDepth,
-        double gamma,
-        double phiDegree,
-        double b,
-        double pEleLength,
-        double puSwitch,
-        double kSwitch,
-        double gwtSwitch,
-        double *pult,
-        double *y50);
+                      double gamma,
+                      double phiDegree,
+                      double b,
+                      double pEleLength,
+                      double puSwitch,
+                      double kSwitch,
+                      double gwtSwitch,
+                      double *pult,
+                      double *y50);
 
 // OpenSees include files
 #include <Node.h>
@@ -76,19 +76,26 @@ MainWindow::MainWindow(QWidget *parent) :
     reDrawTable();    
 
     // setup data
-    P=3500;
-    L1=1.0;
-    L2=20.0;
-    D =1.0;
-    E=25.0e6;
-    fixHead=true;
-    numEle=80;
-    gamma=17.0;
-    phi=36.0;
-    gSoil=150000;
-    puSwitch=1;
-    kSwitch=1;
-    gwtSwitch=1;
+    P        = 0.0;
+    L1       = 1.0;
+    L2       = 20.0;
+    D        = 1.0;
+    gwtDepth = 3.00;
+    E        = 25.0e6;
+    numEle   = 80;
+    gamma    = 17.0;
+    phi      = 36.0;
+    gSoil    = 150000;
+    puSwitch = 1;
+    kSwitch  = 1;
+    gwtSwitch= 1;
+
+    ui->appliedForce->setValue(P);
+    ui->pileDiameter->setValue(D);
+    ui->freeLength->setValue(L1);
+    ui->embeddedLength->setValue(L2);
+    ui->Emodulus->setValue(E);
+    ui->groundWaterTable->setValue(gwtDepth);
 
     // set initial state of check boxes
     useToeResistance    = true;
@@ -146,7 +153,7 @@ MainWindow::doAnalysis(void)
     Node *theNode = 0;
     int nodeTag = i+200;
     theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
-    if (i == numNodePile && fixHead == true) {
+    if (i == numNodePile && assumeRigidPileHead ) {
       SP_Constraint *theSP = 0;
       theSP = new SP_Constraint(nodeTag, 4, 0., true); theDomain.addSP_Constraint(theSP);
     }
@@ -392,85 +399,21 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_puValue_activated(const QString &arg1)
-{
-    qDebug() << arg1;
-}
-
-void MainWindow::on_fixedHead_clicked(bool checked)
-{
-    fixHead = true;
-    this->doAnalysis();
-}
-
-void MainWindow::on_pinnedHead_clicked(bool checked)
-{
-    fixHead = false;
-    this->doAnalysis();
-}
-
-void MainWindow::on_pValue_valueChanged(double arg1)
-{
-    P = arg1;
-    this->doAnalysis();
-}
-
-void MainWindow::on_l1Value_valueChanged(double arg1)
-{
-    L1 = arg1;
-    this->doAnalysis();
-}
-
-void MainWindow::on_l2Value_valueChanged(double arg1)
-{
-    L2 = arg1;
-    this->doAnalysis();
-}
-
-void MainWindow::on_dValue_valueChanged(double arg1)
-{
-    D = arg1;
-    this->doAnalysis();
-}
-
-void MainWindow::on_eValue_valueChanged(double arg1)
-{
-    E = arg1;
-    this->doAnalysis();
-}
-
-void MainWindow::on_gammaValue_valueChanged(double arg1)
-{
-    gamma = arg1;
-    this->doAnalysis();
-}
-
-void MainWindow::on_phiValue_valueChanged(double arg1)
-{
-    phi = arg1;
-    this->doAnalysis();
-}
-
-void MainWindow::on_gSoilValue_valueChanged(double arg1)
-{
-    gSoil = arg1;
-    this->doAnalysis();
-}
-
-void MainWindow::on_gammaValue_editingFinished()
-{
-
-}
-
+/*
 void MainWindow::on_analyzeButton_clicked()
 {
     doAnalysis();
 }
+*/
+
+/* ***** menu actions ***** */
 
 void MainWindow::on_actionExit_triggered()
 {
     this->close();
 }
+
+/* ***** check box status changes ***** */
 
 void MainWindow::on_chkBox_assume_rigid_cap_clicked(bool checked)
 {
@@ -482,10 +425,45 @@ void MainWindow::on_chkBox_include_toe_resistance_clicked(bool checked)
     useToeResistance = checked;
 }
 
+/* ***** analysis parameter changes ***** */
+
 void MainWindow::on_displacementSlider_sliderMoved(int position)
 {
     // slider moved -- the number of steps (10) is a parameter to the slider in mainwindow.ui
     displacementRatio = double(position)/10.0;
+
+    P = 3500.0 * displacementRatio;
+    ui->appliedForce->setValue(P);
+    this->doAnalysis();
+}
+
+void MainWindow::on_pileDiameter_valueChanged(double arg1)
+{
+    D = arg1;
+    this->doAnalysis();
+}
+
+void MainWindow::on_embeddedLength_valueChanged(double arg1)
+{
+    L2 = arg1;
+    this->doAnalysis();
+}
+
+void MainWindow::on_freeLength_valueChanged(double arg1)
+{
+    L1 = arg1;
+    this->doAnalysis();
+}
+
+void MainWindow::on_Emodulus_valueChanged(double arg1)
+{
+    E = arg1;
+    this->doAnalysis();
+}
+
+void MainWindow::on_groundWaterTable_valueChanged(double arg1)
+{
+    gwtDepth = arg1;
     this->doAnalysis();
 }
 
@@ -536,3 +514,19 @@ void MainWindow::updateInfo(QTableWidgetItem * item)
   return;
 }
 
+
+void MainWindow::on_appliedForce_valueChanged(double arg1)
+{
+}
+
+void MainWindow::on_appliedForce_editingFinished()
+{
+    P = ui->appliedForce->value();
+
+    int sliderPosition = 10*int(P/3500.0);
+    if (sliderPosition >  10) sliderPosition= 10;
+    if (sliderPosition < -10) sliderPosition=-10;
+    ui->displacementSlider->setValue(sliderPosition);
+
+    this->doAnalysis();
+}
