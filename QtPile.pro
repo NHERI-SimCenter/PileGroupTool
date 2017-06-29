@@ -35,12 +35,14 @@ SOURCES += main.cpp\
         getTZParam.cpp \
         qcustomplot.cpp \
     materialdbinterface.cpp \
-    surveysplashscreen.cpp
+    surveysplashscreen.cpp \
+    soilmat.cpp
         
 HEADERS  += mainwindow.h \
         qcustomplot.h \
     materialdbinterface.h \
-    surveysplashscreen.h
+    surveysplashscreen.h \
+    soilmat.h
 
 # WHY DO WE NEED THIS ?????
 HEADERS  += ui_mainwindow.h
