@@ -36,3 +36,4 @@ moc*
 *.exe
 *.out
 *.app
+*.user
