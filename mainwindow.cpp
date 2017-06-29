@@ -80,15 +80,22 @@ MainWindow::MainWindow(QWidget *parent) :
     L1       = 1.0;
     L2       = 20.0;
     D        = 1.0;
-    gwtDepth = 0.00;
-    E=25.0e6;
-    numEle=80;
-    gamma=17.0;
-    phi=36.0;
-    gSoil=150000;
-    puSwitch=1;
-    kSwitch=1;
-    gwtSwitch=1;
+    gwtDepth = 3.00;
+    E        = 25.0e6;
+    numEle   = 80;
+    gamma    = 17.0;
+    phi      = 36.0;
+    gSoil    = 150000;
+    puSwitch = 1;
+    kSwitch  = 1;
+    gwtSwitch= 1;
+
+    ui->appliedForce->setValue(P);
+    ui->pileDiameter->setValue(D);
+    ui->freeLength->setValue(L1);
+    ui->embeddedLength->setValue(L2);
+    ui->Emodulus->setValue(E);
+    ui->groundWaterTable->setValue(gwtDepth);
 
     // set initial state of check boxes
     useToeResistance    = true;
@@ -392,29 +399,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_gammaValue_valueChanged(double arg1)
-{
-    gamma = arg1;
-    this->doAnalysis();
-}
-
-void MainWindow::on_phiValue_valueChanged(double arg1)
-{
-    phi = arg1;
-    this->doAnalysis();
-}
-
-void MainWindow::on_gSoilValue_valueChanged(double arg1)
-{
-    gSoil = arg1;
-    this->doAnalysis();
-}
-
-void MainWindow::on_gammaValue_editingFinished()
-{
-
-}
-
 /*
 void MainWindow::on_analyzeButton_clicked()
 {
@@ -449,6 +433,7 @@ void MainWindow::on_displacementSlider_sliderMoved(int position)
     displacementRatio = double(position)/10.0;
 
     P = 3500.0 * displacementRatio;
+    ui->appliedForce->setValue(P);
     this->doAnalysis();
 }
 
@@ -529,3 +514,19 @@ void MainWindow::updateInfo(QTableWidgetItem * item)
   return;
 }
 
+
+void MainWindow::on_appliedForce_valueChanged(double arg1)
+{
+}
+
+void MainWindow::on_appliedForce_editingFinished()
+{
+    P = ui->appliedForce->value();
+
+    int sliderPosition = 10*int(P/3500.0);
+    if (sliderPosition >  10) sliderPosition= 10;
+    if (sliderPosition < -10) sliderPosition=-10;
+    ui->displacementSlider->setValue(sliderPosition);
+
+    this->doAnalysis();
+}

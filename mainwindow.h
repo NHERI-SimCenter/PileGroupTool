@@ -22,10 +22,6 @@ public:
 
 private slots:
     // soil parameter values entered/changed
-    void on_gammaValue_valueChanged(double arg1);
-    void on_phiValue_valueChanged(double arg1);
-    void on_gSoilValue_valueChanged(double arg1);
-    void on_gammaValue_editingFinished();
 
     // program controls
     //void on_analyzeButton_clicked();
@@ -47,6 +43,10 @@ private slots:
 
     // material table slots
     void updateInfo(QTableWidgetItem *);
+
+    void on_appliedForce_valueChanged(double arg1);
+
+    void on_appliedForce_editingFinished();
 
 private:
     Q_OBJECT
