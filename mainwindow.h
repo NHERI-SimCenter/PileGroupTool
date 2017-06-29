@@ -43,33 +43,29 @@ private slots:
 
     // material table slots
     void updateInfo(QTableWidgetItem *);
-
     void on_appliedForce_valueChanged(double arg1);
-
     void on_appliedForce_editingFinished();
+    void on_displacementSlider_actionTriggered(int action);
 
 private:
     Q_OBJECT
     Ui::MainWindow *ui;
 
     // get data
-    double P;
-    double L1;
-    double L2;
-    double D;
-    double E;
-    int numEle;
-    double gamma;
-    double phi;
-    double gSoil;
-    int puSwitch;
-    int kSwitch;
-    int gwtSwitch;
-    double gwtDepth;
+    double P;  // lateral force on pile
+    double L1; // pile length above ground
+    double L2; // embedded length of pile
+    double pileDiameter;  // pile diameter
+    double E;  // pile modulus of elasticity
+
+    double gwtDepth;  // depth of ground water table below the surface
 
     // states
     bool assumeRigidPileHead = false;
     bool useToeResistance    = false;
+    int  puSwitch;
+    int  kSwitch;
+    int  gwtSwitch;
 
     // load parameter
     double displacementRatio;
@@ -79,6 +75,24 @@ private:
 
     void setupLayers();
     void reDrawTable();
+
+    // meshing parameters
+    int minElementsPerLayer =  5;
+    int maxElementsPerLayer = 25;
+    int numElementsInAir    =  4;
+    int numEle;
+
+    // temporary variables
+    double gamma;
+    double gammaWet;
+    double gammaSaturated;
+    double phi;
+    double gSoil;
+    double totalStress;
+    double effectiveStress;
+    double porePressure;
+    double overburdonStress;
+    double groundWaterHead;
 
 };
 
