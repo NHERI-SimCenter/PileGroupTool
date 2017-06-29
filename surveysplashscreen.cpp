@@ -8,10 +8,24 @@ surveySplashScreen::surveySplashScreen(QWidget *parent) :
     ui->setupUi(this);
 
     /* populate information and survey text info */
-    QString HTMLtext = "This is the splash screen\
-                        to demonstrate feature\
-                        <a href=\"http://www.uw.edu\">survey hyperlink</a>\
-                        and more info.";
+    QString HTMLtext = "\
+            Dear user,\
+            <p>\
+            You are about to explore an alpha release of the SimCenter Educational Pile Tool.\
+            This version of the software is to provide an initial impression of features and functionality, \
+            though several intended features such as pile groups and more complex layer structure are not yet available.\
+            <p>\
+            Please be aware that this software is not intended to be used in any commercial\
+            analysis and/or design, nor must it be redistributed other than through \
+            <a href=\"https://www.designsafe-ci.org/\">https://www.designsafe-ci.org</a>.\
+            All contributors of NHERI SimCenter are free of responsibility and liability resulting\
+            from the use of this software.  Use of this software is at your own risk.\
+            <p>\
+            We, the SimCenter software designers, are asking you to please go to \
+            <a href=\"http://uw.edu\">http://uw.edu</a>  \
+            and share with us your most values suggestions on how to improve this educational tool.\
+            <p>\
+            Your SimCenter team";
     ui->surveyText->insertHtml(HTMLtext);
 }
 

@@ -17,31 +17,29 @@ public:
     void doAnalysis(void);
 
 private slots:
+    // parameter values entered/changed
     void on_puValue_activated(const QString &arg1);
-
     void on_fixedHead_clicked(bool checked);
-
     void on_pinnedHead_clicked(bool checked);
-
     void on_pValue_valueChanged(double arg1);
-
     void on_l1Value_valueChanged(double arg1);
-
     void on_l2Value_valueChanged(double arg1);
-
     void on_dValue_valueChanged(double arg1);
-
     void on_eValue_valueChanged(double arg1);
-
     void on_gammaValue_valueChanged(double arg1);
-
     void on_phiValue_valueChanged(double arg1);
-
     void on_gSoilValue_valueChanged(double arg1);
-
     void on_gammaValue_editingFinished();
-
     void on_analyzeButton_clicked();
+
+    // menu actions
+    void on_actionExit_triggered();
+
+    // check boxes
+    void on_chkBox_assume_rigid_cap_clicked(bool checked);
+    void on_chkBox_include_toe_resistance_clicked(bool checked);
+
+    void on_displacementSlider_sliderMoved(int position);
 
 private:
     Q_OBJECT
@@ -61,6 +59,13 @@ private:
     int puSwitch;
     int kSwitch;
     int gwtSwitch;
+
+    // states
+    bool assumeRigidPileHead = false;
+    bool useToeResistance    = false;
+
+    // load parameter
+    double displacementRatio;
 
 };
 

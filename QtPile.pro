@@ -19,13 +19,13 @@ PRODUCT_NAME = 'QtPile'
 #DEFINES += APPLICATION_NAME=\"\\\"$$PRODUCT_NAME\\\"\"
 #DEFINES += APPLICATION_VERSION=\"\\\"$$M_VERSION$$member(M_REV, 1)\\\"\"
 
-unix: QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable
-
-#INCLUDEPATH += ../../../Common
+#win32: INCLUDES += "./ops"
+#win32: LIBS += -llapack -lblas
+unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable
+win32: QMAKE_CXXFLAGS += /Y-
 
 include(OPS_includes.pro)
 
-#INCLUDES += "/home/users/fmk/Downloads/Pile/ops"
 #INCLUDEPATH += "$(HOME)/OpenSees/DEVELOPER/core"
 
 SOURCES += main.cpp\
@@ -49,3 +49,6 @@ FORMS    += mainwindow.ui \
     materialdbinterface.ui \
     surveysplashscreen.ui
         
+
+RESOURCES += \
+    qtpileresources.qrc

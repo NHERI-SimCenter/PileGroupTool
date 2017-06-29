@@ -1,5 +1,5 @@
-#include "MainWindow.h"
-#include "ui_MainWindow.h"
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
@@ -71,6 +71,16 @@ MainWindow::MainWindow(QWidget *parent) :
     puSwitch=1;
     kSwitch=1;
     gwtSwitch=1;
+
+    // set initial state of check boxes
+    useToeResistance    = true;
+    assumeRigidPileHead = true;
+
+    ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHead?Qt::Checked:Qt::Unchecked);
+    ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
+
+    // analysis parameters
+    displacementRatio = 0.0;
 
     this->doAnalysis();
 
@@ -369,8 +379,6 @@ void MainWindow::on_puValue_activated(const QString &arg1)
     qDebug() << arg1;
 }
 
-
-
 void MainWindow::on_fixedHead_clicked(bool checked)
 {
     fixHead = true;
@@ -439,4 +447,26 @@ void MainWindow::on_gammaValue_editingFinished()
 void MainWindow::on_analyzeButton_clicked()
 {
     doAnalysis();
+}
+
+void MainWindow::on_actionExit_triggered()
+{
+    this->close();
+}
+
+void MainWindow::on_chkBox_assume_rigid_cap_clicked(bool checked)
+{
+    assumeRigidPileHead = checked;
+}
+
+void MainWindow::on_chkBox_include_toe_resistance_clicked(bool checked)
+{
+    useToeResistance = checked;
+}
+
+void MainWindow::on_displacementSlider_sliderMoved(int position)
+{
+    // slider moved -- the number of steps (10) is a parameter to the slider in mainwindow.ui
+    displacementRatio = double(position)/10.0;
+    this->doAnalysis();
 }
