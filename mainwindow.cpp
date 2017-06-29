@@ -185,7 +185,7 @@ MainWindow::doAnalysis(void)
   for (int i=1; i <= numNodeEmbedded; i++) {
     double pyDepth = L2 - eleSize*(i - 1);
     double pult, y50;
-    getPyParam(pyDepth, gamma, phi, D, eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
+    getPyParam(pyDepth, pyDepth * gamma, phi, D, eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
     UniaxialMaterial *theMat = new PySimple1(i, 0, 2, pult, y50, 0.0, 0.0);
     OPS_addUniaxialMaterial(theMat);
   }
