@@ -1,34 +1,35 @@
 #include<soilmat.h>
 #include<math.h>
 
-int soilLayer::numLayers = 0;
 const double pi = atan(1.0) * 4.0;
 
 
 soilLayer::soilLayer()
 {
-  ++numLayers;
-  layerName = QString("Layer" + QString::number(numLayers));
+  layerName = QString("New Soil Layer");
   layerH = 1.0;
   layerG = 2.0e5;
   layerPhi = 30;
   layerGamma = 18.0;
+  layerGammaSat = 18.0;
+  layerTopStress = 0.0;
   layerColor = QColor(100,100,100,100);
-  topStress = 0;
-  botStress = 0;
+
+  waterUnitWeight = 9.81;
 }
 
-soilLayer::soilLayer(QString lName, double nThick, double lUnitWeight, double lStiffness, double lFrictionAng, QColor color)
+soilLayer::soilLayer(QString lName, double nThick, double lUnitWeight, double lSatUnitWeight, double lStiffness, double lFrictionAng, QColor color)
 {
-  ++numLayers;
   layerName = lName;
   layerH = nThick;
   layerG = lStiffness;
   layerPhi = lFrictionAng;
   layerGamma = lUnitWeight;
+  layerGammaSat = lSatUnitWeight;
+  layerTopStress = 0.0;
   layerColor = color;
-  topStress = 0;
-  botStress = 0;
+
+  waterUnitWeight = 9.81;
 }
 
 soilLayer::~soilLayer()
@@ -36,14 +37,25 @@ soilLayer::~soilLayer()
 
 }
 
-void
-soilLayer::update()
+double soilLayer::getLayerTopStress()
 {
-    calcStress();
+  return getEffectiveStress(0);
 }
 
-void
-soilLayer::calcStress()
+double soilLayer::getLayerBottomStress()
 {
-  botStress = topStress + layerGamma * layerH;
+  return getEffectiveStress(layerH);
+}
+
+double soilLayer::getEffectiveStress(double depth)
+{
+  if ((depth < 0) || (depth > layerH))
+    return 0.0;
+
+  if (layerGWT < 0)
+    return depth * (layerGammaSat - waterUnitWeight) + layerTopStress;
+  else if (layerGWT > depth)
+    return depth * layerGamma + layerTopStress;
+  else
+    return layerGWT * layerGamma + (depth - layerGWT) * (layerGammaSat - waterUnitWeight) + layerTopStress;
 }

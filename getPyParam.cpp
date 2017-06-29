@@ -40,7 +40,7 @@ double atanh(double x)
 
 int
 getPyParam(double pyDepth,
-	    double gamma, 
+	    double sig, 
 	    double phiDegree, 
 	    double b, 
 	    double pEleLength, 
@@ -189,10 +189,10 @@ getPyParam(double pyDepth,
     double  c6  = K0*tan(phi)*pow(tan(beta),4);
     
     // Equation (3.44), Reese and Van Impe (2001)
-    double  pst = gamma*pyDepth*(pyDepth*(c1+c2+c3) + b*c4);
+    double  pst = sig*(pyDepth*(c1+c2+c3) + b*c4);
     
     // Equation (3.45), Reese and Van Impe (2001)
-    double  psd = b*gamma*pyDepth*(c5+c6);
+    double  psd = b*sig*(c5+c6);
     //qDebug() << "pst psd: " << pst << " " << psd;
 
     // pult is the lesser of pst and psd. At surface, an arbitrary value is defined
@@ -230,7 +230,7 @@ getPyParam(double pyDepth,
     if (pyDepth == 0) { 
       pu = 0.01;
     } else {
-      pu = gamma*pyDepth*KqD*b;
+      pu = sig*KqD*b;
     }
     
     // PySimple1 material formulated with pult as a force, not force/length, multiply by trib. length
@@ -318,7 +318,7 @@ getPyParam(double pyDepth,
   double  k_SIunits = khat*271.45;
 
   // define parabolic distribution of k with depth if desired (i.e. lin_par switch == 2)
-  double  sigV = pyDepth*gamma;
+  double  sigV = sig;
   
   if (sigV == 0) {
     sigV = 0.01;
