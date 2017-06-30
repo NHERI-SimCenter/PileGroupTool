@@ -36,7 +36,7 @@ private slots:
     void on_chkBox_include_toe_resistance_clicked(bool checked);
 
     // geometry parameters entered/changed
-    void on_displacementSlider_sliderMoved(int position);
+    void on_displacementSlider_valueChanged(int value);
     void on_pileDiameter_valueChanged(double arg1);
     void on_embeddedLength_valueChanged(double arg1);
     void on_freeLength_valueChanged(double arg1);
@@ -47,7 +47,6 @@ private slots:
     void updateInfo(QTableWidgetItem *);
     void on_appliedForce_valueChanged(double arg1);
     void on_appliedForce_editingFinished();
-    void on_displacementSlider_actionTriggered(int action);
 
 private:
     Q_OBJECT
@@ -79,8 +78,8 @@ private:
     void reDrawTable();
 
     // meshing parameters
-    int minElementsPerLayer = 10;
-    int maxElementsPerLayer = 25;
+    int minElementsPerLayer = 15;
+    int maxElementsPerLayer = 40;
     int numElementsInAir    =  4;
     int numEle;
 

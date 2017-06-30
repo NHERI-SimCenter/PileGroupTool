@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "math.h"
 
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
@@ -241,7 +242,7 @@ void MainWindow::doAnalysis(void)
         int numNodesLayer = elemsInLayer[iLayer];
 
         //
-        // pile only has interface node
+        // only the pile has a node at the interface (no spring there)
         //
         numNode += 1;
 
@@ -497,7 +498,7 @@ void MainWindow::doAnalysis(void)
     // plot displacemenet
     QCPCurve *dispCurve = new QCPCurve(ui->displPlot->xAxis, ui->displPlot->yAxis);
     dispCurve->setData(disp,loc);
-    dispCurve->setPen(QPen(Qt::blue));
+    dispCurve->setPen(QPen(Qt::blue, 3));
     ui->displPlot->clearPlottables();
     ui->displPlot->addGraph();
     ui->displPlot->graph(0)->setData(zero,loc);
@@ -511,7 +512,7 @@ void MainWindow::doAnalysis(void)
 
     QCPCurve *shearCurve = new QCPCurve(ui->shearPlot->xAxis, ui->shearPlot->yAxis);
     shearCurve->setData(shear,loc);
-    shearCurve->setPen(QPen(Qt::blue));
+    shearCurve->setPen(QPen(Qt::blue, 3));
     ui->shearPlot->clearPlottables();
     ui->shearPlot->addGraph();
     ui->shearPlot->graph(0)->setData(zero,loc);
@@ -524,7 +525,7 @@ void MainWindow::doAnalysis(void)
 
     QCPCurve *momCurve = new QCPCurve(ui->momentPlot->xAxis, ui->momentPlot->yAxis);
     momCurve->setData(moment,loc);
-    momCurve->setPen(QPen(Qt::blue));
+    momCurve->setPen(QPen(Qt::blue, 3));
     ui->momentPlot->clearPlottables();
     ui->momentPlot->addGraph();
     ui->momentPlot->graph(0)->setData(zero,loc);
@@ -540,13 +541,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-
-/*
-void MainWindow::on_analyzeButton_clicked()
-{
-    doAnalysis();
-}
-*/
 
 /* ***** menu actions ***** */
 
@@ -575,12 +569,14 @@ void MainWindow::on_chkBox_include_toe_resistance_clicked(bool checked)
 
 void MainWindow::on_appliedForce_valueChanged(double arg1)
 {
-    P = ui->appliedForce->value();
+    //P = ui->appliedForce->value();
+    P = arg1;
 
-    int sliderPosition = 10*int(P/3500.0);
-    if (sliderPosition >  10) sliderPosition= 10;
-    if (sliderPosition < -10) sliderPosition=-10;
+    int sliderPosition = nearbyint(100.*P/5000.0);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
     ui->displacementSlider->setValue(sliderPosition);
+    //qDebug() << "valueChanged:: Force value: " << P << ",  sliderPosition: " << sliderPosition << endln;
 
     this->doAnalysis();
 }
@@ -589,32 +585,24 @@ void MainWindow::on_appliedForce_editingFinished()
 {
     P = ui->appliedForce->value();
 
-    int sliderPosition = 10*int(P/3500.0);
-    if (sliderPosition >  10) sliderPosition= 10;
-    if (sliderPosition < -10) sliderPosition=-10;
-    ui->displacementSlider->setValue(sliderPosition);
+    int sliderPosition = nearbyint(100.*P/5000.0);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    //qDebug() << "editingFinished:: Force value: " << P << ",  sliderPosition: " << sliderPosition << endln;
+    ui->displacementSlider->setSliderPosition(sliderPosition);
 
     this->doAnalysis();
 }
 
-void MainWindow::on_displacementSlider_sliderMoved(int position)
+void MainWindow::on_displacementSlider_valueChanged(int value)
 {
-    // slider moved -- the number of steps (10) is a parameter to the slider in mainwindow.ui
-    displacementRatio = double(position)/10.0;
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    displacementRatio = double(value)/100.0;
 
-    P = 3500.0 * displacementRatio;
-    ui->appliedForce->setValue(P);
+    P = 5000.0 * displacementRatio;
 
-    this->doAnalysis();
-}
-
-void MainWindow::on_displacementSlider_actionTriggered(int action)
-{
-    // slider moved -- the number of steps (10) is a parameter to the slider in mainwindow.ui
-    int position = ui->displacementSlider->value();
-    displacementRatio = double(position)/10.0;
-
-    P = 3500.0 * displacementRatio;
+    //qDebug() << "Force value: " << P << ",  sliderPosition: " << value << endln;
     ui->appliedForce->setValue(P);
 
     this->doAnalysis();
@@ -699,16 +687,19 @@ void MainWindow::reDrawTable()
 
 void MainWindow::updateInfo(QTableWidgetItem * item)
 {
- if (item && item == ui->matTable->currentItem()) {
-      if(item->row() == 0)
-         mSoilLayers[item->column()].setLayerThickness(item->text().toDouble());
-      else if (item->row() == 1)
-         mSoilLayers[item->column()].setLayerUnitWeight(item->text().toDouble());
-      else if (item->row() == 2)
-         mSoilLayers[item->column()].setLayerSatUnitWeight(item->text().toDouble());
-      else if (item->row() == 3)
-         mSoilLayers[item->column()].setLayerFrictionAng(item->text().toDouble());
-      else if (item->row() == 4)
-         mSoilLayers[item->column()].setLayerStiffness(item->text().toDouble());
-  }
+    if (item && item == ui->matTable->currentItem()) {
+        if(item->row() == 0)
+            mSoilLayers[item->column()].setLayerThickness(item->text().toDouble());
+        else if (item->row() == 1)
+            mSoilLayers[item->column()].setLayerUnitWeight(item->text().toDouble());
+        else if (item->row() == 2)
+            mSoilLayers[item->column()].setLayerSatUnitWeight(item->text().toDouble());
+        else if (item->row() == 3)
+            mSoilLayers[item->column()].setLayerFrictionAng(item->text().toDouble());
+        else if (item->row() == 4)
+            mSoilLayers[item->column()].setLayerStiffness(item->text().toDouble());
+    }
+
+    this->doAnalysis();
 }
+
