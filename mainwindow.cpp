@@ -330,7 +330,7 @@ void MainWindow::doAnalysis(void)
             puSwitch  = 2;  // Hanson
             kSwitch   = 1;  // API
 
-            gwtSwitch = (gwtDepth > -zCoord)?0:1;
+            gwtSwitch = (gwtDepth > -zCoord)?1:2;
 
             double depthInLayer = -zCoord - depthOfLayer[iLayer];
             sigV = mSoilLayers[iLayer].getEffectiveStress(depthInLayer);
@@ -494,19 +494,29 @@ void MainWindow::doAnalysis(void)
     QVector<double> disp(numNodePile);
     QVector<double> moment(numNodePile);
     QVector<double> shear(numNodePile);
+    QVector<double> stress(numNodePile);
     QVector<double> zero(numNodePile);
 
 
     double maxDisp   = 0.0;
     double minDisp   = 0.0;
+    double maxShear  = 0.0;
+    double minShear  = 0.0;
     double maxMoment = 0.0;
     double minMoment = 0.0;
+    //double maxStress = 0.0;
+    //double minStress = 0.0;
 
     for (int i=1; i<=numNodePile; i++) {
         zero[i-1] = 0.0;
         Node *theNode = theDomain.getNode(i+ioffset2);
         const Vector &nodeCoord = theNode->getCrds();
         loc[i-1] = nodeCoord(2);
+        int iLayer;
+        for (iLayer=0; iLayer<maxLayers; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
+        stress[i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
+        //if (stress[i-1] > maxStress) maxStress = stress[i-1];
+        //if (stress[i-1] < minStress) minStress = stress[i-1];
         const Vector &nodeDisp = theNode->getDisp();
         disp[i-1] = nodeDisp(0);
         if (disp[i-1] > maxDisp) maxDisp = disp[i-1];
@@ -521,6 +531,8 @@ void MainWindow::doAnalysis(void)
         if (moment[i] > maxMoment) maxMoment = moment[i];
         if (moment[i] < minMoment) minMoment = moment[i];
         shear[i] = eleForces(6);
+        if (shear[i] > maxShear) maxShear = shear[i];
+        if (shear[i] < minShear) minShear = shear[i];
     }
 
     // plot results
@@ -564,6 +576,19 @@ void MainWindow::doAnalysis(void)
     ui->momentPlot->axisRect()->setupFullAxesBox();
     ui->momentPlot->rescaleAxes();
     ui->momentPlot->replot();
+
+    QCPCurve *stressCurve = new QCPCurve(ui->stressPlot->xAxis, ui->stressPlot->yAxis);
+    stressCurve->setData(stress,loc);
+    stressCurve->setPen(QPen(Qt::blue, 3));
+    ui->stressPlot->clearPlottables();
+    ui->stressPlot->addGraph();
+    ui->stressPlot->graph(0)->setData(zero,loc);
+    ui->stressPlot->graph(0)->setPen(QPen(Qt::black));
+    ui->stressPlot->addPlottable(stressCurve);
+    ui->stressPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->stressPlot->axisRect()->setupFullAxesBox();
+    ui->stressPlot->rescaleAxes();
+    ui->stressPlot->replot();
 }
 
 MainWindow::~MainWindow()
@@ -729,23 +754,22 @@ void MainWindow::updateInfo(QTableWidgetItem * item)
             mSoilLayers[item->column()].setLayerStiffness(item->text().toDouble());
     //}
 
-    qDebug() << "Soil data updated:" << endln;
+#if 0
+    qDebug() << "Soil data updated:"
     qDebug() << "   layer 1: " \
                 << mSoilLayers[0].getLayerName() \
                 << mSoilLayers[0].getLayerThickness() \
                 << mSoilLayers[0].getLayerUnitWeight() \
                 << mSoilLayers[0].getLayerSatUnitWeight() \
                 << mSoilLayers[0].getLayerFrictionAng() \
-                << mSoilLayers[0].getLayerStiffness() \
-                << endln;
+                << mSoilLayers[0].getLayerStiffness()
     qDebug() << "   layer 1: " \
                 << mSoilLayers[1].getLayerName() \
                 << mSoilLayers[1].getLayerThickness() \
                 << mSoilLayers[1].getLayerUnitWeight() \
                 << mSoilLayers[1].getLayerSatUnitWeight() \
                 << mSoilLayers[1].getLayerFrictionAng() \
-                << mSoilLayers[1].getLayerStiffness() \
-                << endln;
+                << mSoilLayers[1].getLayerStiffness()
     qDebug() << "   layer 3: " \
                 << mSoilLayers[2].getLayerName() \
                 << mSoilLayers[2].getLayerThickness() \
@@ -754,6 +778,7 @@ void MainWindow::updateInfo(QTableWidgetItem * item)
                 << mSoilLayers[2].getLayerFrictionAng() \
                 << mSoilLayers[2].getLayerStiffness() \
                 << endln;
+#endif
 
     this->doAnalysis();
 }
