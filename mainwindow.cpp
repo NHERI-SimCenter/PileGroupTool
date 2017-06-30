@@ -346,6 +346,7 @@ void MainWindow::doAnalysis(void)
 
             double depthInLayer = -zCoord - depthOfLayer[iLayer];
             sigV = mSoilLayers[iLayer].getEffectiveStress(depthInLayer);
+            phi  = mSoilLayers[iLayer].getLayerFrictionAng();
 
             UniaxialMaterial *theMat;
             getPyParam(-zCoord, sigV, phi, pileDiameter, eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
