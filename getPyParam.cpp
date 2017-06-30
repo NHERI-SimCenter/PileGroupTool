@@ -156,17 +156,17 @@ getPyParam(double pyDepth,
   
   // linear interpolation to define A for intermediate values of depth:diameter ratio
   if (zbRatio < zb[1])
-    A = As[1];
+      A = As[1];
   else if (zbRatio > zb[41])
-    A = As[41];
+      A = As[41];
   else {
-    for (int i=1; i < dataNum; i++) {
-      if ((zb[i] <= zbRatio)  && (zbRatio <= zb[i+1])) {
-	A = (As[i+1]-As[i])/(zb[i+1]-zb[i]) * (zbRatio-zb[i]) + As[i];
-      } else if (zbRatio >= 5) {
-	A  = 0.88;
+      for (int i=1; i < dataNum; i++) {
+          if ((zb[i] <= zbRatio)  && (zbRatio <= zb[i+1])) {
+              A = (As[i+1]-As[i])/(zb[i+1]-zb[i]) * (zbRatio-zb[i]) + As[i];
+          } else if (zbRatio >= 5) {
+              A  = 0.88;
+          }
       }
-    }
   }
   
   //-------API recommended method-------
@@ -196,14 +196,18 @@ getPyParam(double pyDepth,
     //qDebug() << "pst psd: " << pst << " " << psd;
 
     // pult is the lesser of pst and psd. At surface, an arbitrary value is defined
-    if (pst <= psd) {
-      if (pyDepth == 0) 
-	pu = 0.01; 
-      else 
-	pu = A*pst;
+    /*
+     if (pst <= psd) {
+        if (pyDepth == 0)
+            pu = 0.01;
+        else
+            pu = A*pst;
     } else {
-      pu = A*psd;
+        pu = A*psd;
     }
+    */
+    pu = A*fmin(pst,psd);
+    if (pu < 0.01) pu = 0.01;
 
     // PySimple1 material formulated with pult as a force, not force/length, multiply by trib. length
     *pult = pu*pEleLength;
