@@ -111,6 +111,8 @@ MainWindow::MainWindow(QWidget *parent) :
           this, SLOT(updateInfo(QTableWidgetItem*)));
     connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)),
           this, SLOT(updateInfo(QTableWidgetItem*)));
+    connect(ui->matTable, SIGNAL(itemEntered(QTableWidgetItem*)),
+          this, SLOT(updateInfo(QTableWidgetItem*)));
 
     inSetupState = false;
       
@@ -434,11 +436,14 @@ void MainWindow::doAnalysis(void)
         UniaxialMaterial *theMat = new QzSimple1(1+ioffset, 2, qult, z50q, 0.0, 0.0);
         OPS_addUniaxialMaterial(theMat);
 
+        ID Onedirection(1);
+        Onedirection[0] = 2;
+
         // pile toe
         //theMaterials[0] = OPS_getUniaxialMaterial(1);
         //theMaterials[1] = OPS_getUniaxialMaterial(1+ioffset);
         //Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 2, theMaterials, direction);
-        Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 1, &theMat, direction);
+        Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 1, &theMat, Onedirection);
         theDomain.addElement(theEle);
     }
 
@@ -711,7 +716,7 @@ void MainWindow::reDrawTable()
 
 void MainWindow::updateInfo(QTableWidgetItem * item)
 {
-    if (item && item == ui->matTable->currentItem()) {
+    //if (item && item == ui->matTable->currentItem()) {
         if(item->row() == 0)
             mSoilLayers[item->column()].setLayerThickness(item->text().toDouble());
         else if (item->row() == 1)
@@ -722,7 +727,33 @@ void MainWindow::updateInfo(QTableWidgetItem * item)
             mSoilLayers[item->column()].setLayerFrictionAng(item->text().toDouble());
         else if (item->row() == 4)
             mSoilLayers[item->column()].setLayerStiffness(item->text().toDouble());
-    }
+    //}
+
+    qDebug() << "Soil data updated:" << endln;
+    qDebug() << "   layer 1: " \
+                << mSoilLayers[0].getLayerName() \
+                << mSoilLayers[0].getLayerThickness() \
+                << mSoilLayers[0].getLayerUnitWeight() \
+                << mSoilLayers[0].getLayerSatUnitWeight() \
+                << mSoilLayers[0].getLayerFrictionAng() \
+                << mSoilLayers[0].getLayerStiffness() \
+                << endln;
+    qDebug() << "   layer 1: " \
+                << mSoilLayers[1].getLayerName() \
+                << mSoilLayers[1].getLayerThickness() \
+                << mSoilLayers[1].getLayerUnitWeight() \
+                << mSoilLayers[1].getLayerSatUnitWeight() \
+                << mSoilLayers[1].getLayerFrictionAng() \
+                << mSoilLayers[1].getLayerStiffness() \
+                << endln;
+    qDebug() << "   layer 3: " \
+                << mSoilLayers[2].getLayerName() \
+                << mSoilLayers[2].getLayerThickness() \
+                << mSoilLayers[2].getLayerUnitWeight() \
+                << mSoilLayers[2].getLayerSatUnitWeight() \
+                << mSoilLayers[2].getLayerFrictionAng() \
+                << mSoilLayers[2].getLayerStiffness() \
+                << endln;
 
     this->doAnalysis();
 }
