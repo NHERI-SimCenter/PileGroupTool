@@ -366,8 +366,8 @@ void MainWindow::doAnalysis(void)
             //
 
             UniaxialMaterial *theMaterials[2];
-            theMaterials[0] = OPS_getUniaxialMaterial(i);
-            theMaterials[1] = OPS_getUniaxialMaterial(i+ioffset);
+            theMaterials[0] = OPS_getUniaxialMaterial(numNode);
+            theMaterials[1] = OPS_getUniaxialMaterial(numNode+ioffset);
             Element *theEle = new ZeroLength(numNode+1000, 3, numNode, numNode+ioffset, x, y, 2, theMaterials, direction);
             theDomain.addElement(theEle);
 
