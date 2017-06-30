@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>images/PileSchematic.png</file>
         <file>images/PileSchematic@0,5x.png</file>
+        <file>images/LayerSchematic@0,5x.png</file>
+        <file>images/LayerSchematic@1x.png</file>
+        <file>images/PileSchematic@1x.png</file>
     </qresource>
 </RCC>

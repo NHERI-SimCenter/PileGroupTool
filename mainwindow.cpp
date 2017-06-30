@@ -835,3 +835,23 @@ void MainWindow::updateInfo(QTableWidgetItem * item)
     this->doAnalysis();
 }
 
+
+void MainWindow::on_action_Open_triggered()
+{
+
+}
+
+void MainWindow::on_actionExport_to_OpenSees_triggered()
+{
+
+}
+
+void MainWindow::on_actionReset_triggered()
+{
+
+}
+
+void MainWindow::on_actionFEA_parameters_triggered()
+{
+
+}

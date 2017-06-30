@@ -30,6 +30,10 @@ private slots:
 
     // menu actions
     void on_actionExit_triggered();
+    void on_action_Open_triggered();
+    void on_actionExport_to_OpenSees_triggered();
+    void on_actionReset_triggered();
+    void on_actionFEA_parameters_triggered();
 
     // check boxes
     void on_chkBox_assume_rigid_cap_clicked(bool checked);
@@ -47,6 +51,7 @@ private slots:
     void updateInfo(QTableWidgetItem *);
     void on_appliedForce_valueChanged(double arg1);
     void on_appliedForce_editingFinished();
+
 
 private:
     Q_OBJECT
