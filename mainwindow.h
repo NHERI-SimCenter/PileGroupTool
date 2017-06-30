@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#define ABS(X) (X<0.0?-X:X)
+
 // forward declaration of classes
 class soilLayer;
 class QTableWidgetItem;
@@ -71,13 +73,13 @@ private:
     double displacementRatio;
 
     // soil layers and related methods
-    QVector<soilLayer> soilLayers;
+    QVector<soilLayer> mSoilLayers;
 
     void setupLayers();
     void reDrawTable();
 
     // meshing parameters
-    int minElementsPerLayer =  5;
+    int minElementsPerLayer = 10;
     int maxElementsPerLayer = 25;
     int numElementsInAir    =  4;
     int numEle;
@@ -93,6 +95,16 @@ private:
     double porePressure;
     double overburdonStress;
     double groundWaterHead;
+
+    double zCoord = 0.0;  // z-coordinate of point.  Negative if below the surface
+    double eleSize;       // effective element length for p-y and t-z springs
+    double sigV;          // effective stress at p-y and t-z springs
+    double pult, y50;     // lateral resistance
+    double tult, z50;     // shaft friction
+    double qult, z50q;    // toe resistance
+
+    // setup switch
+    bool inSetupState = true;
 
 };
 

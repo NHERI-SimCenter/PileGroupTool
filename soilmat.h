@@ -13,13 +13,14 @@ public:
 
   void setLayerName(QString name) {layerName = name;}
   void setLayerThickness(double H){layerH = H;}
-  void setLayerOverburdonStress(double sigma0){layerSigma0 = sigma0;}
+  void setLayerOverburdenStress(double sigma0){layerTopStress = sigma0;}
   void setLayerStiffness(double G){layerG = G;}
   void setLayerFrictionAng(double Phi){layerPhi = Phi;}
   void setLayerUnitWeight(double gamma){layerGamma = gamma;}
   void setLayerSatUnitWeight(double gamma){layerGammaSat = gamma;}
   void setLayerTopStress(double stress){layerTopStress = stress;}
   void setGWTdepth(double gwt){layerGWT = gwt;}
+  void setLayerGWHead(double gwt){layerGWT = gwt;}
   void setWaterUnitWeight(double gamma){waterUnitWeight = gamma;}
   void setLayerColor(QColor color){layerColor = color;}
 
@@ -43,7 +44,6 @@ private:
   double layerGammaSat;
   double layerG;
   double layerPhi;
-  double layerSigma0;
   double layerGWT;
   double waterUnitWeight;
   QColor layerColor;
