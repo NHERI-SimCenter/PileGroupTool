@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#define ABS(X) (X<0.0?-X:X)
+
 // forward declaration of classes
 class soilLayer;
 class QTableWidgetItem;
@@ -34,7 +36,7 @@ private slots:
     void on_chkBox_include_toe_resistance_clicked(bool checked);
 
     // geometry parameters entered/changed
-    void on_displacementSlider_sliderMoved(int position);
+    void on_displacementSlider_valueChanged(int value);
     void on_pileDiameter_valueChanged(double arg1);
     void on_embeddedLength_valueChanged(double arg1);
     void on_freeLength_valueChanged(double arg1);
@@ -45,7 +47,6 @@ private slots:
     void updateInfo(QTableWidgetItem *);
     void on_appliedForce_valueChanged(double arg1);
     void on_appliedForce_editingFinished();
-    void on_displacementSlider_actionTriggered(int action);
 
 private:
     Q_OBJECT
@@ -71,14 +72,14 @@ private:
     double displacementRatio;
 
     // soil layers and related methods
-    QVector<soilLayer> soilLayers;
+    QVector<soilLayer> mSoilLayers;
 
     void setupLayers();
     void reDrawTable();
 
     // meshing parameters
-    int minElementsPerLayer =  5;
-    int maxElementsPerLayer = 25;
+    int minElementsPerLayer = 15;
+    int maxElementsPerLayer = 40;
     int numElementsInAir    =  4;
     int numEle;
 
@@ -93,6 +94,16 @@ private:
     double porePressure;
     double overburdonStress;
     double groundWaterHead;
+
+    double zCoord = 0.0;  // z-coordinate of point.  Negative if below the surface
+    double eleSize;       // effective element length for p-y and t-z springs
+    double sigV;          // effective stress at p-y and t-z springs
+    double pult, y50;     // lateral resistance
+    double tult, z50;     // shaft friction
+    double qult, z50q;    // toe resistance
+
+    // setup switch
+    bool inSetupState = true;
 
 };
 

@@ -37,3 +37,5 @@ moc*
 *.out
 *.app
 *.user
+
+*.autosave
