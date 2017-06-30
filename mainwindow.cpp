@@ -107,12 +107,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHead?Qt::Checked:Qt::Unchecked);
     ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
 
-    connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
-          this, SLOT(updateInfo(QTableWidgetItem*)));
-    connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)),
-          this, SLOT(updateInfo(QTableWidgetItem*)));
-    connect(ui->matTable, SIGNAL(itemEntered(QTableWidgetItem*)),
-          this, SLOT(updateInfo(QTableWidgetItem*)));
+    //connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)), this, SLOT(updateInfo(QTableWidgetItem*)));
+    connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(updateInfo(QTableWidgetItem*)));
+    //connect(ui->matTable, SIGNAL(itemEntered(QTableWidgetItem*)), this, SLOT(updateInfo(QTableWidgetItem*)));
 
     inSetupState = false;
       
@@ -121,7 +118,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::doAnalysis(void)
 {
-    if (inSetupState) return;
+    if (inSetupState) return;    
 
     // clear existing model
     theDomain.clearAll();
@@ -157,7 +154,7 @@ void MainWindow::doAnalysis(void)
         elemsInLayer[iLayer] = numElemThisLayer;
 
         // total node count
-        numNodePile += numElemThisLayer;
+        numNodePile += numElemThisLayer + 1;
 
         // compute bottom of this layer/top of the next layer
         depthOfLayer[iLayer+1] = depthOfLayer[iLayer] + thickness;
@@ -192,11 +189,18 @@ void MainWindow::doAnalysis(void)
         depthOfLayer[maxLayers] = L2;
     }
 
+    //
+    // for debug purpose only (can be removed once stable)
+    //
+    QVector<double> locList(numNodePile+1);
+    QVector<double> pultList(numNodePile+1);
+    QVector<double> y50List(numNodePile+1);
+    //
+    // end of debug block
+    //
+
     int ioffset  = numNodePile;
     int ioffset2 = 2*numNodePile;
-
-    // offset for spring node generation
-    int springNodeNumber = numNodePile;
 
     //
     // compute pile properties (compute once; used for all pile elements)
@@ -221,7 +225,6 @@ void MainWindow::doAnalysis(void)
     static Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
 
     // direction for spring elements
-    UniaxialMaterial *theMaterials[2];
     ID direction(2);
     direction[0] = 0;
     direction[1] = 2;
@@ -238,10 +241,14 @@ void MainWindow::doAnalysis(void)
 
     zCoord = -L2;
 
+    locList[numNode]  = zCoord;
+    pultList[numNode] = 0.001;
+    y50List[numNode]  = 0.00001;
+
     for (int iLayer=maxLayers-1; iLayer >= 0; iLayer--)
     {
         eleSize = mSoilLayers[iLayer].getLayerThickness()/(1.0*elemsInLayer[iLayer]);
-        int numNodesLayer = elemsInLayer[iLayer];
+        int numNodesLayer = elemsInLayer[iLayer] + 1;
 
         //
         // only the pile has a node at the interface (no spring there unless ...)
@@ -257,6 +264,11 @@ void MainWindow::doAnalysis(void)
             theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
             theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
         }
+
+        locList[numNode]  = zCoord;
+        pultList[numNode] = 0.01;
+        y50List[numNode]  = 0.0001;
+
         //
         // ... there is toe resistance:
         //
@@ -340,6 +352,10 @@ void MainWindow::doAnalysis(void)
             theMat = new PySimple1(numNode, 0, 2, pult, y50, 0.0, 0.0);
             OPS_addUniaxialMaterial(theMat);
 
+            locList[numNode]  = zCoord;
+            pultList[numNode] = pult/eleSize;
+            y50List[numNode]  = y50;
+
             // t-z spring material
             getTzParam(phi, pileDiameter,  sigV,  eleSize, &tult, &z50);
             theMat = new TzSimple1(numNode+ioffset, 0, 2, tult, z50, 0.0);
@@ -349,6 +365,7 @@ void MainWindow::doAnalysis(void)
             // create soil spring elements
             //
 
+            UniaxialMaterial *theMaterials[2];
             theMaterials[0] = OPS_getUniaxialMaterial(i);
             theMaterials[1] = OPS_getUniaxialMaterial(i+ioffset);
             Element *theEle = new ZeroLength(numNode+1000, 3, numNode, numNode+ioffset, x, y, 2, theMaterials, direction);
@@ -356,8 +373,8 @@ void MainWindow::doAnalysis(void)
 
             zCoord += eleSize;
         }
-        // climb to layer interface
-        zCoord += 0.5*eleSize;
+        // back to the layer interface
+        zCoord -= 0.5*eleSize;
 
     } // on to the next layer, working our way up from the bottom
 
@@ -383,6 +400,10 @@ void MainWindow::doAnalysis(void)
                 theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
                 theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
             }
+
+            locList[numNode]  = zCoord;
+            pultList[numNode] = 0.001;
+            y50List[numNode]  = 0.00001;
 
             zCoord += eleSize;
         }
@@ -410,8 +431,8 @@ void MainWindow::doAnalysis(void)
         theSections[2] = theSection;
         Element *theEle = new DispBeamColumn3d(i+ioffset2, i+ioffset2, i+ioffset2+1, 3, theSections, *theIntegration, *theTransformation);
         theDomain.addElement(theEle);
-        delete theSection;
-        delete theIntegration;
+        //delete theSection;
+        //delete theIntegration;
     }
 
     //
@@ -489,7 +510,6 @@ void MainWindow::doAnalysis(void)
     theAnalysis.analyze(20);
     theDomain.calculateNodalReactions(0);
 
-
     QVector<double> loc(numNodePile);
     QVector<double> disp(numNodePile);
     QVector<double> moment(numNodePile);
@@ -550,7 +570,6 @@ void MainWindow::doAnalysis(void)
     ui->displPlot->rescaleAxes();
     ui->displPlot->replot();
 
-
     QCPCurve *shearCurve = new QCPCurve(ui->shearPlot->xAxis, ui->shearPlot->yAxis);
     shearCurve->setData(shear,loc);
     shearCurve->setPen(QPen(Qt::blue, 3));
@@ -589,6 +608,32 @@ void MainWindow::doAnalysis(void)
     ui->stressPlot->axisRect()->setupFullAxesBox();
     ui->stressPlot->rescaleAxes();
     ui->stressPlot->replot();
+
+    QCPCurve *pultCurve = new QCPCurve(ui->pultPlot->xAxis, ui->pultPlot->yAxis);
+    pultCurve->setData(pultList,locList);
+    pultCurve->setPen(QPen(Qt::red, 3));
+    ui->pultPlot->clearPlottables();
+    ui->pultPlot->addGraph();
+    ui->pultPlot->graph(0)->setData(zero,loc);
+    ui->pultPlot->graph(0)->setPen(QPen(Qt::black));
+    ui->pultPlot->addPlottable(pultCurve);
+    ui->pultPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->pultPlot->axisRect()->setupFullAxesBox();
+    ui->pultPlot->rescaleAxes();
+    ui->pultPlot->replot();
+
+    QCPCurve *y50Curve = new QCPCurve(ui->y50Plot->xAxis, ui->y50Plot->yAxis);
+    y50Curve->setData(y50List,locList);
+    y50Curve->setPen(QPen(Qt::red, 3));
+    ui->y50Plot->clearPlottables();
+    ui->y50Plot->addGraph();
+    ui->y50Plot->graph(0)->setData(zero,loc);
+    ui->y50Plot->graph(0)->setPen(QPen(Qt::black));
+    ui->y50Plot->addPlottable(y50Curve);
+    ui->y50Plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->y50Plot->axisRect()->setupFullAxesBox();
+    ui->y50Plot->rescaleAxes();
+    ui->y50Plot->replot();
 }
 
 MainWindow::~MainWindow()
@@ -742,16 +787,23 @@ void MainWindow::reDrawTable()
 void MainWindow::updateInfo(QTableWidgetItem * item)
 {
     //if (item && item == ui->matTable->currentItem()) {
-        if(item->row() == 0)
+        if(item->row() == 0) {
+            double thickness = item->text().toDouble();
+            if (thickness < 0.10) item->setText("0.10");
             mSoilLayers[item->column()].setLayerThickness(item->text().toDouble());
-        else if (item->row() == 1)
+        }
+        else if (item->row() == 1) {
             mSoilLayers[item->column()].setLayerUnitWeight(item->text().toDouble());
-        else if (item->row() == 2)
+        }
+        else if (item->row() == 2) {
             mSoilLayers[item->column()].setLayerSatUnitWeight(item->text().toDouble());
-        else if (item->row() == 3)
+        }
+        else if (item->row() == 3) {
             mSoilLayers[item->column()].setLayerFrictionAng(item->text().toDouble());
-        else if (item->row() == 4)
+        }
+        else if (item->row() == 4) {
             mSoilLayers[item->column()].setLayerStiffness(item->text().toDouble());
+        }
     //}
 
 #if 0

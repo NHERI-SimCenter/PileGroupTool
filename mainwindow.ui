@@ -374,6 +374,26 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pult">
+       <attribute name="title">
+        <string>p_ult</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_7">
+        <item row="0" column="0">
+         <widget class="QCustomPlot" name="pultPlot" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="y50">
+       <attribute name="title">
+        <string>y50</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_8">
+        <item row="0" column="0">
+         <widget class="QCustomPlot" name="y50Plot" native="true"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
