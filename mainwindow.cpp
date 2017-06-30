@@ -476,7 +476,7 @@ void MainWindow::doAnalysis(void)
         zero[i-1] = 0.0;
         Node *theNode = theDomain.getNode(i+ioffset2);
         const Vector &nodeCoord = theNode->getCrds();
-        loc[i-1] = nodeCoord(2)-L2;
+        loc[i-1] = nodeCoord(2);
         const Vector &nodeDisp = theNode->getDisp();
         disp[i-1] = nodeDisp(0);
         if (disp[i-1] > maxDisp) maxDisp = disp[i-1];
