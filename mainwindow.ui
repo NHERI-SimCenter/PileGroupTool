@@ -412,10 +412,20 @@
      <string>File</string>
     </property>
     <addaction name="actionNew"/>
+    <addaction name="action_Open"/>
     <addaction name="actionSave"/>
+    <addaction name="actionExport_to_OpenSees"/>
     <addaction name="actionExit"/>
    </widget>
+   <widget class="QMenu" name="menuAnalysis">
+    <property name="title">
+     <string>Analysis</string>
+    </property>
+    <addaction name="actionReset"/>
+    <addaction name="actionFEA_parameters"/>
+   </widget>
    <addaction name="menuOpenSeesPile"/>
+   <addaction name="menuAnalysis"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -439,6 +449,26 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="text">
+    <string>&amp;Reset</string>
+   </property>
+  </action>
+  <action name="actionFEA_parameters">
+   <property name="text">
+    <string>FEA &amp;Parameters</string>
+   </property>
+  </action>
+  <action name="action_Open">
+   <property name="text">
+    <string>&amp;Open</string>
+   </property>
+  </action>
+  <action name="actionExport_to_OpenSees">
+   <property name="text">
+    <string>Export to OpenSees</string>
    </property>
   </action>
  </widget>
