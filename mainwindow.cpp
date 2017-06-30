@@ -242,7 +242,7 @@ void MainWindow::doAnalysis(void)
         int numNodesLayer = elemsInLayer[iLayer];
 
         //
-        // only the pile has a node at the interface (no spring there)
+        // only the pile has a node at the interface (no spring there unless ...)
         //
         numNode += 1;
 
@@ -254,6 +254,29 @@ void MainWindow::doAnalysis(void)
             theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
             theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
             theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
+        }
+        //
+        // ... there is toe resistance:
+        //
+        /*
+         *  CHECK IN WITH FRANK:
+         *     how to properly implement a Q-z spring at the end WITHOUT the p-y spring.
+         */
+
+        if (useToeResistance) {
+            Node *theNode = 0;
+
+            theNode = new Node(numNode,         3, 0., 0., zCoord);  theDomain.addNode(theNode);
+            theNode = new Node(numNode+ioffset, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
+
+            SP_Constraint *theSP = 0;
+            theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain.addSP_Constraint(theSP);
+            theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain.addSP_Constraint(theSP);
+            theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain.addSP_Constraint(theSP);
+            theSP = new SP_Constraint(numNode+ioffset, 0, 0., true);  theDomain.addSP_Constraint(theSP); // ?
+            theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain.addSP_Constraint(theSP);
+            theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
+
         }
 
         //
@@ -412,9 +435,10 @@ void MainWindow::doAnalysis(void)
         OPS_addUniaxialMaterial(theMat);
 
         // pile toe
-        theMaterials[0] = OPS_getUniaxialMaterial(1);
-        theMaterials[1] = OPS_getUniaxialMaterial(1+ioffset);
-        Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 2, theMaterials, direction);
+        //theMaterials[0] = OPS_getUniaxialMaterial(1);
+        //theMaterials[1] = OPS_getUniaxialMaterial(1+ioffset);
+        //Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 2, theMaterials, direction);
+        Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 1, &theMat, direction);
         theDomain.addElement(theEle);
     }
 
