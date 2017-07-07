@@ -53,6 +53,8 @@ private slots:
     void on_appliedForce_editingFinished();
 
 
+    void on_actionLicense_Information_triggered();
+
 private:
     Q_OBJECT
     Ui::MainWindow *ui;
