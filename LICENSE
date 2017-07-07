@@ -1,8 +1,7 @@
-The SimCenter CFD Client Program and Agave Interfaces, in source and binary forms, are copyright "The University of Notre Dame" and "The Regents of the University of California" and are licensed under the following copyright and license:
+The SimCenter QtPile Tool, in source and binary forms, are copyright "The Regents of the University of California" and are licensed under the following copyright and license:
 
 BSD 3-Clause License
 
-Copyright (c) 2017, The University of Notre Dame
 Copyright (c) 2017, The Regents of the University of California
 
 All rights reserved.
@@ -880,11 +879,4 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <http://www.gnu.org/philosophy/why-not-lgpl.html>.
-
----------------------------------------------------------------------------------------
-
-The decompress wrapper uses the zlib library, by Jean-loup Gailly and Mark Adler, 
-which is not distributed with this source code, but whose authors request acknowledgement
-when zlib is used.
-
 

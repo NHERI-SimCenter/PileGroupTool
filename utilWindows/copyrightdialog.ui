@@ -108,7 +108,7 @@ The SimCenter CFD Client Program makes use of the QT packages (unmodified): core
 QT is copyright &quot;The Qt Company Ltd&quot; and licensed under the GNU Lesser General Public License (version 3) which references the GNU General Public License (version 3)
 
 These Licenses can be found at: &lt;http://www.gnu.org/licenses/&gt;
-
+	    </string>
          </property>
          <property name="textFormat">
           <enum>Qt::PlainText</enum>
