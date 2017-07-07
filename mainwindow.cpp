@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "math.h"
+#include "utilWindows/copyrightdialog.h"
 
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
@@ -855,4 +856,10 @@ void MainWindow::on_actionReset_triggered()
 void MainWindow::on_actionFEA_parameters_triggered()
 {
 
+}
+
+void MainWindow::on_actionLicense_Information_triggered()
+{
+    CopyrightDialog *dlg = new CopyrightDialog(this);
+    dlg->exec();
 }
