@@ -53,6 +53,7 @@ private:
     int DLGminElementsPerLayer = 15;
     int DLGmaxElementsPerLayer = 40;
     int DLGnumElementsInAir    =  4;
+    int DLGmaxNumberOfPiles    =  3;
 };
 
 #endif // DIALOGPREFERENCES_H

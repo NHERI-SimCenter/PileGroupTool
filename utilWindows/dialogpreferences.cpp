@@ -39,6 +39,7 @@ DialogPreferences::DialogPreferences(QWidget *parent, QSettings *settings) :
         DLGminElementsPerLayer = DLGsettings->value("minElemementsPerLayer",15).toInt();
         DLGmaxElementsPerLayer = DLGsettings->value("maxElemementsPerLayer",40).toInt();
         DLGnumElementsInAir    = DLGsettings->value("numElementsInAir", 4).toInt();
+        DLGmaxNumberOfPiles    = DLGsettings->value("maxNumberOfPiles", 3).toInt();
     DLGsettings->endGroup();
 
     //
@@ -97,6 +98,7 @@ void DialogPreferences::on_buttonBox_clicked(QAbstractButton *button)
         DLGsettings->setValue("minElemementsPerLayer",DLGminElementsPerLayer);
         DLGsettings->setValue("maxElemementsPerLayer",DLGmaxElementsPerLayer);
         DLGsettings->setValue("numElementsInAir",DLGnumElementsInAir);
+        DLGsettings->setValue("maxNumberOfPiles",DLGmaxNumberOfPiles);
     DLGsettings->endGroup();
 
     this->InitGUI();
@@ -171,5 +173,6 @@ void DialogPreferences::on_buttonBox_accepted()
         DLGsettings->setValue("minElemementsPerLayer",DLGminElementsPerLayer);
         DLGsettings->setValue("maxElemementsPerLayer",DLGmaxElementsPerLayer);
         DLGsettings->setValue("numElementsInAir",DLGnumElementsInAir);
+        DLGsettings->setValue("maxNumberOfPiles",DLGmaxNumberOfPiles);
     DLGsettings->endGroup();
 }
