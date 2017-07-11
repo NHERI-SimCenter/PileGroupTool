@@ -64,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     this->fetchSettings();
+    this->updateUI();
 
     // setup data
     numPiles = 1;
@@ -134,9 +135,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::doAnalysis(void)
 {
-    if (inSetupState) return;    
-
-    return;
+    if (inSetupState) return;
 
     // clear existing model
     theDomain.clearAll();
@@ -150,13 +149,13 @@ void MainWindow::doAnalysis(void)
     QVector<QVector<int>> elemsInLayer(MAXPILES,QVector<int>(3,minElementsPerLayer));
     QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
 
-    int numNodePile = numElementsInAir+1;
-
+    int numNodePile = 0;
     int maxLayers[MAXPILES];
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
         maxLayers[pileIdx] = 3;
+        numNodePile += numElementsInAir+1;
 
         for (int iLayer=0; iLayer < maxLayers[pileIdx]; iLayer++)
         {
@@ -226,7 +225,8 @@ void MainWindow::doAnalysis(void)
     QVector<double> y50List(numNodePile+1);
 
     int ioffset  = numNodePile;
-    int ioffset2 = 2*numNodePile;
+    int ioffset2 = ioffset + numNodePile;
+    int ioffset3 = ioffset2 + numNodePile;
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
@@ -397,7 +397,7 @@ void MainWindow::doAnalysis(void)
                 UniaxialMaterial *theMaterials[2];
                 theMaterials[0] = OPS_getUniaxialMaterial(numNode);
                 theMaterials[1] = OPS_getUniaxialMaterial(numNode+ioffset);
-                Element *theEle = new ZeroLength(numNode+1000, 3, numNode, numNode+ioffset, x, y, 2, theMaterials, direction);
+                Element *theEle = new ZeroLength(numNode+ioffset3, 3, numNode, numNode+ioffset, x, y, 2, theMaterials, direction);
                 theDomain.addElement(theEle);
 
                 zCoord += eleSize;
