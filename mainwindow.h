@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 
+#define MAXPILES 3
 #define ABS(X) (X<0.0?-X:X)
 
 // forward declaration of classes
@@ -64,7 +65,7 @@ private slots:
 
     void on_xOffset_valueChanged(double arg1);
 
-    void on_spinBox_pileNumber_valueChanged(int arg1);
+    void on_pileIndex_valueChanged(int arg1);
 
     void on_action_About_triggered();
 
@@ -76,12 +77,9 @@ private:
 
     // get data
     double P;  // lateral force on pile
-    double L1; // pile length above ground
-    double L2; // embedded length of pile
-    double pileDiameter;  // pile diameter
-    double E;  // pile modulus of elasticity
-
     double gwtDepth;  // depth of ground water table below the surface
+    int    numEle;
+    int    numPiles;
 
     // states
     bool assumeRigidPileHead = false;
@@ -136,8 +134,12 @@ private:
     int minElementsPerLayer = 15;
     int maxElementsPerLayer = 40;
     int numElementsInAir    =  4;
-    int numEle;
 
+    double L1;                      // pile length above ground (all the same)
+    double L2[MAXPILES];            // embedded length of pile
+    double pileDiameter[MAXPILES];  // pile diameter
+    double E[MAXPILES];             // pile modulus of elasticity
+    double xOffset[MAXPILES];       // x-offset of pile
 };
 
 #endif // MAINWINDOW_H

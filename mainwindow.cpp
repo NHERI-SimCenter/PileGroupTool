@@ -66,12 +66,16 @@ MainWindow::MainWindow(QWidget *parent) :
     this->fetchSettings();
 
     // setup data
+    numPiles = 1;
     P        = 0.0;
-    L1       = 1.0;
-    L2       = 20.0;
-    pileDiameter = 1.0;
+
+    L1                       = 1.0;
+    L2[numPiles-1]           = 20.0;
+    pileDiameter[numPiles-1] = 1.0;
+    E[numPiles-1]            = 25.0e6;
+    xOffset[numPiles-1]      = 0.0;
+
     gwtDepth = 3.00;
-    E        = 25.0e6;
     numEle   = 80;
     gamma    = 17.0;
     phi      = 36.0;
@@ -102,11 +106,18 @@ MainWindow::MainWindow(QWidget *parent) :
     setupLayers();
     reDrawTable();    
 
+    ui->pileIndex->setValue(1);
+    ui->pileIndex->setMinimum(1);
+    ui->pileIndex->setMaximum(numPiles);
+
+    int pileIdx = ui->pileIndex->value() - 1;
+
     ui->appliedForce->setValue(P);
-    ui->pileDiameter->setValue(pileDiameter);
+    ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
-    ui->embeddedLength->setValue(L2);
-    ui->Emodulus->setValue(E);
+    ui->embeddedLength->setValue(L2[pileIdx]);
+    ui->Emodulus->setValue(E[pileIdx]);
+
     ui->groundWaterTable->setValue(gwtDepth);
 
     ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHead?Qt::Checked:Qt::Unchecked);
@@ -125,6 +136,8 @@ void MainWindow::doAnalysis(void)
 {
     if (inSetupState) return;    
 
+    return;
+
     // clear existing model
     theDomain.clearAll();
     OPS_clearAllUniaxialMaterial();
@@ -134,198 +147,143 @@ void MainWindow::doAnalysis(void)
     // find meshing parameters
     //
     //
-    QVector<int>    elemsInLayer = QVector<int>(3,minElementsPerLayer);
+    QVector<QVector<int>> elemsInLayer(MAXPILES,QVector<int>(3,minElementsPerLayer));
     QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
 
     int numNodePile = numElementsInAir+1;
 
-    int maxLayers=3;
+    int maxLayers[MAXPILES];
 
-    for (int iLayer=0; iLayer < maxLayers; iLayer++)
+    for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
-        if (depthOfLayer[iLayer] >= L2) {
-            maxLayers = iLayer;
-            break;
-        }
+        maxLayers[pileIdx] = 3;
 
-        double thickness = mSoilLayers[iLayer].getLayerThickness();
+        for (int iLayer=0; iLayer < maxLayers[pileIdx]; iLayer++)
+        {
+            if (depthOfLayer[iLayer] >= L2[pileIdx]) {
+                maxLayers[pileIdx] = iLayer;
+                break;
+            }
 
-        int numElemThisLayer = int(thickness/pileDiameter);
-        if (numElemThisLayer < minElementsPerLayer) numElemThisLayer = minElementsPerLayer;
-        if (numElemThisLayer > maxElementsPerLayer) numElemThisLayer = maxElementsPerLayer;
-        numElemThisLayer += 1; // accounting for the shift of elements such that no spring ends up on an interface
+            double thickness = mSoilLayers[iLayer].getLayerThickness();
 
-        // remember number of elements in this layer
-        elemsInLayer[iLayer] = numElemThisLayer;
+            int numElemThisLayer = int(thickness/pileDiameter[pileIdx]);
+            if (numElemThisLayer < minElementsPerLayer) numElemThisLayer = minElementsPerLayer;
+            if (numElemThisLayer > maxElementsPerLayer) numElemThisLayer = maxElementsPerLayer;
+            numElemThisLayer += 1; // accounting for the shift of elements such that no spring ends up on an interface
 
-        // total node count
-        numNodePile += numElemThisLayer + 1;
+            // remember number of elements in this layer
+            elemsInLayer[pileIdx][iLayer] = numElemThisLayer;
 
-        // compute bottom of this layer/top of the next layer
-        depthOfLayer[iLayer+1] = depthOfLayer[iLayer] + thickness;
+            // total node count
+            numNodePile += numElemThisLayer + 1;
 
-        // check if layer ends below the pile toe
-        if (depthOfLayer[iLayer+1] > L2) {
-            thickness = L2 - depthOfLayer[iLayer];
-            mSoilLayers[iLayer].setLayerThickness(thickness);
+            // compute bottom of this layer/top of the next layer
             depthOfLayer[iLayer+1] = depthOfLayer[iLayer] + thickness;
+
+            // check if layer ends below the pile toe
+            if (depthOfLayer[iLayer+1] > L2[pileIdx]) {
+                thickness = L2[pileIdx] - depthOfLayer[iLayer];
+                mSoilLayers[iLayer].setLayerThickness(thickness);
+                if (depthOfLayer[iLayer+1] < depthOfLayer[iLayer] + thickness) {
+                    depthOfLayer[iLayer+1] = depthOfLayer[iLayer] + thickness;
+                }
+            }
+
+            // update layer information on overburdon stress and water table
+            if (iLayer > 0) {
+                overburdonStress = mSoilLayers[iLayer-1].getLayerBottomStress();
+            }
+            else {
+                overburdonStress = 0.00;
+            }
+            mSoilLayers[iLayer].setLayerOverburdenStress(overburdonStress);
+
+            groundWaterHead = gwtDepth - depthOfLayer[iLayer];
+            mSoilLayers[iLayer].setLayerGWHead(groundWaterHead);
         }
 
-        // update layer information on overburdon stress and water table
-        if (iLayer > 0) {
-            overburdonStress = mSoilLayers[iLayer-1].getLayerBottomStress();
+        // make sure we have enough soil for the analysis
+        if (L2[pileIdx] > depthOfLayer[maxLayers[pileIdx]]) {
+            //
+            // increase thickness of the bottom layer
+            //
+            double thickness = L2[pileIdx] - depthOfLayer[maxLayers[pileIdx]-1];
+            mSoilLayers[maxLayers[pileIdx]-1].setLayerThickness(thickness);
+            depthOfLayer[maxLayers[pileIdx]] = L2[pileIdx];
         }
-        else {
-            overburdonStress = 0.00;
-        }
-        mSoilLayers[iLayer].setLayerOverburdenStress(overburdonStress);
-
-        groundWaterHead = gwtDepth - depthOfLayer[iLayer];
-        mSoilLayers[iLayer].setLayerGWHead(groundWaterHead);
-    }
-
-    // make sure we have enough soil for the analysis
-    if (L2 > depthOfLayer[maxLayers]) {
-        //
-        // increase thickness of the bottom layer
-        //
-        double thickness = L2 - depthOfLayer[maxLayers-1];
-        mSoilLayers[maxLayers-1].setLayerThickness(thickness);
-        depthOfLayer[maxLayers] = L2;
     }
 
     //
     // for debug purpose only (can be removed once stable)
     //
     QVector<double> locList(numNodePile+1);
-    QVector<double> pultList(numNodePile+1);
-    QVector<double> y50List(numNodePile+1);
     //
     // end of debug block
     //
 
+    QVector<double> pultList(numNodePile+1);
+    QVector<double> y50List(numNodePile+1);
+
     int ioffset  = numNodePile;
     int ioffset2 = 2*numNodePile;
 
-    //
-    // compute pile properties (compute once; used for all pile elements)
-    //
-    double PI = 3.14159;
-    double A  = 0.2500 * PI * pileDiameter * pileDiameter;
-    double Iz = 0.0625 *  A * pileDiameter * pileDiameter;
-    double G  = E/(2.0*(1.+0.3));
-    double J  = 1.0e10;
-
-    //
-    // matrix used to constrain spring and pile nodes with equalDOF (identity constraints)
-    //
-    static Matrix Ccr (2, 2);
-    Ccr.Zero(); Ccr(0,0)=1.0; Ccr(1,1)=1.0;
-    static ID rcDof (2);
-    rcDof(0) = 0;
-    rcDof(1) = 2;
-
-    // create the vectors for the spring elements orientation
-    static Vector x(3); x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
-    static Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
-
-    // direction for spring elements
-    ID direction(2);
-    direction[0] = 0;
-    direction[1] = 2;
-
-    //
-    // Ready to generate the structure
-    //
-
-    /* embedded pile portion */
-
-    int numNode;
-
-    numNode = 0;
-
-    zCoord = -L2;
-
-    locList[numNode]  = zCoord;
-    pultList[numNode] = 0.001;
-    y50List[numNode]  = 0.00001;
-
-    for (int iLayer=maxLayers-1; iLayer >= 0; iLayer--)
+    for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
-        eleSize = mSoilLayers[iLayer].getLayerThickness()/(1.0*elemsInLayer[iLayer]);
-        int numNodesLayer = elemsInLayer[iLayer] + 1;
+        //
+        // compute pile properties (compute once; used for all pile elements)
+        //
+        double PI = 3.14159;
+        double A  = 0.2500 * PI * pileDiameter[pileIdx] * pileDiameter[pileIdx];
+        double Iz = 0.0625 *  A * pileDiameter[pileIdx] * pileDiameter[pileIdx];
+        double G  = E[pileIdx]/(2.0*(1.+0.3));
+        double J  = 1.0e10;
 
         //
-        // only the pile has a node at the interface (no spring there unless ...)
+        // matrix used to constrain spring and pile nodes with equalDOF (identity constraints)
         //
-        numNode += 1;
+        static Matrix Ccr (2, 2);
+        Ccr.Zero(); Ccr(0,0)=1.0; Ccr(1,1)=1.0;
+        static ID rcDof (2);
+        rcDof(0) = 0;
+        rcDof(1) = 2;
 
-        Node *theNode = 0;
-        int nodeTag = numNode+ioffset2;
-        theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
-        if (numNode != 1) {
-            SP_Constraint *theSP = 0;
-            theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
-        }
+        // create the vectors for the spring elements orientation
+        static Vector x(3); x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
+        static Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
+
+        // direction for spring elements
+        ID direction(2);
+        direction[0] = 0;
+        direction[1] = 2;
+
+        //
+        // Ready to generate the structure
+        //
+
+        /* embedded pile portion */
+
+        int numNode;
+
+        numNode = 0;
+
+        zCoord = -L2[pileIdx];
 
         locList[numNode]  = zCoord;
-        pultList[numNode] = 0.01;
-        y50List[numNode]  = 0.0001;
+        pultList[numNode] = 0.001;
+        y50List[numNode]  = 0.00001;
 
-        //
-        // ... there is toe resistance:
-        //
-        /*
-         *  CHECK IN WITH FRANK:
-         *     how to properly implement a Q-z spring at the end WITHOUT the p-y spring.
-         */
+        for (int iLayer=maxLayers[pileIdx]-1; iLayer >= 0; iLayer--)
+        {
+            eleSize = mSoilLayers[iLayer].getLayerThickness()/(1.0*elemsInLayer[pileIdx][iLayer]);
+            int numNodesLayer = elemsInLayer[pileIdx][iLayer] + 1;
 
-        if (useToeResistance) {
-            Node *theNode = 0;
-
-            theNode = new Node(numNode,         3, 0., 0., zCoord);  theDomain.addNode(theNode);
-            theNode = new Node(numNode+ioffset, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
-
-            SP_Constraint *theSP = 0;
-            theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode+ioffset, 0, 0., true);  theDomain.addSP_Constraint(theSP); // ?
-            theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
-
-        }
-
-        //
-        // create spring nodes
-        //
-        zCoord += 0.5*eleSize;
-
-        for (int i=2; i<=numNodesLayer; i++) {
+            //
+            // only the pile has a node at the interface (no spring there unless ...)
+            //
             numNode += 1;
 
-            //
-            // spring nodes
-            //
-
             Node *theNode = 0;
-
-            theNode = new Node(numNode,         3, 0., 0., zCoord);  theDomain.addNode(theNode);
-            theNode = new Node(numNode+ioffset, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
-
-            SP_Constraint *theSP = 0;
-            theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
-
-            //
-            // pile nodes
-            //
-
             int nodeTag = numNode+ioffset2;
             theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
             if (numNode != 1) {
@@ -335,143 +293,210 @@ void MainWindow::doAnalysis(void)
                 theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
             }
 
-            // constrain spring and pile nodes with equalDOF (identity constraints)
-            MP_Constraint *theMP = new MP_Constraint(numNode+ioffset2, numNode+ioffset, Ccr, rcDof, rcDof);
-            theDomain.addMP_Constraint(theMP);
-
-            //
-            // create soil-spring materials
-            //
-
-            // # p-y spring material
-            puSwitch  = 2;  // Hanson
-            kSwitch   = 1;  // API
-
-            gwtSwitch = (gwtDepth > -zCoord)?1:2;
-
-            double depthInLayer = -zCoord - depthOfLayer[iLayer];
-            sigV = mSoilLayers[iLayer].getEffectiveStress(depthInLayer);
-            phi  = mSoilLayers[iLayer].getLayerFrictionAng();
-
-            UniaxialMaterial *theMat;
-            getPyParam(-zCoord, sigV, phi, pileDiameter, eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
-            theMat = new PySimple1(numNode, 0, 2, pult, y50, 0.0, 0.0);
-            OPS_addUniaxialMaterial(theMat);
-
             locList[numNode]  = zCoord;
-            pultList[numNode] = pult/eleSize;
-            y50List[numNode]  = y50;
-
-            // t-z spring material
-            getTzParam(phi, pileDiameter,  sigV,  eleSize, &tult, &z50);
-            theMat = new TzSimple1(numNode+ioffset, 0, 2, tult, z50, 0.0);
-            OPS_addUniaxialMaterial(theMat);
+            pultList[numNode] = 0.01;
+            y50List[numNode]  = 0.0001;
 
             //
-            // create soil spring elements
+            // ... there is toe resistance:
             //
+            /*
+         *  CHECK IN WITH FRANK:
+         *     how to properly implement a Q-z spring at the end WITHOUT the p-y spring.
+         */
 
-            UniaxialMaterial *theMaterials[2];
-            theMaterials[0] = OPS_getUniaxialMaterial(numNode);
-            theMaterials[1] = OPS_getUniaxialMaterial(numNode+ioffset);
-            Element *theEle = new ZeroLength(numNode+1000, 3, numNode, numNode+ioffset, x, y, 2, theMaterials, direction);
-            theDomain.addElement(theEle);
+            if (useToeResistance) {
+                Node *theNode = 0;
 
-            zCoord += eleSize;
-        }
-        // back to the layer interface
-        zCoord -= 0.5*eleSize;
+                theNode = new Node(numNode,         3, 0., 0., zCoord);  theDomain.addNode(theNode);
+                theNode = new Node(numNode+ioffset, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
 
-    } // on to the next layer, working our way up from the bottom
-
-    if (ABS(zCoord) > 1.0e-2) {
-        qDebug() << "ERROR in node generation: surface reached at " << zCoord << endln;
-    }
-    //
-    // add elements above ground
-    //
-
-    if (L1 > 0.01) {
-        eleSize = L1 / (1.0*numElementsInAir);
-        zCoord = -1.0e-3;
-
-        while (zCoord < L1) {
-            numNode += 1;
-
-            int nodeTag = numNode+ioffset2;
-            Node *theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
-            if (numNode != 1) {
                 SP_Constraint *theSP = 0;
-                theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(numNode+ioffset, 0, 0., true);  theDomain.addSP_Constraint(theSP); // ?
+                theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
+
             }
 
-            locList[numNode]  = zCoord;
-            pultList[numNode] = 0.001;
-            y50List[numNode]  = 0.00001;
+            //
+            // create spring nodes
+            //
+            zCoord += 0.5*eleSize;
 
-            zCoord += eleSize;
+            for (int i=2; i<=numNodesLayer; i++) {
+                numNode += 1;
+
+                //
+                // spring nodes
+                //
+
+                Node *theNode = 0;
+
+                theNode = new Node(numNode,         3, 0., 0., zCoord);  theDomain.addNode(theNode);
+                theNode = new Node(numNode+ioffset, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
+
+                SP_Constraint *theSP = 0;
+                theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
+
+                //
+                // pile nodes
+                //
+
+                int nodeTag = numNode+ioffset2;
+                theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
+                if (numNode != 1) {
+                    SP_Constraint *theSP = 0;
+                    theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
+                    theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
+                    theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
+                }
+
+                // constrain spring and pile nodes with equalDOF (identity constraints)
+                MP_Constraint *theMP = new MP_Constraint(numNode+ioffset2, numNode+ioffset, Ccr, rcDof, rcDof);
+                theDomain.addMP_Constraint(theMP);
+
+                //
+                // create soil-spring materials
+                //
+
+                // # p-y spring material
+                puSwitch  = 2;  // Hanson
+                kSwitch   = 1;  // API
+
+                gwtSwitch = (gwtDepth > -zCoord)?1:2;
+
+                double depthInLayer = -zCoord - depthOfLayer[iLayer];
+                sigV = mSoilLayers[iLayer].getEffectiveStress(depthInLayer);
+                phi  = mSoilLayers[iLayer].getLayerFrictionAng();
+
+                UniaxialMaterial *theMat;
+                getPyParam(-zCoord, sigV, phi, pileDiameter[pileIdx], eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
+                theMat = new PySimple1(numNode, 0, 2, pult, y50, 0.0, 0.0);
+                OPS_addUniaxialMaterial(theMat);
+
+                locList[numNode]  = zCoord;
+                pultList[numNode] = pult/eleSize;
+                y50List[numNode]  = y50;
+
+                // t-z spring material
+                getTzParam(phi, pileDiameter[pileIdx],  sigV,  eleSize, &tult, &z50);
+                theMat = new TzSimple1(numNode+ioffset, 0, 2, tult, z50, 0.0);
+                OPS_addUniaxialMaterial(theMat);
+
+                //
+                // create soil spring elements
+                //
+
+                UniaxialMaterial *theMaterials[2];
+                theMaterials[0] = OPS_getUniaxialMaterial(numNode);
+                theMaterials[1] = OPS_getUniaxialMaterial(numNode+ioffset);
+                Element *theEle = new ZeroLength(numNode+1000, 3, numNode, numNode+ioffset, x, y, 2, theMaterials, direction);
+                theDomain.addElement(theEle);
+
+                zCoord += eleSize;
+            }
+            // back to the layer interface
+            zCoord -= 0.5*eleSize;
+
+        } // on to the next layer, working our way up from the bottom
+
+        if (ABS(zCoord) > 1.0e-2) {
+            qDebug() << "ERROR in node generation: surface reached at " << zCoord << endln;
         }
-    }
+        //
+        // add elements above ground
+        //
 
-    if (numNode != numNodePile) {
-        qDebug() << "ERROR: " << numNode << " nodes generated but " << numNodePile << "expected" << endln;
-    }
+        if (L1 > 0.01) {
+            eleSize = L1 / (1.0*numElementsInAir);
+            zCoord = -1.0e-3;
 
-    //
-    // create pile elements
-    //
+            while (zCoord < L1) {
+                numNode += 1;
 
-    static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
-    CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
+                int nodeTag = numNode+ioffset2;
+                Node *theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
+                if (numNode != 1) {
+                    SP_Constraint *theSP = 0;
+                    theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
+                    theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
+                    theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
+                }
 
-    numEle = numNodePile-1;
+                locList[numNode]  = zCoord;
+                pultList[numNode] = 0.001;
+                y50List[numNode]  = 0.00001;
 
-    for (int i=1; i<=numEle; i++) {
-        BeamIntegration *theIntegration = new LegendreBeamIntegration();
-        SectionForceDeformation *theSections[3];
-        SectionForceDeformation *theSection = new ElasticSection3d(1, E, A, Iz, Iz, G, J);
-        theSections[0] = theSection;
-        theSections[1] = theSection;
-        theSections[2] = theSection;
-        Element *theEle = new DispBeamColumn3d(i+ioffset2, i+ioffset2, i+ioffset2+1, 3, theSections, *theIntegration, *theTransformation);
-        theDomain.addElement(theEle);
-        //delete theSection;
-        //delete theIntegration;
-    }
+                zCoord += eleSize;
+            }
+        }
 
-    //
-    // constrain pile cap, if requested
-    //
-    if (assumeRigidPileHead) {
-        SP_Constraint *theSP = 0;
-        theSP = new SP_Constraint(numNode+ioffset2, 4, 0., true);
-        theDomain.addSP_Constraint(theSP);
-    }
+        if (numNode != numNodePile) {
+            qDebug() << "ERROR: " << numNode << " nodes generated but " << numNodePile << "expected" << endln;
+        }
 
-    //
-    // set up toe resistance, if requested
-    //
-    if (useToeResistance) {
+        //
+        // create pile elements
+        //
 
-        // # q-z spring material
-        // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
-        double sigVq  = mSoilLayers[maxLayers-1].getLayerBottomStress();
+        static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
+        CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
 
-        getQzParam(phi, pileDiameter,  sigVq,  gSoil, &qult, &z50q);
-        UniaxialMaterial *theMat = new QzSimple1(1+ioffset, 2, qult, z50q, 0.0, 0.0);
-        OPS_addUniaxialMaterial(theMat);
+        numEle = numNodePile-1;
 
-        ID Onedirection(1);
-        Onedirection[0] = 2;
+        for (int i=1; i<=numEle; i++) {
+            BeamIntegration *theIntegration = new LegendreBeamIntegration();
+            SectionForceDeformation *theSections[3];
+            SectionForceDeformation *theSection = new ElasticSection3d(1, E[pileIdx], A, Iz, Iz, G, J);
+            theSections[0] = theSection;
+            theSections[1] = theSection;
+            theSections[2] = theSection;
+            Element *theEle = new DispBeamColumn3d(i+ioffset2, i+ioffset2, i+ioffset2+1, 3, theSections, *theIntegration, *theTransformation);
+            theDomain.addElement(theEle);
+            //delete theSection;
+            //delete theIntegration;
+        }
 
-        // pile toe
-        //theMaterials[0] = OPS_getUniaxialMaterial(1);
-        //theMaterials[1] = OPS_getUniaxialMaterial(1+ioffset);
-        //Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 2, theMaterials, direction);
-        Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 1, &theMat, Onedirection);
-        theDomain.addElement(theEle);
+        //
+        // constrain pile cap, if requested
+        //
+        if (assumeRigidPileHead) {
+            SP_Constraint *theSP = 0;
+            theSP = new SP_Constraint(numNode+ioffset2, 4, 0., true);
+            theDomain.addSP_Constraint(theSP);
+        }
+
+        //
+        // set up toe resistance, if requested
+        //
+        if (useToeResistance) {
+
+            // # q-z spring material
+            // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
+            double sigVq  = mSoilLayers[maxLayers[pileIdx]-1].getLayerBottomStress();
+
+            getQzParam(phi, pileDiameter[pileIdx],  sigVq,  gSoil, &qult, &z50q);
+            UniaxialMaterial *theMat = new QzSimple1(1+ioffset, 2, qult, z50q, 0.0, 0.0);
+            OPS_addUniaxialMaterial(theMat);
+
+            ID Onedirection(1);
+            Onedirection[0] = 2;
+
+            // pile toe
+            //theMaterials[0] = OPS_getUniaxialMaterial(1);
+            //theMaterials[1] = OPS_getUniaxialMaterial(1+ioffset);
+            //Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 2, theMaterials, direction);
+            Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 1, &theMat, Onedirection);
+            theDomain.addElement(theEle);
+        }
+
     }
 
     //
@@ -533,13 +558,15 @@ void MainWindow::doAnalysis(void)
     //double maxStress = 0.0;
     //double minStress = 0.0;
 
+    int pileIdx = ui->pileIndex->value() - 1;
+
     for (int i=1; i<=numNodePile; i++) {
         zero[i-1] = 0.0;
         Node *theNode = theDomain.getNode(i+ioffset2);
         const Vector &nodeCoord = theNode->getCrds();
         loc[i-1] = nodeCoord(2);
         int iLayer;
-        for (iLayer=0; iLayer<maxLayers; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
+        for (iLayer=0; iLayer<maxLayers[pileIdx]; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
         stress[i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
         //if (stress[i-1] > maxStress) maxStress = stress[i-1];
         //if (stress[i-1] < minStress) minStress = stress[i-1];
@@ -757,13 +784,17 @@ void MainWindow::on_displacementSlider_valueChanged(int value)
 
 void MainWindow::on_pileDiameter_valueChanged(double arg1)
 {
-    pileDiameter = arg1;
+    int pileIdx = ui->pileIndex->value() - 1;
+
+    pileDiameter[pileIdx] = arg1;
     this->doAnalysis();
 }
 
 void MainWindow::on_embeddedLength_valueChanged(double arg1)
 {
-    L2 = arg1;
+    int pileIdx = ui->pileIndex->value() - 1;
+
+    L2[pileIdx] = arg1;
     this->doAnalysis();
 }
 
@@ -775,7 +806,9 @@ void MainWindow::on_freeLength_valueChanged(double arg1)
 
 void MainWindow::on_Emodulus_valueChanged(double arg1)
 {
-    E = arg1;
+    int pileIdx = ui->pileIndex->value() - 1;
+
+    E[pileIdx] = arg1;
     this->doAnalysis();
 }
 
@@ -889,7 +922,21 @@ void MainWindow::on_btn_deletePile_clicked()
 
 void MainWindow::on_btn_newPile_clicked()
 {
+    if (numPiles < MAXPILES) {
+        L2[numPiles]           = L2[numPiles-1];
+        pileDiameter[numPiles] = pileDiameter[numPiles-1];
+        E[numPiles]            = E[numPiles-1];
+        xOffset[numPiles]      = xOffset[numPiles-1] + 2.0*pileDiameter[numPiles-1];
+        numPiles += 1;
+    }
+    else
+    {
+        QMessageBox msg(QMessageBox::Information,"Info","Maximum number of piles reached.");
+        msg.exec();
+    }
 
+    ui->pileIndex->setMaximum(numPiles);
+    ui->pileIndex->setValue(numPiles);
 }
 
 void MainWindow::on_xOffset_valueChanged(double arg1)
@@ -897,8 +944,16 @@ void MainWindow::on_xOffset_valueChanged(double arg1)
 
 }
 
-void MainWindow::on_spinBox_pileNumber_valueChanged(int arg1)
+void MainWindow::on_pileIndex_valueChanged(int arg1)
 {
+    int pileIdx = ui->pileIndex->value() - 1;
+    ui->pileDiameter->setValue(pileDiameter[pileIdx]);
+    ui->Emodulus->setValue(E[pileIdx]);
+    ui->embeddedLength->setValue(L2[pileIdx]);
+    ui->freeLength->setValue(L1);
+    ui->xOffset->setValue(xOffset[pileIdx]);
+
+    // refresh graphics
 
 }
 

@@ -176,7 +176,7 @@
            </widget>
           </item>
           <item row="2" column="2">
-           <widget class="QSpinBox" name="spinBox_pileNumber">
+           <widget class="QSpinBox" name="pileIndex">
             <property name="minimum">
              <number>1</number>
             </property>
@@ -211,32 +211,6 @@
           <item row="5" column="2">
            <widget class="QDoubleSpinBox" name="embeddedLength"/>
           </item>
-          <item row="10" column="1">
-           <widget class="QPushButton" name="btn_deletePile">
-            <property name="text">
-             <string>Delete this Pile</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="QLabel" name="pilePropertyLabel">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Pile properties</string>
-            </property>
-           </widget>
-          </item>
           <item row="4" column="1">
            <widget class="QLabel" name="diameterLabel">
             <property name="text">
@@ -268,6 +242,32 @@
           <item row="3" column="2">
            <widget class="QDoubleSpinBox" name="xOffset"/>
           </item>
+          <item row="1" column="0" colspan="3">
+           <widget class="QLabel" name="pilePropertyLabel">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Pile properties</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="QPushButton" name="btn_deletePile">
+            <property name="text">
+             <string>Delete this Pile</string>
+            </property>
+           </widget>
+          </item>
          </layout>
          <zorder>lengthLabel</zorder>
          <zorder>freeLengthLabel</zorder>
@@ -280,7 +280,7 @@
          <zorder>Emodulus</zorder>
          <zorder>chkBox_include_toe_resistance</zorder>
          <zorder>chkBox_assume_rigid_cap</zorder>
-         <zorder>spinBox_pileNumber</zorder>
+         <zorder>pileIndex</zorder>
          <zorder>label</zorder>
          <zorder>btn_newPile</zorder>
          <zorder>btn_deletePile</zorder>
