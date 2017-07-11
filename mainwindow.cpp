@@ -917,7 +917,22 @@ void MainWindow::on_actionLicense_Information_triggered()
 
 void MainWindow::on_btn_deletePile_clicked()
 {
+    int pileIdx = ui->pileIndex->value() - 1;
+    if (pileIdx < numPiles && numPiles > 1) {
+        if ( pileIdx < numPiles ) {
+            for (int j=pileIdx; j<numPiles; j++) {
+                L2[j-1]           = L2[j];
+                pileDiameter[j-1] = pileDiameter[j];
+                E[j-1]            = E[j];
+                xOffset[j-1]      = xOffset[j];
+            }
+        }
+        numPiles--;
+        while (pileIdx >= numPiles) pileIdx--;
 
+        ui->pileIndex->setMaximum(numPiles);
+        ui->pileIndex->setValue(pileIdx+1);
+    }
 }
 
 void MainWindow::on_btn_newPile_clicked()
