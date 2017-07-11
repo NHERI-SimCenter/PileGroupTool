@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include "math.h"
 #include "utilWindows/copyrightdialog.h"
+#include "utilWindows/dialogpreferences.h"
+#include "utilWindows/dialogabout.h"
 
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
@@ -60,6 +62,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    this->fetchSettings();
 
     // setup data
     P        = 0.0;
@@ -557,90 +561,130 @@ void MainWindow::doAnalysis(void)
         if (shear[i] < minShear) minShear = shear[i];
     }
 
+    //
     // plot results
+    //
+
     // plot displacemenet
-    QCPCurve *dispCurve = new QCPCurve(ui->displPlot->xAxis, ui->displPlot->yAxis);
-    dispCurve->setData(disp,loc);
-    dispCurve->setPen(QPen(Qt::blue, 3));
-    ui->displPlot->clearPlottables();
-    ui->displPlot->addGraph();
-    ui->displPlot->graph(0)->setData(zero,loc);
-    ui->displPlot->graph(0)->setPen(QPen(Qt::black));
-    ui->displPlot->addPlottable(dispCurve);
-    ui->displPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    ui->displPlot->axisRect()->setupFullAxesBox();
-    ui->displPlot->rescaleAxes();
-    ui->displPlot->replot();
+    if (showDisplacements) {
+        QCPCurve *dispCurve = new QCPCurve(ui->displPlot->xAxis, ui->displPlot->yAxis);
+        dispCurve->setData(disp,loc);
+        dispCurve->setPen(QPen(Qt::blue, 3));
+        ui->displPlot->clearPlottables();
+        ui->displPlot->addGraph();
+        ui->displPlot->graph(0)->setData(zero,loc);
+        ui->displPlot->graph(0)->setPen(QPen(Qt::black));
+        ui->displPlot->addPlottable(dispCurve);
+        ui->displPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+        ui->displPlot->axisRect()->setupFullAxesBox();
+        ui->displPlot->rescaleAxes();
+        ui->displPlot->replot();
+    }
 
-    QCPCurve *shearCurve = new QCPCurve(ui->shearPlot->xAxis, ui->shearPlot->yAxis);
-    shearCurve->setData(shear,loc);
-    shearCurve->setPen(QPen(Qt::blue, 3));
-    ui->shearPlot->clearPlottables();
-    ui->shearPlot->addGraph();
-    ui->shearPlot->graph(0)->setData(zero,loc);
-    ui->shearPlot->graph(0)->setPen(QPen(Qt::black));
-    ui->shearPlot->addPlottable(shearCurve);
-    ui->shearPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    ui->shearPlot->axisRect()->setupFullAxesBox();
-    ui->shearPlot->rescaleAxes();
-    ui->shearPlot->replot();
+    if (showShear) {
+        QCPCurve *shearCurve = new QCPCurve(ui->shearPlot->xAxis, ui->shearPlot->yAxis);
+        shearCurve->setData(shear,loc);
+        shearCurve->setPen(QPen(Qt::blue, 3));
+        ui->shearPlot->clearPlottables();
+        ui->shearPlot->addGraph();
+        ui->shearPlot->graph(0)->setData(zero,loc);
+        ui->shearPlot->graph(0)->setPen(QPen(Qt::black));
+        ui->shearPlot->addPlottable(shearCurve);
+        ui->shearPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+        ui->shearPlot->axisRect()->setupFullAxesBox();
+        ui->shearPlot->rescaleAxes();
+        ui->shearPlot->replot();
+    }
 
-    QCPCurve *momCurve = new QCPCurve(ui->momentPlot->xAxis, ui->momentPlot->yAxis);
-    momCurve->setData(moment,loc);
-    momCurve->setPen(QPen(Qt::blue, 3));
-    ui->momentPlot->clearPlottables();
-    ui->momentPlot->addGraph();
-    ui->momentPlot->graph(0)->setData(zero,loc);
-    ui->momentPlot->graph(0)->setPen(QPen(Qt::black));
-    ui->momentPlot->addPlottable(momCurve);
-    ui->momentPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    ui->momentPlot->axisRect()->setupFullAxesBox();
-    ui->momentPlot->rescaleAxes();
-    ui->momentPlot->replot();
+    if (showMoments) {
+        QCPCurve *momCurve = new QCPCurve(ui->momentPlot->xAxis, ui->momentPlot->yAxis);
+        momCurve->setData(moment,loc);
+        momCurve->setPen(QPen(Qt::blue, 3));
+        ui->momentPlot->clearPlottables();
+        ui->momentPlot->addGraph();
+        ui->momentPlot->graph(0)->setData(zero,loc);
+        ui->momentPlot->graph(0)->setPen(QPen(Qt::black));
+        ui->momentPlot->addPlottable(momCurve);
+        ui->momentPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+        ui->momentPlot->axisRect()->setupFullAxesBox();
+        ui->momentPlot->rescaleAxes();
+        ui->momentPlot->replot();
+    }
 
-    QCPCurve *stressCurve = new QCPCurve(ui->stressPlot->xAxis, ui->stressPlot->yAxis);
-    stressCurve->setData(stress,loc);
-    stressCurve->setPen(QPen(Qt::blue, 3));
-    ui->stressPlot->clearPlottables();
-    ui->stressPlot->addGraph();
-    ui->stressPlot->graph(0)->setData(zero,loc);
-    ui->stressPlot->graph(0)->setPen(QPen(Qt::black));
-    ui->stressPlot->addPlottable(stressCurve);
-    ui->stressPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    ui->stressPlot->axisRect()->setupFullAxesBox();
-    ui->stressPlot->rescaleAxes();
-    ui->stressPlot->replot();
+    if (showStress) {
+        QCPCurve *stressCurve = new QCPCurve(ui->stressPlot->xAxis, ui->stressPlot->yAxis);
+        stressCurve->setData(stress,loc);
+        stressCurve->setPen(QPen(Qt::blue, 3));
+        ui->stressPlot->clearPlottables();
+        ui->stressPlot->addGraph();
+        ui->stressPlot->graph(0)->setData(zero,loc);
+        ui->stressPlot->graph(0)->setPen(QPen(Qt::black));
+        ui->stressPlot->addPlottable(stressCurve);
+        ui->stressPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+        ui->stressPlot->axisRect()->setupFullAxesBox();
+        ui->stressPlot->rescaleAxes();
+        ui->stressPlot->replot();
+    }
 
-    QCPCurve *pultCurve = new QCPCurve(ui->pultPlot->xAxis, ui->pultPlot->yAxis);
-    pultCurve->setData(pultList,locList);
-    pultCurve->setPen(QPen(Qt::red, 3));
-    ui->pultPlot->clearPlottables();
-    ui->pultPlot->addGraph();
-    ui->pultPlot->graph(0)->setData(zero,loc);
-    ui->pultPlot->graph(0)->setPen(QPen(Qt::black));
-    ui->pultPlot->addPlottable(pultCurve);
-    ui->pultPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    ui->pultPlot->axisRect()->setupFullAxesBox();
-    ui->pultPlot->rescaleAxes();
-    ui->pultPlot->replot();
+    if (showPultimate) {
+        QCPCurve *pultCurve = new QCPCurve(ui->pultPlot->xAxis, ui->pultPlot->yAxis);
+        pultCurve->setData(pultList,locList);
+        pultCurve->setPen(QPen(Qt::red, 3));
+        ui->pultPlot->clearPlottables();
+        ui->pultPlot->addGraph();
+        ui->pultPlot->graph(0)->setData(zero,loc);
+        ui->pultPlot->graph(0)->setPen(QPen(Qt::black));
+        ui->pultPlot->addPlottable(pultCurve);
+        ui->pultPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+        ui->pultPlot->axisRect()->setupFullAxesBox();
+        ui->pultPlot->rescaleAxes();
+        ui->pultPlot->replot();
+    }
 
-    QCPCurve *y50Curve = new QCPCurve(ui->y50Plot->xAxis, ui->y50Plot->yAxis);
-    y50Curve->setData(y50List,locList);
-    y50Curve->setPen(QPen(Qt::red, 3));
-    ui->y50Plot->clearPlottables();
-    ui->y50Plot->addGraph();
-    ui->y50Plot->graph(0)->setData(zero,loc);
-    ui->y50Plot->graph(0)->setPen(QPen(Qt::black));
-    ui->y50Plot->addPlottable(y50Curve);
-    ui->y50Plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    ui->y50Plot->axisRect()->setupFullAxesBox();
-    ui->y50Plot->rescaleAxes();
-    ui->y50Plot->replot();
+    if (showY50) {
+        QCPCurve *y50Curve = new QCPCurve(ui->y50Plot->xAxis, ui->y50Plot->yAxis);
+        y50Curve->setData(y50List,locList);
+        y50Curve->setPen(QPen(Qt::red, 3));
+        ui->y50Plot->clearPlottables();
+        ui->y50Plot->addGraph();
+        ui->y50Plot->graph(0)->setData(zero,loc);
+        ui->y50Plot->graph(0)->setPen(QPen(Qt::black));
+        ui->y50Plot->addPlottable(y50Curve);
+        ui->y50Plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+        ui->y50Plot->axisRect()->setupFullAxesBox();
+        ui->y50Plot->rescaleAxes();
+        ui->y50Plot->replot();
+    }
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::fetchSettings()
+{
+    if (settings != NULL) { delete settings; }
+    settings = new QSettings("NHERI SimCenter","Pile Group Tool");
+
+    // viewer settings
+    settings->beginGroup("viewer");
+        showDisplacements = settings->value("displacements",1).toBool();
+        showMoments       = settings->value("moments",1).toBool();
+        showShear         = settings->value("shear",1).toBool();
+        showStress        = settings->value("stress",1).toBool();
+        showPultimate     = settings->value("pult",1).toBool();
+        showY50           = settings->value("compliance",1).toBool();
+    settings->endGroup();
+
+    // meshing parameters
+    settings->beginGroup("fea");
+        minElementsPerLayer = settings->value("minElemementsPerLayer",15).toInt();
+        maxElementsPerLayer = settings->value("maxElemementsPerLayer",40).toInt();
+        numElementsInAir    = settings->value("numElementsInAir", 4).toInt();
+    settings->endGroup();
+
+    /****** end of settings ******/
 }
 
 /* ***** menu actions ***** */
@@ -808,32 +852,6 @@ void MainWindow::updateInfo(QTableWidgetItem * item)
         }
     //}
 
-#if 0
-    qDebug() << "Soil data updated:"
-    qDebug() << "   layer 1: " \
-                << mSoilLayers[0].getLayerName() \
-                << mSoilLayers[0].getLayerThickness() \
-                << mSoilLayers[0].getLayerUnitWeight() \
-                << mSoilLayers[0].getLayerSatUnitWeight() \
-                << mSoilLayers[0].getLayerFrictionAng() \
-                << mSoilLayers[0].getLayerStiffness()
-    qDebug() << "   layer 1: " \
-                << mSoilLayers[1].getLayerName() \
-                << mSoilLayers[1].getLayerThickness() \
-                << mSoilLayers[1].getLayerUnitWeight() \
-                << mSoilLayers[1].getLayerSatUnitWeight() \
-                << mSoilLayers[1].getLayerFrictionAng() \
-                << mSoilLayers[1].getLayerStiffness()
-    qDebug() << "   layer 3: " \
-                << mSoilLayers[2].getLayerName() \
-                << mSoilLayers[2].getLayerThickness() \
-                << mSoilLayers[2].getLayerUnitWeight() \
-                << mSoilLayers[2].getLayerSatUnitWeight() \
-                << mSoilLayers[2].getLayerFrictionAng() \
-                << mSoilLayers[2].getLayerStiffness() \
-                << endln;
-#endif
-
     this->doAnalysis();
 }
 
@@ -862,4 +880,85 @@ void MainWindow::on_actionLicense_Information_triggered()
 {
     CopyrightDialog *dlg = new CopyrightDialog(this);
     dlg->exec();
+}
+
+void MainWindow::on_btn_deletePile_clicked()
+{
+
+}
+
+void MainWindow::on_btn_newPile_clicked()
+{
+
+}
+
+void MainWindow::on_xOffset_valueChanged(double arg1)
+{
+
+}
+
+void MainWindow::on_spinBox_pileNumber_valueChanged(int arg1)
+{
+
+}
+
+void MainWindow::on_action_About_triggered()
+{
+    DialogAbout *dlg = new DialogAbout();
+    dlg->exec();
+    delete dlg;
+}
+
+void MainWindow::on_actionPreferences_triggered()
+{
+    DialogPreferences *dlg = new DialogPreferences(this, settings);
+    dlg->exec();
+    delete dlg;
+
+    this->fetchSettings();
+    this->updateUI();
+    this->doAnalysis();
+}
+
+void MainWindow::updateUI()
+{
+    if (!showDisplacements && ui->tabWidget->indexOf(ui->displacement)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->displacement));
+    }
+    if (!showMoments && ui->tabWidget->indexOf(ui->moment)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->moment));
+    }
+    if (!showShear && ui->tabWidget->indexOf(ui->shear)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->shear));
+    }
+    if (!showStress && ui->tabWidget->indexOf(ui->stress)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->stress));
+    }
+    if (!showPultimate && ui->tabWidget->indexOf(ui->pult)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pult));
+    }
+    if (!showY50 && ui->tabWidget->indexOf(ui->y50)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->y50));
+    }
+
+    int numTabs = ui->tabWidget->count();
+
+    if (showDisplacements && ui->tabWidget->indexOf(ui->displacement) < 0 ) {
+        ui->tabWidget->addTab(ui->displacement,"Displacement");
+    }
+    if (showMoments && ui->tabWidget->indexOf(ui->moment) < 0 ) {
+        ui->tabWidget->addTab(ui->moment,"Moment");
+    }
+    if (showShear && ui->tabWidget->indexOf(ui->shear) < 0 ) {
+        ui->tabWidget->addTab(ui->shear,"Shear");
+    }
+    if (showStress && ui->tabWidget->indexOf(ui->stress) < 0 ) {
+        ui->tabWidget->addTab(ui->stress,"Stress");
+    }
+    if (showPultimate && ui->tabWidget->indexOf(ui->pult) < 0 ) {
+        ui->tabWidget->addTab(ui->pult,"p_ult");
+    }
+    if (showY50 && ui->tabWidget->indexOf(ui->y50) < 0) {
+        ui->tabWidget->addTab(ui->y50,"y50");
+    }
 }
