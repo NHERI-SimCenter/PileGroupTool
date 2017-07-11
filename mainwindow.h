@@ -8,6 +8,7 @@
 // forward declaration of classes
 class soilLayer;
 class QTableWidgetItem;
+class QSettings;
 
 namespace Ui {
 class MainWindow;
@@ -21,6 +22,8 @@ public:
     ~MainWindow();
 
     void doAnalysis(void);
+    void fetchSettings();
+    void updateUI();
 
 private slots:
     // soil parameter values entered/changed
@@ -55,6 +58,18 @@ private slots:
 
     void on_actionLicense_Information_triggered();
 
+    void on_btn_deletePile_clicked();
+
+    void on_btn_newPile_clicked();
+
+    void on_xOffset_valueChanged(double arg1);
+
+    void on_spinBox_pileNumber_valueChanged(int arg1);
+
+    void on_action_About_triggered();
+
+    void on_actionPreferences_triggered();
+
 private:
     Q_OBJECT
     Ui::MainWindow *ui;
@@ -84,12 +99,6 @@ private:
     void setupLayers();
     void reDrawTable();
 
-    // meshing parameters
-    int minElementsPerLayer = 15;
-    int maxElementsPerLayer = 40;
-    int numElementsInAir    =  4;
-    int numEle;
-
     // temporary variables
     double gamma;
     double gammaWet;
@@ -111,6 +120,23 @@ private:
 
     // setup switch
     bool inSetupState = true;
+
+    // system conforming settings and parameters
+    QSettings *settings = NULL;
+
+    // viewer settings
+    bool showDisplacements;
+    bool showMoments;
+    bool showShear;
+    bool showStress;
+    bool showPultimate;
+    bool showY50;
+
+    // meshing parameters
+    int minElementsPerLayer = 15;
+    int maxElementsPerLayer = 40;
+    int numElementsInAir    =  4;
+    int numEle;
 
 };
 

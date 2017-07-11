@@ -37,14 +37,18 @@ SOURCES += main.cpp\
         materialdbinterface.cpp \
         surveysplashscreen.cpp \
         soilmat.cpp \
-        utilWindows/copyrightdialog.cpp
+        utilWindows/copyrightdialog.cpp \
+    utilWindows/dialogabout.cpp \
+    utilWindows/dialogpreferences.cpp
         
 HEADERS  += mainwindow.h \
         qcustomplot.h \
         materialdbinterface.h \
         surveysplashscreen.h \
         soilmat.h \
-        utilWindows/copyrightdialog.h
+        utilWindows/copyrightdialog.h \
+    utilWindows/dialogabout.h \
+    utilWindows/dialogpreferences.h
 
 # WHY DO WE NEED THIS ?????
 HEADERS  += ui_mainwindow.h
@@ -52,7 +56,9 @@ HEADERS  += ui_mainwindow.h
 FORMS    += mainwindow.ui \
         materialdbinterface.ui \
         surveysplashscreen.ui \
-        utilWindows/copyrightdialog.ui
+        utilWindows/copyrightdialog.ui \
+    utilWindows/dialogabout.ui \
+    utilWindows/dialogpreferences.ui
         
 
 RESOURCES += \
