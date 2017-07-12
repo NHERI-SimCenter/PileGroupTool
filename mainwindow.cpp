@@ -86,7 +86,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
      // set initial state of check boxes
     useToeResistance    = false;
-    assumeRigidPileHead = false;
+    assumeRigidPileHeadConnection = false;
 
     // analysis parameters
     displacementRatio = 0.0;
@@ -120,7 +120,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->groundWaterTable->setValue(gwtDepth);
 
-    ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHead?Qt::Checked:Qt::Unchecked);
+    ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHeadConnection?Qt::Checked:Qt::Unchecked);
     ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
 
     //connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)), this, SLOT(updateInfo(QTableWidgetItem*)));
@@ -134,7 +134,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::doAnalysis(void)
 {
-    QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1, 0.0});
+    QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1, -1, 0.0});
 
     if (inSetupState) return;
 
@@ -150,11 +150,7 @@ void MainWindow::doAnalysis(void)
     QVector<QVector<int>> elemsInLayer(MAXPILES,QVector<int>(3,minElementsPerLayer));
     QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
 
-    int numNodePiles = 0;
-    int numNodePile[MAXPILES];
-    int maxLayers[MAXPILES];
-    int nodeIDoffset[MAXPILES];
-    int elemIDoffset[MAXPILES];
+    numNodePiles = numPiles;
 
     for (int k=0; k<MAXPILES; k++) {
         numNodePile[k]  = 0;
@@ -162,8 +158,6 @@ void MainWindow::doAnalysis(void)
         nodeIDoffset[k] = 0;
         elemIDoffset[k] = 0;
     }
-
-
 
     /* ******** sizing and adjustments ******** */
 
@@ -225,16 +219,9 @@ void MainWindow::doAnalysis(void)
 
     /* ******** done with sizing and adjustments ******** */
 
-    //
-    // for debug purpose only (can be removed once stable)
-    //
-    QVector<double> locList(numNodePiles+1);
-    //
-    // end of debug block
-    //
-
-    QVector<double> pultList(numNodePiles+1);
-    QVector<double> y50List(numNodePiles+1);
+    QVector<QVector<double> > locList(MAXPILES, QVector<double>(numNodePiles+1,0.0));
+    QVector<QVector<double> > pultList(MAXPILES, QVector<double>(numNodePiles+1,0.0));
+    QVector<QVector<double> > y50List(MAXPILES, QVector<double>(numNodePiles+1,0.0));
 
     int ioffset  = numNodePiles;              // for p-y spring nodes
     int ioffset2 = ioffset + numNodePiles;    // for pile nodes
@@ -288,6 +275,11 @@ void MainWindow::doAnalysis(void)
         double G  = E[pileIdx]/(2.0*(1.+0.3));
         double J  = 1.0e10;
 
+        // suitable pile head parameters (make pile head stiff)
+        if (100.*E[pileIdx]*A > EA ) EA = 100.*E[pileIdx]*A;
+        if (100.*E[pileIdx]*Iz > EI) EI = 100.*E[pileIdx]*Iz;
+        if (10.*G*J > EA)            GJ = 10.*G*J;
+
         //
         // Ready to generate the structure
         //
@@ -296,9 +288,9 @@ void MainWindow::doAnalysis(void)
 
         zCoord = -L2[pileIdx];
 
-        locList[numNode]  = zCoord;
-        pultList[numNode] = 0.001;
-        y50List[numNode]  = 0.00001;
+        locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+        pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
+        y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
 
         //
         // create bottom pile node
@@ -308,9 +300,9 @@ void MainWindow::doAnalysis(void)
         Node *theNode = 0;
         nodeTag = numNode+ioffset2;
 
-        //qDebug() << "Node(" << nodeTag << "," << 6 << "," << 0.0 << "," << 0.0 << "," << zCoord << ")";
+        //qDebug() << "Node(" << nodeTag << "," << 6 << "," << xOffset[pileIdx] << "," << 0.0 << "," << zCoord << ")";
 
-        theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
+        theNode = new Node(nodeTag, 6, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
         if (numNode != 1) {
             SP_Constraint *theSP = 0;
             theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
@@ -329,8 +321,8 @@ void MainWindow::doAnalysis(void)
         if (useToeResistance) {
             Node *theNode = 0;
 
-            theNode = new Node(numNode,         3, 0., 0., zCoord);  theDomain.addNode(theNode);
-            theNode = new Node(numNode+ioffset, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
+            theNode = new Node(numNode,         3, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
+            theNode = new Node(numNode+ioffset, 3, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
 
             SP_Constraint *theSP = 0;
             theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain.addSP_Constraint(theSP);
@@ -364,8 +356,8 @@ void MainWindow::doAnalysis(void)
 
                 Node *theNode = 0;
 
-                theNode = new Node(numNode,         3, 0., 0., zCoord);  theDomain.addNode(theNode);
-                theNode = new Node(numNode+ioffset, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
+                theNode = new Node(numNode,         3, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
+                theNode = new Node(numNode+ioffset, 3, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
 
                 SP_Constraint *theSP = 0;
                 theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain.addSP_Constraint(theSP);
@@ -380,9 +372,9 @@ void MainWindow::doAnalysis(void)
 
                 nodeTag = numNode+ioffset2;
 
-                //qDebug() << "Node(" << nodeTag << "," << 6 << "," << 0.0 << "," << 0.0 << "," << zCoord << ")";
+                //qDebug() << "Node(" << nodeTag << "," << 6 << "," << xOffset[pileIdx] << "," << 0.0 << "," << zCoord << ")";
 
-                theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
+                theNode = new Node(nodeTag, 6, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
                 if (numNode != 1) {
                     SP_Constraint *theSP = 0;
                     theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
@@ -413,9 +405,9 @@ void MainWindow::doAnalysis(void)
                 theMat = new PySimple1(numNode, 0, 2, pult, y50, 0.0, 0.0);
                 OPS_addUniaxialMaterial(theMat);
 
-                locList[numNode]  = zCoord;
-                pultList[numNode] = pult/eleSize;
-                y50List[numNode]  = y50;
+                locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
+                y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
 
                 // t-z spring material
                 getTzParam(phi, pileDiameter[pileIdx],  sigV,  eleSize, &tult, &z50);
@@ -457,9 +449,9 @@ void MainWindow::doAnalysis(void)
 
                 nodeTag = numNode+ioffset2;
 
-                //qDebug() << "Node(" << nodeTag << "," << 6 << "," << 0.0 << "," << 0.0 << "," << zCoord << ")";
+                //qDebug() << "Node(" << nodeTag << "," << 6 << "," << xOffset[pileIdx] << "," << 0.0 << "," << zCoord << ")";
 
-                Node *theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
+                Node *theNode = new Node(nodeTag, 6, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
                 if (numNode != 1) {
                     SP_Constraint *theSP = 0;
                     theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
@@ -467,19 +459,19 @@ void MainWindow::doAnalysis(void)
                     theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
                 }
 
-                locList[numNode]  = zCoord;
-                pultList[numNode] = 0.001;
-                y50List[numNode]  = 0.00001;
+                locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
+                y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
 
                 zCoord += eleSize;
             }
         }
 
-        headNodeList[pileIdx] = {nodeTag, xOffset[pileIdx]};
+        headNodeList[pileIdx] = {pileIdx, nodeTag, xOffset[pileIdx]};
 
         qDebug() << "* pile index: " << pileIdx;
         for (int k=0; k<headNodeList.count(); k++) {
-            qDebug() << "** headNodeList: " << headNodeList[k].nodeIdx << headNodeList[k].x ;
+            qDebug() << "** headNodeList: " << headNodeList[k].pileIdx << headNodeList[k].nodeIdx << headNodeList[k].x ;
         }
 
         //
@@ -515,7 +507,7 @@ void MainWindow::doAnalysis(void)
         //
         // constrain pile cap, if requested
         //
-        if (assumeRigidPileHead) {
+        if (assumeRigidPileHeadConnection && numPiles == 1) {
             SP_Constraint *theSP = 0;
             theSP = new SP_Constraint(numNode+ioffset2, 4, 0., true);
             theDomain.addSP_Constraint(theSP);
@@ -541,8 +533,88 @@ void MainWindow::doAnalysis(void)
             Element *theEle = new ZeroLength(1+pileIdx+ioffset4, 3, 1, 1+ioffset, x, y, 1, &theMat, Onedirection);
             theDomain.addElement(theEle);
         }
-
     }
+
+    //
+    // *** construct the pile head ***
+    //
+    if (numPiles > 1) {
+
+        int ioffset5 = ioffset4 + numNodePiles;
+
+        // sort piles by xOffset
+        for (int i=0; i<numPiles; i++) {
+            for (int j=0; j<numPiles-i; j++) {
+                if (headNodeList[i].x < headNodeList[j].x) SWAP(headNodeList[i],headNodeList[j]);
+            }
+        }
+
+        static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
+        CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
+
+        BeamIntegration *theIntegration = new LegendreBeamIntegration();
+        SectionForceDeformation *theSections[3];
+        SectionForceDeformation *theSection = new ElasticSection3d(numPiles+1, 1., EA, EI, EI, 1., GJ);
+        theSections[0] = theSection;
+        theSections[1] = theSection;
+        theSections[2] = theSection;
+
+        int prevNode = -1;
+
+        QVector<HEAD_NODE_TYPE>::iterator itr = headNodeList.begin();
+        while (itr != headNodeList.end()) {
+
+            // create node for pile head
+            numNode++;
+            int nodeTag = numNode + ioffset5;
+            Node *theNode = new Node(nodeTag, 6, itr->x, 0., L1);  theDomain.addNode(theNode);
+
+            // create single point constraints
+            if (assumeRigidPileHeadConnection) {
+                // constrain spring and pile nodes with equalDOF (identity constraints)
+                static Matrix Chr (6, 6);
+                Chr.Zero();
+                Chr(0,0)=1.0; Chr(1,1)=1.0; Chr(2,2)=1.0; Chr(3,3)=1.0; Chr(4,4)=1.0; Chr(5,5)=1.0;
+                static ID hcDof (6);
+                hcDof(0) = 0; hcDof(1) = 1; hcDof(2) = 2; hcDof(3) = 3; hcDof(4) = 4; hcDof(5) = 5;
+
+                MP_Constraint *theMP = new MP_Constraint(nodeTag, itr->nodeIdx, Chr, hcDof, hcDof);
+                theDomain.addMP_Constraint(theMP);
+            }
+            else {
+                // constrain spring and pile nodes with equalDOF (identity constraints)
+                static Matrix Chl (5, 5);
+                Chl.Zero();
+                Chl(0,0)=1.0; Chl(1,1)=1.0; Chl(2,2)=1.0; Chl(3,3)=1.0; Chl(4,4)=1.0;
+                static ID hlDof (5);
+                hlDof(0) = 0; hlDof(1) = 1; hlDof(2) = 2; hlDof(3) = 3; hlDof(4) = 5;
+
+                MP_Constraint *theMP = new MP_Constraint(nodeTag, itr->nodeIdx, Chl, hlDof, hlDof);
+                theDomain.addMP_Constraint(theMP);
+            }
+
+            // create beams for pile head
+            if (prevNode > 0) {
+                numElem++;
+
+                qDebug() << "DispBeamColumn3d(" << numElem << "," << prevNode << "," << itr->nodeIdx << ")";
+
+                Element *theEle = new DispBeamColumn3d(numElem, prevNode, itr->nodeIdx,
+                                                       3, theSections, *theIntegration, *theTransformation);
+                theDomain.addElement(theEle);
+            }
+
+            prevNode = itr->nodeIdx;
+
+            ++itr;
+        }
+    }
+    else {
+        /* this has been taken care of within the pile loop */
+    }
+
+    /* *** done with the pile head *** */
+
 
     if (numNode != numNodePiles) {
         qDebug() << "ERROR: " << numNode << " nodes generated but " << numNodePiles << "expected" << endln;
@@ -685,6 +757,7 @@ void MainWindow::doAnalysis(void)
 
         ui->displPlot->autoAddPlottableToLegend();
         ui->displPlot->legend->setVisible(true);
+        ui->displPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom|Qt::AlignRight);
 
         ui->displPlot->addGraph();
         ui->displPlot->graph(0)->setPen(QPen(Qt::black));
@@ -712,6 +785,7 @@ void MainWindow::doAnalysis(void)
 
         ui->shearPlot->autoAddPlottableToLegend();
         ui->shearPlot->legend->setVisible(true);
+        ui->shearPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom|Qt::AlignRight);
 
         ui->shearPlot->addGraph();
         ui->shearPlot->graph(0)->setData(zero,loc[0]);
@@ -739,6 +813,7 @@ void MainWindow::doAnalysis(void)
 
         ui->momentPlot->autoAddPlottableToLegend();
         ui->momentPlot->legend->setVisible(true);
+        ui->momentPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom|Qt::AlignRight);
 
         ui->momentPlot->addGraph();
         ui->momentPlot->graph(0)->setData(zero,loc[0]);
@@ -765,6 +840,7 @@ void MainWindow::doAnalysis(void)
 
         ui->stressPlot->autoAddPlottableToLegend();
         ui->stressPlot->legend->setVisible(true);
+        ui->stressPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignRight);
 
         ui->stressPlot->addGraph();
         ui->stressPlot->graph(0)->setData(zero,loc[0]);
@@ -797,13 +873,13 @@ void MainWindow::doAnalysis(void)
         ui->pultPlot->graph(0)->setPen(QPen(Qt::black));
         ui->pultPlot->graph(0)->removeFromLegend();
 
-        //for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
             QCPCurve *pultCurve = new QCPCurve(ui->pultPlot->xAxis, ui->pultPlot->yAxis);
-            pultCurve->setData(pultList,locList);
-            pultCurve->setPen(QPen(LINE_COLOR[1], 3));
+            pultCurve->setData(pultList[pileIdx].mid(0,numNodePile[pileIdx]),locList[pileIdx].mid(0,numNodePile[pileIdx]));
+            pultCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
             pultCurve->setName(QString("Pile #%1").arg(pileIdx+1));
             ui->pultPlot->addPlottable(pultCurve);
-        //}
+        }
 
         ui->pultPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
         ui->pultPlot->axisRect()->setupFullAxesBox();
@@ -823,13 +899,13 @@ void MainWindow::doAnalysis(void)
         ui->y50Plot->graph(0)->setPen(QPen(Qt::black));
         ui->y50Plot->graph(0)->removeFromLegend();
 
-        //for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
             QCPCurve *y50Curve = new QCPCurve(ui->y50Plot->xAxis, ui->y50Plot->yAxis);
-            y50Curve->setData(y50List,locList);
-            y50Curve->setPen(QPen(LINE_COLOR[1], 3));
+            y50Curve->setData(y50List[pileIdx].mid(0,numNodePile[pileIdx]),locList[pileIdx].mid(0,numNodePile[pileIdx]));
+            y50Curve->setPen(QPen(LINE_COLOR[pileIdx], 3));
             y50Curve->setName(QString("Pile #%1").arg(pileIdx+1));
             ui->y50Plot->addPlottable(y50Curve);
-        //}
+        }
 
         ui->y50Plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
         ui->y50Plot->axisRect()->setupFullAxesBox();
@@ -879,7 +955,7 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_chkBox_assume_rigid_cap_clicked(bool checked)
 {
-    assumeRigidPileHead = checked;
+    assumeRigidPileHeadConnection = checked;
 
     this->doAnalysis();
 }
