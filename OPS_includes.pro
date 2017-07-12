@@ -91,143 +91,6 @@ SOURCES += ./ops/DummyStream.cpp
 SOURCES += ./ops/DummyElementAPI.cpp
 SOURCES += ./ops/OPS_Stream.cpp
 
-HEADERS += \
-        ops/Analysis.h \
-        ops/AnalysisModel.h \
-        ops/ArrayOfTaggedObjects.h \
-        ops/ArrayOfTaggedObjectsIter.h \
-        ops/BandGenLinLapackSolver.h \
-        ops/BandGenLinSOE.h \
-        ops/BandGenLinSolver.h \
-        ops/BeamFiberMaterial.h \
-        ops/BeamFiberMaterial2d.h \
-        ops/BeamIntegration.h \
-        ops/BinaryFileStream.h \
-        ops/CTestNormDispIncr.h \
-        ops/Channel.h \
-        ops/ColorMap.h \
-        ops/CompositeResponse.h \
-        ops/ConstraintHandler.h \
-        ops/ConvergenceTest.h \
-        ops/CrdTransf.h \
-        ops/DOF_Group.h \
-        ops/DOF_GrpIter.h \
-        ops/DOF_Numberer.h \
-        ops/DataFileStream.h \
-        ops/DispBeamColumn3d.h \
-        ops/DispBeamColumn3dWithSensitivity.h \
-        ops/Domain.h \
-        ops/DomainComponent.h \
-        ops/DomainDecompositionAnalysis.h \
-        ops/DummyStream.h \
-        ops/EigenSOE.h \
-        ops/EigenSolver.h \
-        ops/ElasticSection3d.h \
-        ops/Element.h \
-        ops/ElementIter.h \
-        ops/ElementResponse.h \
-        ops/ElementalLoad.h \
-        ops/ElementalLoadIter.h \
-        ops/EquiSolnAlgo.h \
-        ops/FEM_ObjectBroker.h \
-        ops/FE_Datastore.h \
-        ops/FE_EleIter.h \
-        ops/FE_Element.h \
-        ops/Fiber.h \
-        ops/FiberResponse.h \
-        ops/File.h \
-        ops/FileIter.h \
-        ops/FrictionModel.h \
-        ops/FrictionResponse.h \
-        ops/G3Globals.h \
-        ops/Graph.h \
-        ops/GraphNumberer.h \
-        ops/ID.h \
-        ops/IncrementalIntegrator.h \
-        ops/Information.h \
-        ops/Integrator.h \
-        ops/LegendreBeamIntegration.h \
-        ops/LinearCrdTransf3d.h \
-        ops/LinearSOE.h \
-        ops/LinearSOESolver.h \
-        ops/LinearSeries.h \
-        ops/Load.h \
-        ops/LoadControl.h \
-        ops/LoadPattern.h \
-        ops/LoadPatternIter.h \
-        ops/MP_Constraint.h \
-        ops/MP_ConstraintIter.h \
-        ops/MapOfTaggedObjects.h \
-        ops/MapOfTaggedObjectsIter.h \
-        ops/Material.h \
-        ops/MaterialResponse.h \
-        ops/Matrix.h \
-        ops/MatrixUtil.h \
-        ops/MeshRegion.h \
-        ops/Message.h \
-        ops/MovableObject.h \
-        ops/NDMaterial.h \
-        ops/NewtonRaphson.h \
-        ops/NodalLoad.h \
-        ops/NodalLoadIter.h \
-        ops/Node.h \
-        ops/NodeIter.h \
-        ops/OPS_Globals.h \
-        ops/OPS_Stream.h \
-        ops/ObjectBroker.h \
-        ops/Parameter.h \
-        ops/ParameterIter.h \
-        ops/PenaltyConstraintHandler.h \
-        ops/PenaltyMP_FE.h \
-        ops/PenaltySP_FE.h \
-        ops/PlainMap.h \
-        ops/PlainNumberer.h \
-        ops/PlaneStrainMaterial.h \
-        ops/PlaneStressMaterial.h \
-        ops/PlateFiberMaterial.h \
-        ops/Pressure_Constraint.h \
-        ops/Pressure_ConstraintIter.h \
-        ops/PySimple1.h \
-        ops/QzSimple1.h \
-        ops/RCM.h \
-        ops/Recorder.h \
-        ops/Renderer.h \
-        ops/Response.h \
-        ops/SP_Constraint.h \
-        ops/SP_ConstraintIter.h \
-        ops/SectionForceDeformation.h \
-        ops/SimulationInformation.h \
-        ops/SingleDomAllSP_Iter.h \
-        ops/SingleDomEleIter.h \
-        ops/SingleDomLC_Iter.h \
-        ops/SingleDomMP_Iter.h \
-        ops/SingleDomNodIter.h \
-        ops/SingleDomPC_Iter.h \
-        ops/SingleDomParamIter.h \
-        ops/SingleDomSP_Iter.h \
-        ops/SolutionAlgorithm.h \
-        ops/StandardStream.h \
-        ops/StaticAnalysis.h \
-        ops/StaticIntegrator.h \
-        ops/StringContainer.h \
-        ops/Subdomain.h \
-        ops/SubdomainNodIter.h \
-        ops/TaggedObject.h \
-        ops/TaggedObjectIter.h \
-        ops/TaggedObjectStorage.h \
-        ops/TimeSeries.h \
-        ops/TransformationConstraintHandler.h \
-        ops/TransformationDOF_Group.h \
-        ops/TransformationFE.h \
-        ops/TransientIntegrator.h \
-        ops/TzSimple1.h \
-        ops/UniaxialMaterial.h \
-        ops/Vector.h \
-        ops/Vertex.h \
-        ops/VertexIter.h \
-        ops/ZeroLength.h \
-        ops/classTags.h \
-        ops/elementAPI.h
 
 DEFINES += _bool_h
 
@@ -264,23 +127,18 @@ LIBS += -llapack -lblas
 }
 
 win32 {
-INCLUDEPATH += C:\Progra~1\Tcl\include
-INCLUDEPATH += $$(HOME)\OpenSees\DEVELOPER\core
+INCLUDEPATH += .\ops
 
 # NOTE THAT THE OpenSees libs have to be created with /MD as opposed to /MT as runtime library
 # this is specified in C++ -> Code Generation -> RunTime Library
 # this is because Qt must be built with this option as they have memory issues if built /MT
 
+#INCLUDEPATH += "%MKLROOT%"\include
+#LIBS += -L"C:\Program Files (x86)\IntelSWTools\compilers_and_libraries_2017.4.210\windows\mkl\lib\intel64_win" mkl_intel_lp64.lib mkl_sequential.lib mkl_core.lib
+LIBS += -L".\..\QtPile\lib" lapack.lib blas.lib
 
-CONFIG += static
-
-QMAKE_LFLAGS_DEBUG += /FORCE:MULTIPLE
-QMAKE_LFLAGS_DEBUG += /NODEFAULTLIB:"libc.lib"
-QMAKE_LFLAGS_RELEASE += /FORCE:MULTIPLE
-QMAKE_LFLAGS_RELEASE += /NODEFAULTLIB:"libc.lib"
-
-QMAKE_LFLAGS_RELEASE += /NODEFAULTLIB:"libcmt.lib"
-LIBPATH += "C:\Program Files (x86)\Intel\Composer XE\compiler\lib\intel64"
+DEFINES += -D_FORTRAN -D_RELIABILITY -D_TCL85
+QMAKE_CXXFLAGS += /GS /W3 /Gy   /Zi /Gm- /O2 /Ob1 /fp:precise /errorReport:prompt /GF /WX- /Zc:forScope /Gd /EHsc /MD
 
 
 } else {
