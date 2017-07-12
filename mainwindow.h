@@ -3,8 +3,20 @@
 
 #include <QMainWindow>
 
+// fixed parameters (limits for piles and soil layers)
 #define MAXPILES 3
+#define MAXLAYERS 3
+
+// functions
 #define ABS(X) (X<0.0?-X:X)
+
+// data types
+typedef struct {
+    int nodeIdx;
+    double x;
+} HEAD_NODE_TYPE;
+
+static QVector<QColor> LINE_COLOR({Qt::blue,Qt::red,Qt::green,Qt::cyan,Qt::magenta,Qt::yellow});
 
 // forward declaration of classes
 class soilLayer;
@@ -78,7 +90,7 @@ private:
     // get data
     double P;  // lateral force on pile
     double gwtDepth;  // depth of ground water table below the surface
-    int    numEle;
+    int    numPileElements;
     int    numPiles;
 
     // states

@@ -77,7 +77,6 @@ MainWindow::MainWindow(QWidget *parent) :
     xOffset[numPiles-1]      = 0.0;
 
     gwtDepth = 3.00;
-    numEle   = 80;
     gamma    = 17.0;
     phi      = 36.0;
     gSoil    = 150000;
@@ -135,6 +134,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::doAnalysis(void)
 {
+    QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1, 0.0});
+
     if (inSetupState) return;
 
     // clear existing model
@@ -145,49 +146,65 @@ void MainWindow::doAnalysis(void)
     //
     // find meshing parameters
     //
-    //
+
     QVector<QVector<int>> elemsInLayer(MAXPILES,QVector<int>(3,minElementsPerLayer));
     QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
 
-    int numNodePile = 0;
+    int numNodePiles = 0;
+    int numNodePile[MAXPILES];
     int maxLayers[MAXPILES];
+    int nodeIDoffset[MAXPILES];
+    int elemIDoffset[MAXPILES];
+
+    for (int k=0; k<MAXPILES; k++) {
+        numNodePile[k]  = 0;
+        maxLayers[k]    = MAXLAYERS;
+        nodeIDoffset[k] = 0;
+        elemIDoffset[k] = 0;
+    }
+
+
+
+    /* ******** sizing and adjustments ******** */
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
-        maxLayers[pileIdx] = 3;
-        numNodePile += numElementsInAir+1;
+        numNodePile[pileIdx] = numElementsInAir+2; // free standing plus bottom plus surface node
 
+        //
+        // find active layers for pile #pileIdx
+        //
         for (int iLayer=0; iLayer < maxLayers[pileIdx]; iLayer++)
         {
             if (depthOfLayer[iLayer] >= L2[pileIdx]) {
+                // this pile only penetrates till layer #iLayer
                 maxLayers[pileIdx] = iLayer;
                 break;
             }
 
             double thickness = mSoilLayers[iLayer].getLayerThickness();
 
+            // compute bottom of this layer/top of the next layer
+            if (depthOfLayer[iLayer] + thickness < L2[pileIdx] && iLayer == MAXLAYERS - 1) {
+                thickness = L2[pileIdx] - depthOfLayer[iLayer];
+                mSoilLayers[iLayer].setLayerThickness(thickness);
+            }
+            depthOfLayer[iLayer+1] = depthOfLayer[iLayer] + thickness;
+
+            // check if layer ends below the pile toe and adjust thickness for mesh generation
+            if (depthOfLayer[iLayer+1] > L2[pileIdx]) {
+                thickness = L2[pileIdx] - depthOfLayer[iLayer];
+            }
+
             int numElemThisLayer = int(thickness/pileDiameter[pileIdx]);
             if (numElemThisLayer < minElementsPerLayer) numElemThisLayer = minElementsPerLayer;
             if (numElemThisLayer > maxElementsPerLayer) numElemThisLayer = maxElementsPerLayer;
-            numElemThisLayer += 1; // accounting for the shift of elements such that no spring ends up on an interface
 
             // remember number of elements in this layer
             elemsInLayer[pileIdx][iLayer] = numElemThisLayer;
 
             // total node count
-            numNodePile += numElemThisLayer + 1;
-
-            // compute bottom of this layer/top of the next layer
-            depthOfLayer[iLayer+1] = depthOfLayer[iLayer] + thickness;
-
-            // check if layer ends below the pile toe
-            if (depthOfLayer[iLayer+1] > L2[pileIdx]) {
-                thickness = L2[pileIdx] - depthOfLayer[iLayer];
-                mSoilLayers[iLayer].setLayerThickness(thickness);
-                if (depthOfLayer[iLayer+1] < depthOfLayer[iLayer] + thickness) {
-                    depthOfLayer[iLayer+1] = depthOfLayer[iLayer] + thickness;
-                }
-            }
+            numNodePile[pileIdx] += numElemThisLayer;
 
             // update layer information on overburdon stress and water table
             if (iLayer > 0) {
@@ -202,34 +219,66 @@ void MainWindow::doAnalysis(void)
             mSoilLayers[iLayer].setLayerGWHead(groundWaterHead);
         }
 
-        // make sure we have enough soil for the analysis
-        if (L2[pileIdx] > depthOfLayer[maxLayers[pileIdx]]) {
-            //
-            // increase thickness of the bottom layer
-            //
-            double thickness = L2[pileIdx] - depthOfLayer[maxLayers[pileIdx]-1];
-            mSoilLayers[maxLayers[pileIdx]-1].setLayerThickness(thickness);
-            depthOfLayer[maxLayers[pileIdx]] = L2[pileIdx];
-        }
+        // add numper of nodes in this pile to global number of nodes
+        numNodePiles += numNodePile[pileIdx];
     }
+
+    /* ******** done with sizing and adjustments ******** */
 
     //
     // for debug purpose only (can be removed once stable)
     //
-    QVector<double> locList(numNodePile+1);
+    QVector<double> locList(numNodePiles+1);
     //
     // end of debug block
     //
 
-    QVector<double> pultList(numNodePile+1);
-    QVector<double> y50List(numNodePile+1);
+    QVector<double> pultList(numNodePiles+1);
+    QVector<double> y50List(numNodePiles+1);
 
-    int ioffset  = numNodePile;
-    int ioffset2 = ioffset + numNodePile;
-    int ioffset3 = ioffset2 + numNodePile;
+    int ioffset  = numNodePiles;              // for p-y spring nodes
+    int ioffset2 = ioffset + numNodePiles;    // for pile nodes
+    int ioffset3 = ioffset2 + numNodePiles;   // for t-z spring nodes
+    int ioffset4 = ioffset3 + numNodePiles;   // for toe resistance nodes
+
+    /* ******** build the finite element mesh ******** */
+
+    //
+    // matrix used to constrain spring and pile nodes with equalDOF (identity constraints)
+    //
+    static Matrix Ccr (2, 2);
+    Ccr.Zero(); Ccr(0,0)=1.0; Ccr(1,1)=1.0;
+    static ID rcDof (2);
+    rcDof(0) = 0;
+    rcDof(1) = 2;
+
+    // create the vectors for the spring elements orientation
+    static Vector x(3); x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
+    static Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
+
+    // direction for spring elements
+    ID direction(2);
+    direction[0] = 0;
+    direction[1] = 2;
+
+    // initialization of counters
+    int numNode = 0;
+    int numElem = ioffset2;
+    int nodeTag = 0;
+
+    nodeIDoffset[0] = ioffset2;
+    elemIDoffset[0] = ioffset2;
+    for (int k=1; k<numPiles; k++) {
+        nodeIDoffset[k] = nodeIDoffset[k-1] + numNodePile[k-1];
+        elemIDoffset[k] = elemIDoffset[k-1] + numNodePile[k-1] - 1;
+    }
+
+    // build the FE-model one pile at a time
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
+        //qDebug() << "+ pile index: " << pileIdx;
+
         //
         // compute pile properties (compute once; used for all pile elements)
         //
@@ -240,32 +289,10 @@ void MainWindow::doAnalysis(void)
         double J  = 1.0e10;
 
         //
-        // matrix used to constrain spring and pile nodes with equalDOF (identity constraints)
-        //
-        static Matrix Ccr (2, 2);
-        Ccr.Zero(); Ccr(0,0)=1.0; Ccr(1,1)=1.0;
-        static ID rcDof (2);
-        rcDof(0) = 0;
-        rcDof(1) = 2;
-
-        // create the vectors for the spring elements orientation
-        static Vector x(3); x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
-        static Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
-
-        // direction for spring elements
-        ID direction(2);
-        direction[0] = 0;
-        direction[1] = 2;
-
-        //
         // Ready to generate the structure
         //
 
         /* embedded pile portion */
-
-        int numNode;
-
-        numNode = 0;
 
         zCoord = -L2[pileIdx];
 
@@ -273,60 +300,62 @@ void MainWindow::doAnalysis(void)
         pultList[numNode] = 0.001;
         y50List[numNode]  = 0.00001;
 
+        //
+        // create bottom pile node
+        //
+        numNode += 1;
+
+        Node *theNode = 0;
+        nodeTag = numNode+ioffset2;
+
+        //qDebug() << "Node(" << nodeTag << "," << 6 << "," << 0.0 << "," << 0.0 << "," << zCoord << ")";
+
+        theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
+        if (numNode != 1) {
+            SP_Constraint *theSP = 0;
+            theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
+            theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
+            theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
+        }
+
+        //
+        // add toe resistance (if requested)
+        //
+    /*
+     *  CHECK IN WITH FRANK:
+     *     how to properly implement a Q-z spring at the end WITHOUT the p-y spring.
+     */
+
+        if (useToeResistance) {
+            Node *theNode = 0;
+
+            theNode = new Node(numNode,         3, 0., 0., zCoord);  theDomain.addNode(theNode);
+            theNode = new Node(numNode+ioffset, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
+
+            SP_Constraint *theSP = 0;
+            theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain.addSP_Constraint(theSP);
+            theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain.addSP_Constraint(theSP);
+            theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain.addSP_Constraint(theSP);
+            theSP = new SP_Constraint(numNode+ioffset, 0, 0., true);  theDomain.addSP_Constraint(theSP); // ?
+            theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain.addSP_Constraint(theSP);
+            theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
+        }
+
+        //
+        // work the way up layer by layer
+        //
+
         for (int iLayer=maxLayers[pileIdx]-1; iLayer >= 0; iLayer--)
         {
             eleSize = mSoilLayers[iLayer].getLayerThickness()/(1.0*elemsInLayer[pileIdx][iLayer]);
             int numNodesLayer = elemsInLayer[pileIdx][iLayer] + 1;
 
             //
-            // only the pile has a node at the interface (no spring there unless ...)
-            //
-            numNode += 1;
-
-            Node *theNode = 0;
-            int nodeTag = numNode+ioffset2;
-            theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
-            if (numNode != 1) {
-                SP_Constraint *theSP = 0;
-                theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
-            }
-
-            locList[numNode]  = zCoord;
-            pultList[numNode] = 0.01;
-            y50List[numNode]  = 0.0001;
-
-            //
-            // ... there is toe resistance:
-            //
-            /*
-         *  CHECK IN WITH FRANK:
-         *     how to properly implement a Q-z spring at the end WITHOUT the p-y spring.
-         */
-
-            if (useToeResistance) {
-                Node *theNode = 0;
-
-                theNode = new Node(numNode,         3, 0., 0., zCoord);  theDomain.addNode(theNode);
-                theNode = new Node(numNode+ioffset, 3, 0., 0., zCoord);  theDomain.addNode(theNode);
-
-                SP_Constraint *theSP = 0;
-                theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(numNode+ioffset, 0, 0., true);  theDomain.addSP_Constraint(theSP); // ?
-                theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
-
-            }
-
-            //
             // create spring nodes
             //
             zCoord += 0.5*eleSize;
 
-            for (int i=2; i<=numNodesLayer; i++) {
+            for (int i=1; i<numNodesLayer; i++) {
                 numNode += 1;
 
                 //
@@ -349,7 +378,10 @@ void MainWindow::doAnalysis(void)
                 // pile nodes
                 //
 
-                int nodeTag = numNode+ioffset2;
+                nodeTag = numNode+ioffset2;
+
+                //qDebug() << "Node(" << nodeTag << "," << 6 << "," << 0.0 << "," << 0.0 << "," << zCoord << ")";
+
                 theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
                 if (numNode != 1) {
                     SP_Constraint *theSP = 0;
@@ -405,6 +437,8 @@ void MainWindow::doAnalysis(void)
             // back to the layer interface
             zCoord -= 0.5*eleSize;
 
+            //qDebug() << "Layer interface at " << "zCoord: " << zCoord << ", eleSize: " << eleSize;
+
         } // on to the next layer, working our way up from the bottom
 
         if (ABS(zCoord) > 1.0e-2) {
@@ -418,10 +452,13 @@ void MainWindow::doAnalysis(void)
             eleSize = L1 / (1.0*numElementsInAir);
             zCoord = -1.0e-3;
 
-            while (zCoord < L1) {
+            while (zCoord < (L1 + 1.0e-6)) {
                 numNode += 1;
 
-                int nodeTag = numNode+ioffset2;
+                nodeTag = numNode+ioffset2;
+
+                //qDebug() << "Node(" << nodeTag << "," << 6 << "," << 0.0 << "," << 0.0 << "," << zCoord << ")";
+
                 Node *theNode = new Node(nodeTag, 6, 0., 0., zCoord);  theDomain.addNode(theNode);
                 if (numNode != 1) {
                     SP_Constraint *theSP = 0;
@@ -438,8 +475,11 @@ void MainWindow::doAnalysis(void)
             }
         }
 
-        if (numNode != numNodePile) {
-            qDebug() << "ERROR: " << numNode << " nodes generated but " << numNodePile << "expected" << endln;
+        headNodeList[pileIdx] = {nodeTag, xOffset[pileIdx]};
+
+        qDebug() << "* pile index: " << pileIdx;
+        for (int k=0; k<headNodeList.count(); k++) {
+            qDebug() << "** headNodeList: " << headNodeList[k].nodeIdx << headNodeList[k].x ;
         }
 
         //
@@ -449,16 +489,24 @@ void MainWindow::doAnalysis(void)
         static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
         CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
 
-        numEle = numNodePile-1;
-
-        for (int i=1; i<=numEle; i++) {
+        for (int i=0; i<numNodePile[pileIdx]-1; i++) {
+            numElem++;
             BeamIntegration *theIntegration = new LegendreBeamIntegration();
             SectionForceDeformation *theSections[3];
-            SectionForceDeformation *theSection = new ElasticSection3d(1, E[pileIdx], A, Iz, Iz, G, J);
+            SectionForceDeformation *theSection = new ElasticSection3d(pileIdx+1, E[pileIdx], A, Iz, Iz, G, J);
             theSections[0] = theSection;
             theSections[1] = theSection;
             theSections[2] = theSection;
-            Element *theEle = new DispBeamColumn3d(i+ioffset2, i+ioffset2, i+ioffset2+1, 3, theSections, *theIntegration, *theTransformation);
+
+            //qDebug() << "DispBeamColumn3d("
+            //         << numElem << ","
+            //         << nodeIDoffset[pileIdx]+i+1 << ","
+            //         << nodeIDoffset[pileIdx]+i+2 << ")";
+
+            Element *theEle = new DispBeamColumn3d(numElem,
+                                                   nodeIDoffset[pileIdx]+i+1,
+                                                   nodeIDoffset[pileIdx]+i+2,
+                                                   3, theSections, *theIntegration, *theTransformation);
             theDomain.addElement(theEle);
             //delete theSection;
             //delete theIntegration;
@@ -490,13 +538,14 @@ void MainWindow::doAnalysis(void)
             Onedirection[0] = 2;
 
             // pile toe
-            //theMaterials[0] = OPS_getUniaxialMaterial(1);
-            //theMaterials[1] = OPS_getUniaxialMaterial(1+ioffset);
-            //Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 2, theMaterials, direction);
-            Element *theEle = new ZeroLength(10001, 3, 1, 1+ioffset, x, y, 1, &theMat, Onedirection);
+            Element *theEle = new ZeroLength(1+pileIdx+ioffset4, 3, 1, 1+ioffset, x, y, 1, &theMat, Onedirection);
             theDomain.addElement(theEle);
         }
 
+    }
+
+    if (numNode != numNodePiles) {
+        qDebug() << "ERROR: " << numNode << " nodes generated but " << numNodePiles << "expected" << endln;
     }
 
     //
@@ -507,7 +556,7 @@ void MainWindow::doAnalysis(void)
     LoadPattern *theLoadPattern = new LoadPattern(1);
     theLoadPattern->setTimeSeries(theTimeSeries);
     static Vector load(6); load.Zero(); load(0) = P;
-    NodalLoad *theLoad = new NodalLoad(0, numNodePile+ioffset2, load);
+    NodalLoad *theLoad = new NodalLoad(0, numNodePiles+ioffset2, load);
     theLoadPattern->addNodalLoad(theLoad);
     theDomain.addLoadPattern(theLoadPattern);
 
@@ -541,13 +590,34 @@ void MainWindow::doAnalysis(void)
     theAnalysis.analyze(20);
     theDomain.calculateNodalReactions(0);
 
-    QVector<double> loc(numNodePile);
-    QVector<double> disp(numNodePile);
-    QVector<double> moment(numNodePile);
-    QVector<double> shear(numNodePile);
-    QVector<double> stress(numNodePile);
-    QVector<double> zero(numNodePile);
+#if 1
+    QVector<QVector<double>> loc(MAXPILES, QVector<double>(numNodePiles,0.0));
+    QVector<QVector<double>> disp(MAXPILES, QVector<double>(numNodePiles,0.0));
+    QVector<QVector<double>> moment(MAXPILES, QVector<double>(numNodePiles,0.0));
+    QVector<QVector<double>> shear(MAXPILES, QVector<double>(numNodePiles,0.0));
+    QVector<QVector<double>> stress(MAXPILES, QVector<double>(numNodePiles,0.0));
+    QVector<double> zero(numNodePiles,0.0);
+#else
+    QVector<QVector<double> *> loc(MAXPILES, 0);
+    QVector<QVector<double> *> disp(MAXPILES, 0);
+    QVector<QVector<double> *> moment(MAXPILES, 0);
+    QVector<QVector<double> *> shear(MAXPILES, 0);
+    QVector<QVector<double> *> stress(MAXPILES, 0);
+    QVector<double> zero(numNodePiles,0.0);
 
+    for (int k=0; k<numPiles; k++) {
+        if (loc[k] != NULL)    delete loc[k];
+        if (disp[k] != NULL)   delete disp[k];
+        if (moment[k] != NULL) delete moment[k];
+        if (shear[k] != NULL)  delete shear[k];
+        if (stress[k] != NULL) delete stress[k];
+        loc[k]    = new QVector<double>(numNodePile[k],0.0);
+        disp[k]   = new QVector<double>(numNodePile[k],0.0);
+        moment[k] = new QVector<double>(numNodePile[k],0.0);
+        shear[k]  = new QVector<double>(numNodePile[k],0.0);
+        stress[k] = new QVector<double>(numNodePile[k],0.0);
+    }
+#endif
 
     double maxDisp   = 0.0;
     double minDisp   = 0.0;
@@ -558,34 +628,51 @@ void MainWindow::doAnalysis(void)
     //double maxStress = 0.0;
     //double minStress = 0.0;
 
-    int pileIdx = ui->pileIndex->value() - 1;
+    int pileIdx;
 
-    for (int i=1; i<=numNodePile; i++) {
-        zero[i-1] = 0.0;
-        Node *theNode = theDomain.getNode(i+ioffset2);
-        const Vector &nodeCoord = theNode->getCrds();
-        loc[i-1] = nodeCoord(2);
-        int iLayer;
-        for (iLayer=0; iLayer<maxLayers[pileIdx]; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
-        stress[i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
-        //if (stress[i-1] > maxStress) maxStress = stress[i-1];
-        //if (stress[i-1] < minStress) minStress = stress[i-1];
-        const Vector &nodeDisp = theNode->getDisp();
-        disp[i-1] = nodeDisp(0);
-        if (disp[i-1] > maxDisp) maxDisp = disp[i-1];
-        if (disp[i-1] < minDisp) minDisp = disp[i-1];
+    for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+
+        for (int i=1; i<=numNodePile[pileIdx]; i++) {
+            //zero[i-1] = 0.0;
+
+            // qDebug() << "getNode(" << i+nodeIDoffset[pileIdx] << ")";
+
+            Node *theNode = theDomain.getNode(i+nodeIDoffset[pileIdx]);
+            const Vector &nodeCoord = theNode->getCrds();
+            loc[pileIdx][i-1] = nodeCoord(2);
+            int iLayer;
+            for (iLayer=0; iLayer<maxLayers[pileIdx]; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
+            stress[pileIdx][i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
+            //if (stress[pileIdx][i-1] > maxStress) maxStress = stress[pileIdx][i-1];
+            //if (stress[pileIdx][i-1] < minStress) minStress = stress[pileIdx][i-1];
+            const Vector &nodeDisp = theNode->getDisp();
+            disp[pileIdx][i-1] = nodeDisp(0);
+            if (disp[pileIdx][i-1] > maxDisp) maxDisp = disp[pileIdx][i-1];
+            if (disp[pileIdx][i-1] < minDisp) minDisp = disp[pileIdx][i-1];
+        }
     }
 
 
-    for (int i=1; i<=numEle; i++) {
-        Element *theEle = theDomain.getElement(i+ioffset2);
-        const Vector &eleForces = theEle->getResistingForce();
-        moment[i] = eleForces(10);
-        if (moment[i] > maxMoment) maxMoment = moment[i];
-        if (moment[i] < minMoment) minMoment = moment[i];
-        shear[i] = eleForces(6);
-        if (shear[i] > maxShear) maxShear = shear[i];
-        if (shear[i] < minShear) minShear = shear[i];
+    for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+
+        // qDebug() << "= pile index: " << pileIdx ;
+
+        moment[pileIdx][0] = 0.0;
+        shear[pileIdx][0]  = 0.0;
+
+        for (int i=1; i<numNodePile[pileIdx]; i++) {
+
+            // qDebug() << "getElement(" << i+elemIDoffset[pileIdx] << ")";
+
+            Element *theEle = theDomain.getElement(i+elemIDoffset[pileIdx]);
+            const Vector &eleForces = theEle->getResistingForce();
+            moment[pileIdx][i] = eleForces(10);
+            if (moment[pileIdx][i] > maxMoment) maxMoment = moment[pileIdx][i];
+            if (moment[pileIdx][i] < minMoment) minMoment = moment[pileIdx][i];
+            shear[pileIdx][i] = eleForces(6);
+            if (shear[pileIdx][i] > maxShear) maxShear = shear[pileIdx][i];
+            if (shear[pileIdx][i] < minShear) minShear = shear[pileIdx][i];
+        }
     }
 
     //
@@ -594,89 +681,156 @@ void MainWindow::doAnalysis(void)
 
     // plot displacemenet
     if (showDisplacements) {
-        QCPCurve *dispCurve = new QCPCurve(ui->displPlot->xAxis, ui->displPlot->yAxis);
-        dispCurve->setData(disp,loc);
-        dispCurve->setPen(QPen(Qt::blue, 3));
         ui->displPlot->clearPlottables();
+
+        ui->displPlot->autoAddPlottableToLegend();
+        ui->displPlot->legend->setVisible(true);
+
         ui->displPlot->addGraph();
-        ui->displPlot->graph(0)->setData(zero,loc);
         ui->displPlot->graph(0)->setPen(QPen(Qt::black));
-        ui->displPlot->addPlottable(dispCurve);
+        ui->displPlot->graph(0)->setData(zero,loc[0]);
+        ui->displPlot->graph(0)->removeFromLegend();
+
+        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+
+            QCPCurve *dispCurve = new QCPCurve(ui->displPlot->xAxis, ui->displPlot->yAxis);
+            dispCurve->setData(disp[pileIdx].mid(0,numNodePile[pileIdx]),loc[pileIdx].mid(0,numNodePile[pileIdx]));
+            dispCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
+            dispCurve->setName(QString("Pile #%1").arg(pileIdx+1));
+            ui->displPlot->addPlottable(dispCurve);
+        }
+
         ui->displPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
         ui->displPlot->axisRect()->setupFullAxesBox();
         ui->displPlot->rescaleAxes();
         ui->displPlot->replot();
     }
 
+    // plot shear
     if (showShear) {
-        QCPCurve *shearCurve = new QCPCurve(ui->shearPlot->xAxis, ui->shearPlot->yAxis);
-        shearCurve->setData(shear,loc);
-        shearCurve->setPen(QPen(Qt::blue, 3));
         ui->shearPlot->clearPlottables();
+
+        ui->shearPlot->autoAddPlottableToLegend();
+        ui->shearPlot->legend->setVisible(true);
+
         ui->shearPlot->addGraph();
-        ui->shearPlot->graph(0)->setData(zero,loc);
+        ui->shearPlot->graph(0)->setData(zero,loc[0]);
         ui->shearPlot->graph(0)->setPen(QPen(Qt::black));
-        ui->shearPlot->addPlottable(shearCurve);
+        ui->shearPlot->graph(0)->removeFromLegend();
+
+        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+
+            QCPCurve *shearCurve = new QCPCurve(ui->shearPlot->xAxis, ui->shearPlot->yAxis);
+            shearCurve->setData(shear[pileIdx].mid(0,numNodePile[pileIdx]),loc[pileIdx].mid(0,numNodePile[pileIdx]));
+            shearCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
+            shearCurve->setName(QString("Pile #%1").arg(pileIdx+1));
+            ui->shearPlot->addPlottable(shearCurve);
+        }
+
         ui->shearPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
         ui->shearPlot->axisRect()->setupFullAxesBox();
         ui->shearPlot->rescaleAxes();
         ui->shearPlot->replot();
     }
 
+    // plot moments
     if (showMoments) {
-        QCPCurve *momCurve = new QCPCurve(ui->momentPlot->xAxis, ui->momentPlot->yAxis);
-        momCurve->setData(moment,loc);
-        momCurve->setPen(QPen(Qt::blue, 3));
         ui->momentPlot->clearPlottables();
+
+        ui->momentPlot->autoAddPlottableToLegend();
+        ui->momentPlot->legend->setVisible(true);
+
         ui->momentPlot->addGraph();
-        ui->momentPlot->graph(0)->setData(zero,loc);
+        ui->momentPlot->graph(0)->setData(zero,loc[0]);
         ui->momentPlot->graph(0)->setPen(QPen(Qt::black));
-        ui->momentPlot->addPlottable(momCurve);
+        ui->momentPlot->graph(0)->removeFromLegend();
+
+        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+            QCPCurve *momCurve = new QCPCurve(ui->momentPlot->xAxis, ui->momentPlot->yAxis);
+            momCurve->setData(moment[pileIdx].mid(0,numNodePile[pileIdx]),loc[pileIdx].mid(0,numNodePile[pileIdx]));
+            momCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
+            momCurve->setName(QString("Pile #%1").arg(pileIdx+1));
+            ui->momentPlot->addPlottable(momCurve);
+        }
+
         ui->momentPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
         ui->momentPlot->axisRect()->setupFullAxesBox();
         ui->momentPlot->rescaleAxes();
         ui->momentPlot->replot();
     }
 
+    // plot vertical stress
     if (showStress) {
-        QCPCurve *stressCurve = new QCPCurve(ui->stressPlot->xAxis, ui->stressPlot->yAxis);
-        stressCurve->setData(stress,loc);
-        stressCurve->setPen(QPen(Qt::blue, 3));
         ui->stressPlot->clearPlottables();
+
+        ui->stressPlot->autoAddPlottableToLegend();
+        ui->stressPlot->legend->setVisible(true);
+
         ui->stressPlot->addGraph();
-        ui->stressPlot->graph(0)->setData(zero,loc);
+        ui->stressPlot->graph(0)->setData(zero,loc[0]);
         ui->stressPlot->graph(0)->setPen(QPen(Qt::black));
-        ui->stressPlot->addPlottable(stressCurve);
+        ui->stressPlot->graph(0)->removeFromLegend();
+
+        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+            QCPCurve *stressCurve = new QCPCurve(ui->stressPlot->xAxis, ui->stressPlot->yAxis);
+            stressCurve->setData(stress[pileIdx],loc[pileIdx]);
+            stressCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
+            stressCurve->setName(QString("Pile #%1").arg(pileIdx+1));
+            ui->stressPlot->addPlottable(stressCurve);
+        }
+
         ui->stressPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
         ui->stressPlot->axisRect()->setupFullAxesBox();
         ui->stressPlot->rescaleAxes();
         ui->stressPlot->replot();
     }
 
+    // plot p_ultimate
     if (showPultimate) {
-        QCPCurve *pultCurve = new QCPCurve(ui->pultPlot->xAxis, ui->pultPlot->yAxis);
-        pultCurve->setData(pultList,locList);
-        pultCurve->setPen(QPen(Qt::red, 3));
         ui->pultPlot->clearPlottables();
+
+        ui->pultPlot->autoAddPlottableToLegend();
+        ui->pultPlot->legend->setVisible(true);
+
         ui->pultPlot->addGraph();
-        ui->pultPlot->graph(0)->setData(zero,loc);
+        ui->pultPlot->graph(0)->setData(zero,loc[0]);
         ui->pultPlot->graph(0)->setPen(QPen(Qt::black));
-        ui->pultPlot->addPlottable(pultCurve);
+        ui->pultPlot->graph(0)->removeFromLegend();
+
+        //for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+            QCPCurve *pultCurve = new QCPCurve(ui->pultPlot->xAxis, ui->pultPlot->yAxis);
+            pultCurve->setData(pultList,locList);
+            pultCurve->setPen(QPen(LINE_COLOR[1], 3));
+            pultCurve->setName(QString("Pile #%1").arg(pileIdx+1));
+            ui->pultPlot->addPlottable(pultCurve);
+        //}
+
         ui->pultPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
         ui->pultPlot->axisRect()->setupFullAxesBox();
         ui->pultPlot->rescaleAxes();
         ui->pultPlot->replot();
     }
 
+    // plot y_50
     if (showY50) {
-        QCPCurve *y50Curve = new QCPCurve(ui->y50Plot->xAxis, ui->y50Plot->yAxis);
-        y50Curve->setData(y50List,locList);
-        y50Curve->setPen(QPen(Qt::red, 3));
         ui->y50Plot->clearPlottables();
+
+        ui->y50Plot->autoAddPlottableToLegend();
+        ui->y50Plot->legend->setVisible(true);
+
         ui->y50Plot->addGraph();
-        ui->y50Plot->graph(0)->setData(zero,loc);
+        ui->y50Plot->graph(0)->setData(zero,loc[0]);
         ui->y50Plot->graph(0)->setPen(QPen(Qt::black));
-        ui->y50Plot->addPlottable(y50Curve);
+        ui->y50Plot->graph(0)->removeFromLegend();
+
+        //for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+            QCPCurve *y50Curve = new QCPCurve(ui->y50Plot->xAxis, ui->y50Plot->yAxis);
+            y50Curve->setData(y50List,locList);
+            y50Curve->setPen(QPen(LINE_COLOR[1], 3));
+            y50Curve->setName(QString("Pile #%1").arg(pileIdx+1));
+            ui->y50Plot->addPlottable(y50Curve);
+        //}
+
         ui->y50Plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
         ui->y50Plot->axisRect()->setupFullAxesBox();
         ui->y50Plot->rescaleAxes();
@@ -1032,3 +1186,6 @@ void MainWindow::updateUI()
         ui->tabWidget->addTab(ui->y50,"y50");
     }
 }
+
+
+
