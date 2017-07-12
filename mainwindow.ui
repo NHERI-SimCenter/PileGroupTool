@@ -384,7 +384,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="displacement">
        <attribute name="title">
@@ -405,18 +405,7 @@
             <height>0</height>
            </size>
           </property>
-          <zorder>properties</zorder>
          </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="shear">
-       <attribute name="title">
-        <string>Shear</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="0">
-         <widget class="QCustomPlot" name="shearPlot" native="true"/>
         </item>
        </layout>
       </widget>
@@ -427,6 +416,16 @@
        <layout class="QGridLayout" name="gridLayout_5">
         <item row="0" column="0">
          <widget class="QCustomPlot" name="momentPlot" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="shear">
+       <attribute name="title">
+        <string>Shear</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QCustomPlot" name="shearPlot" native="true"/>
         </item>
        </layout>
       </widget>

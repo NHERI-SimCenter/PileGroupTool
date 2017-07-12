@@ -3,8 +3,23 @@
 
 #include <QMainWindow>
 
+// fixed parameters (limits for piles and soil layers)
 #define MAXPILES 3
+#define MAXLAYERS 3
+
+// functions
 #define ABS(X) (X<0.0?-X:X)
+
+// data types
+typedef struct {
+    int pileIdx;
+    int nodeIdx;
+    double x;
+} HEAD_NODE_TYPE;
+
+#define SWAP(X,Y) {HEAD_NODE_TYPE tmp=Y; Y=X, Y=tmp; }
+
+static QVector<QColor> LINE_COLOR({Qt::blue,Qt::red,Qt::green,Qt::cyan,Qt::magenta,Qt::yellow});
 
 // forward declaration of classes
 class soilLayer;
@@ -78,11 +93,11 @@ private:
     // get data
     double P;  // lateral force on pile
     double gwtDepth;  // depth of ground water table below the surface
-    int    numEle;
+    int    numPileElements;
     int    numPiles;
 
     // states
-    bool assumeRigidPileHead = false;
+    bool assumeRigidPileHeadConnection = false;
     bool useToeResistance    = false;
     int  puSwitch;
     int  kSwitch;
@@ -140,6 +155,18 @@ private:
     double pileDiameter[MAXPILES];  // pile diameter
     double E[MAXPILES];             // pile modulus of elasticity
     double xOffset[MAXPILES];       // x-offset of pile
+
+    int numNodePiles;
+    int numNodePile[MAXPILES];
+    int maxLayers[MAXPILES];
+    int nodeIDoffset[MAXPILES];
+    int elemIDoffset[MAXPILES];
+
+    // pile head parameters
+    double EI = 1.;
+    double EA = 1.;
+    double GJ = 1.0e12;
+
 };
 
 #endif // MAINWINDOW_H
