@@ -597,14 +597,14 @@ void MainWindow::doAnalysis(void)
             if (prevNode > 0) {
                 numElem++;
 
-                qDebug() << "DispBeamColumn3d(" << numElem << "," << prevNode << "," << itr->nodeIdx << ")";
+                qDebug() << "DispBeamColumn3d(" << numElem << "," << prevNode << "," << numNode << ")";
 
-                Element *theEle = new DispBeamColumn3d(numElem, prevNode, itr->nodeIdx,
+                Element *theEle = new DispBeamColumn3d(numElem, prevNode, nodeTag,
                                                        3, theSections, *theIntegration, *theTransformation);
                 theDomain.addElement(theEle);
             }
 
-            prevNode = itr->nodeIdx;
+            prevNode = nodeTag;
 
             ++itr;
         }
@@ -612,6 +612,8 @@ void MainWindow::doAnalysis(void)
     else {
         /* this has been taken care of within the pile loop */
     }
+
+    int numLoadedNode = headNodeList[0].nodeIdx;
 
     /* *** done with the pile head *** */
 
@@ -628,7 +630,7 @@ void MainWindow::doAnalysis(void)
     LoadPattern *theLoadPattern = new LoadPattern(1);
     theLoadPattern->setTimeSeries(theTimeSeries);
     static Vector load(6); load.Zero(); load(0) = P;
-    NodalLoad *theLoad = new NodalLoad(0, numNodePiles+ioffset2, load);
+    NodalLoad *theLoad = new NodalLoad(0, numLoadedNode, load);
     theLoadPattern->addNodalLoad(theLoad);
     theDomain.addLoadPattern(theLoadPattern);
 
@@ -1162,6 +1164,8 @@ void MainWindow::on_btn_deletePile_clicked()
 
         ui->pileIndex->setMaximum(numPiles);
         ui->pileIndex->setValue(pileIdx+1);
+
+        this->doAnalysis();
     }
 }
 
@@ -1182,11 +1186,16 @@ void MainWindow::on_btn_newPile_clicked()
 
     ui->pileIndex->setMaximum(numPiles);
     ui->pileIndex->setValue(numPiles);
+
+    this->doAnalysis();
 }
 
 void MainWindow::on_xOffset_valueChanged(double arg1)
 {
+    int pileIdx = ui->pileIndex->value() - 1;
+    xOffset[pileIdx] = ui->xOffset->value();
 
+    this->doAnalysis();
 }
 
 void MainWindow::on_pileIndex_valueChanged(int arg1)
