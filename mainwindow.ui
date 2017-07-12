@@ -125,10 +125,10 @@
         </property>
         <widget class="QWidget" name="pileProperties">
          <attribute name="title">
-          <string>Site Configuration</string>
+          <string>Pile(s) Configuration</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="5" column="2">
+          <item row="7" column="2">
            <widget class="QDoubleSpinBox" name="Emodulus">
             <property name="decimals">
              <number>0</number>
@@ -147,32 +147,102 @@
             </property>
            </widget>
           </item>
-          <item row="9" column="0" colspan="2">
-           <widget class="QLabel" name="GWlabel">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
+          <item row="9" column="1" colspan="2">
+           <widget class="QCheckBox" name="chkBox_include_toe_resistance">
             <property name="text">
-             <string>Ground water table</string>
+             <string>Include toe resistance</string>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLabel" name="emodulusLabel">
+            <property name="text">
+             <string>Young's modulus (E)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLabel" name="freeLengthLabel">
+            <property name="text">
+             <string>Length above ground:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1" colspan="2">
+           <widget class="QCheckBox" name="chkBox_assume_rigid_cap">
+            <property name="text">
+             <string>Assume rigid connection at pile cap</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QSpinBox" name="pileIndex">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>5</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Pile number:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QDoubleSpinBox" name="pileDiameter">
+            <property name="minimum">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QDoubleSpinBox" name="freeLength"/>
+          </item>
+          <item row="5" column="2">
+           <widget class="QDoubleSpinBox" name="embeddedLength"/>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="diameterLabel">
+            <property name="text">
+             <string>Pile Diameter:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLabel" name="lengthLabel">
+            <property name="text">
+             <string>Embedded length:</string>
             </property>
            </widget>
           </item>
           <item row="10" column="2">
-           <widget class="QDoubleSpinBox" name="groundWaterTable"/>
+           <widget class="QPushButton" name="btn_newPile">
+            <property name="text">
+             <string>Add New Pile</string>
+            </property>
+           </widget>
           </item>
-          <item row="1" column="0" colspan="2">
+          <item row="3" column="1">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>x (offset):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QDoubleSpinBox" name="xOffset"/>
+          </item>
+          <item row="1" column="0" colspan="3">
            <widget class="QLabel" name="pilePropertyLabel">
             <property name="maximumSize">
              <size>
@@ -192,70 +262,9 @@
            </widget>
           </item>
           <item row="10" column="1">
-           <widget class="QLabel" name="gwtableLabel">
+           <widget class="QPushButton" name="btn_deletePile">
             <property name="text">
-             <string>Depth below surface:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLabel" name="diameterLabel">
-            <property name="text">
-             <string>Pile Diameter:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1" colspan="2">
-           <widget class="QCheckBox" name="chkBox_include_toe_resistance">
-            <property name="text">
-             <string>Include toe resistance</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="2">
-           <widget class="QDoubleSpinBox" name="embeddedLength"/>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLabel" name="lengthLabel">
-            <property name="text">
-             <string>Embedded length:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <widget class="QDoubleSpinBox" name="freeLength"/>
-          </item>
-          <item row="5" column="1">
-           <widget class="QLabel" name="emodulusLabel">
-            <property name="text">
-             <string>Young's modulus (E)</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QDoubleSpinBox" name="pileDiameter">
-            <property name="minimum">
-             <double>0.010000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-            <property name="value">
-             <double>1.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLabel" name="freeLengthLabel">
-            <property name="text">
-             <string>Length above ground:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1" colspan="2">
-           <widget class="QCheckBox" name="chkBox_assume_rigid_cap">
-            <property name="text">
-             <string>Assume rigid connection at pile cap</string>
+             <string>Delete this Pile</string>
             </property>
            </widget>
           </item>
@@ -267,13 +276,16 @@
          <zorder>pilePropertyLabel</zorder>
          <zorder>diameterLabel</zorder>
          <zorder>pileDiameter</zorder>
-         <zorder>GWlabel</zorder>
          <zorder>emodulusLabel</zorder>
          <zorder>Emodulus</zorder>
-         <zorder>gwtableLabel</zorder>
-         <zorder>groundWaterTable</zorder>
          <zorder>chkBox_include_toe_resistance</zorder>
          <zorder>chkBox_assume_rigid_cap</zorder>
+         <zorder>pileIndex</zorder>
+         <zorder>label</zorder>
+         <zorder>btn_newPile</zorder>
+         <zorder>btn_deletePile</zorder>
+         <zorder>label_2</zorder>
+         <zorder>xOffset</zorder>
         </widget>
         <widget class="QWidget" name="soilProperties">
          <property name="sizePolicy">
@@ -283,25 +295,65 @@
           </sizepolicy>
          </property>
          <attribute name="title">
-          <string>Soil Properties</string>
+          <string>Site Configuration</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <property name="leftMargin">
-           <number>10</number>
-          </property>
-          <property name="topMargin">
-           <number>10</number>
-          </property>
-          <property name="rightMargin">
-           <number>10</number>
-          </property>
-          <property name="bottomMargin">
-           <number>10</number>
-          </property>
-          <property name="horizontalSpacing">
-           <number>-1</number>
-          </property>
-          <item row="0" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QLabel" name="label_GWT">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Ground water table</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QLabel" name="label_depth">
+              <property name="text">
+               <string>Depth below surface:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="groundWaterTable"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_Layers">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Soil Layers</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QTableWidget" name="matTable">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -357,16 +409,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="shear">
-       <attribute name="title">
-        <string>Shear</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="0">
-         <widget class="QCustomPlot" name="shearPlot" native="true"/>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="moment">
        <attribute name="title">
         <string>Moment</string>
@@ -374,6 +416,16 @@
        <layout class="QGridLayout" name="gridLayout_5">
         <item row="0" column="0">
          <widget class="QCustomPlot" name="momentPlot" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="shear">
+       <attribute name="title">
+        <string>Shear</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QCustomPlot" name="shearPlot" native="true"/>
         </item>
        </layout>
       </widget>
@@ -437,8 +489,17 @@
     <addaction name="actionReset"/>
     <addaction name="actionFEA_parameters"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="action_About"/>
+    <addaction name="actionLicense_Information"/>
+    <addaction name="actionPreferences"/>
+   </widget>
    <addaction name="menuOpenSeesPile"/>
    <addaction name="menuAnalysis"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -482,6 +543,21 @@
   <action name="actionExport_to_OpenSees">
    <property name="text">
     <string>Export to OpenSees</string>
+   </property>
+  </action>
+  <action name="actionLicense_Information">
+   <property name="text">
+    <string>License Information</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>&amp;Preferences</string>
+   </property>
+  </action>
+  <action name="action_About">
+   <property name="text">
+    <string>&amp;About</string>
    </property>
   </action>
  </widget>
