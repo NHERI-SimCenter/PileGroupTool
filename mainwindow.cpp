@@ -134,7 +134,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::doAnalysis(void)
 {
-    QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1, -1, 0.0});
+    QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
+
+    for (int k=0; k<MAXPILES; k++) {
+        headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
+    }
 
     if (inSetupState) return;
 
@@ -264,7 +268,7 @@ void MainWindow::doAnalysis(void)
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
-        //qDebug() << "+ pile index: " << pileIdx;
+        qDebug() << "+ pile index: " << pileIdx;
 
         //
         // compute pile properties (compute once; used for all pile elements)
@@ -469,11 +473,6 @@ void MainWindow::doAnalysis(void)
 
         headNodeList[pileIdx] = {pileIdx, nodeTag, xOffset[pileIdx]};
 
-        qDebug() << "* pile index: " << pileIdx;
-        for (int k=0; k<headNodeList.count(); k++) {
-            qDebug() << "** headNodeList: " << headNodeList[k].pileIdx << headNodeList[k].nodeIdx << headNodeList[k].x ;
-        }
-
         //
         // create pile elements
         //
@@ -538,19 +537,24 @@ void MainWindow::doAnalysis(void)
     //
     // *** construct the pile head ***
     //
-    if (numPiles > 1) {
+    if (numPiles > 0) {
 
         int ioffset5 = ioffset4 + numNodePiles;
 
         // sort piles by xOffset
+
         for (int i=0; i<numPiles; i++) {
             for (int j=0; j<numPiles-i; j++) {
                 if (headNodeList[i].x < headNodeList[j].x) SWAP(headNodeList[i],headNodeList[j]);
             }
         }
 
+        // set up transformation and orientation for the pile cap elements
+
         static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
         CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
+
+        // define beam element integration and cross sections
 
         BeamIntegration *theIntegration = new LegendreBeamIntegration();
         SectionForceDeformation *theSections[3];
@@ -561,13 +565,15 @@ void MainWindow::doAnalysis(void)
 
         int prevNode = -1;
 
-        QVector<HEAD_NODE_TYPE>::iterator itr = headNodeList.begin();
-        while (itr != headNodeList.end()) {
+        for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
             // create node for pile head
             numNode++;
             int nodeTag = numNode + ioffset5;
-            Node *theNode = new Node(nodeTag, 6, itr->x, 0., L1);  theDomain.addNode(theNode);
+
+            qDebug() << "Node(" << nodeTag << "," << 6 << "," << headNodeList[pileIdx].x << "," << 0.0 << "," << L1 << ")";
+
+            Node *theNode = new Node(nodeTag, 6, headNodeList[pileIdx].x, 0., L1);  theDomain.addNode(theNode);
 
             // create single point constraints
             if (assumeRigidPileHeadConnection) {
@@ -578,7 +584,9 @@ void MainWindow::doAnalysis(void)
                 static ID hcDof (6);
                 hcDof(0) = 0; hcDof(1) = 1; hcDof(2) = 2; hcDof(3) = 3; hcDof(4) = 4; hcDof(5) = 5;
 
-                MP_Constraint *theMP = new MP_Constraint(nodeTag, itr->nodeIdx, Chr, hcDof, hcDof);
+                qDebug() << "MP_Constraint(" << nodeTag << "," << headNodeList[pileIdx].nodeIdx << "," << "Idty(6,6)" << "," << "{0,1,2,3,4,5}" << "," << "{0,1,2,3,4,5}" << ")";
+
+                MP_Constraint *theMP = new MP_Constraint(nodeTag, headNodeList[pileIdx].nodeIdx, Chr, hcDof, hcDof);
                 theDomain.addMP_Constraint(theMP);
             }
             else {
@@ -589,7 +597,9 @@ void MainWindow::doAnalysis(void)
                 static ID hlDof (5);
                 hlDof(0) = 0; hlDof(1) = 1; hlDof(2) = 2; hlDof(3) = 3; hlDof(4) = 5;
 
-                MP_Constraint *theMP = new MP_Constraint(nodeTag, itr->nodeIdx, Chl, hlDof, hlDof);
+                qDebug() << "MP_Constraint(" << nodeTag << "," << headNodeList[pileIdx].nodeIdx << "," << "Idty(5,5)" << "," << "{0,1,2,3,5}" << "," << "{0,1,2,3,5}" << ")";
+
+                MP_Constraint *theMP = new MP_Constraint(nodeTag, headNodeList[pileIdx].nodeIdx, Chl, hlDof, hlDof);
                 theDomain.addMP_Constraint(theMP);
             }
 
@@ -605,8 +615,6 @@ void MainWindow::doAnalysis(void)
             }
 
             prevNode = nodeTag;
-
-            ++itr;
         }
     }
     else {
@@ -709,7 +717,7 @@ void MainWindow::doAnalysis(void)
         for (int i=1; i<=numNodePile[pileIdx]; i++) {
             //zero[i-1] = 0.0;
 
-            // qDebug() << "getNode(" << i+nodeIDoffset[pileIdx] << ")";
+            //qDebug() << "getNode(" << i+nodeIDoffset[pileIdx] << ")";
 
             Node *theNode = theDomain.getNode(i+nodeIDoffset[pileIdx]);
             const Vector &nodeCoord = theNode->getCrds();
@@ -729,14 +737,14 @@ void MainWindow::doAnalysis(void)
 
     for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
-        // qDebug() << "= pile index: " << pileIdx ;
+        //qDebug() << "= pile index: " << pileIdx ;
 
         moment[pileIdx][0] = 0.0;
         shear[pileIdx][0]  = 0.0;
 
         for (int i=1; i<numNodePile[pileIdx]; i++) {
 
-            // qDebug() << "getElement(" << i+elemIDoffset[pileIdx] << ")";
+            //qDebug() << "getElement(" << i+elemIDoffset[pileIdx] << ")";
 
             Element *theEle = theDomain.getElement(i+elemIDoffset[pileIdx]);
             const Vector &eleForces = theEle->getResistingForce();
@@ -1176,7 +1184,7 @@ void MainWindow::on_btn_newPile_clicked()
         pileDiameter[numPiles] = pileDiameter[numPiles-1];
         E[numPiles]            = E[numPiles-1];
         xOffset[numPiles]      = xOffset[numPiles-1] + 2.0*pileDiameter[numPiles-1];
-        numPiles += 1;
+        numPiles++;
     }
     else
     {
@@ -1271,6 +1279,3 @@ void MainWindow::updateUI()
         ui->tabWidget->addTab(ui->y50,"y50");
     }
 }
-
-
-
