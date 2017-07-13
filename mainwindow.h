@@ -15,6 +15,8 @@ typedef struct {
     int pileIdx;
     int nodeIdx;
     double x;
+    double reductionFactorLeftMovement;
+    double reductionFactorRightMovement;
 } HEAD_NODE_TYPE;
 
 #define SWAP(X,Y) {HEAD_NODE_TYPE tmp=Y; Y=X, Y=tmp; }
