@@ -133,8 +133,6 @@ BandGenLinLapackSolver::solve(void)
 	// factor and solve 	
 	dgbsv_(&n,&kl,&ku,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
     else
-            char* temp;
-            strcpy(temp,"N");
 	// solve only using factored matrix	
 	dgbtrs_("N",&n,&kl,&ku,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
     }
