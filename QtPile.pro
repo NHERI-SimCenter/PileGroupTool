@@ -21,7 +21,7 @@ PRODUCT_NAME = 'QtPile'
 
 #win32: INCLUDES += "./ops"
 #win32: LIBS += -llapack -lblas
-unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable
+unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable -std=c++11
 win32: QMAKE_CXXFLAGS += /Y-
 
 include(OPS_includes.pro)
