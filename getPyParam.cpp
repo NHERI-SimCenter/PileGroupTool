@@ -207,11 +207,7 @@ getPyParam(double pyDepth,
     }
     */
     pu = A*fmin(pst,psd);
-    if (pu < 0.01) pu = 0.01;
 
-    // PySimple1 material formulated with pult as a force, not force/length, multiply by trib. length
-    *pult = pu*pEleLength;
-    //qDebug() << *pult << " " << pu;
     //-------Brinch Hansen method-------
   } else if (puSwitch == 2) {
 
@@ -236,10 +232,11 @@ getPyParam(double pyDepth,
     } else {
       pu = sig*KqD*b;
     }
-    
-    // PySimple1 material formulated with pult as a force, not force/length, multiply by trib. length
-    *pult = pu*pEleLength;
   }
+
+  // PySimple1 material formulated with pult as a force, not force/length, multiply by trib. length
+  if (pu < 0.01) pu = 0.01;
+  *pult = pu*pEleLength;
 
   //----------------------------------------------------------
   //  define displacement at 50% lateral capacity, y50

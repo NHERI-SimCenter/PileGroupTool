@@ -50,9 +50,6 @@ HEADERS  += mainwindow.h \
     utilWindows/dialogabout.h \
     utilWindows/dialogpreferences.h
 
-# WHY DO WE NEED THIS ?????
-HEADERS  += ui_mainwindow.h
-        
 FORMS    += mainwindow.ui \
         materialdbinterface.ui \
         surveysplashscreen.ui \
