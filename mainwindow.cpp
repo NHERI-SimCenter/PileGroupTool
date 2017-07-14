@@ -231,6 +231,7 @@ void MainWindow::doAnalysis(void)
     int ioffset2 = ioffset + numNodePiles;    // for pile nodes
     int ioffset3 = ioffset2 + numNodePiles;   // for t-z spring nodes
     int ioffset4 = ioffset3 + numNodePiles;   // for toe resistance nodes
+    int ioffset5 = ioffset4 + numNodePiles;   // for pile cap nodes
 
     /* ******** build the finite element mesh ******** */
 
@@ -282,7 +283,7 @@ void MainWindow::doAnalysis(void)
         // suitable pile head parameters (make pile head stiff)
         if (100.*E[pileIdx]*A > EA ) EA = 100.*E[pileIdx]*A;
         if (100.*E[pileIdx]*Iz > EI) EI = 100.*E[pileIdx]*Iz;
-        if (10.*G*J > EA)            GJ = 10.*G*J;
+        if (10.*G*J > GJ)            GJ = 10.*G*J;
 
         //
         // Ready to generate the structure
@@ -343,7 +344,12 @@ void MainWindow::doAnalysis(void)
 
         for (int iLayer=maxLayers[pileIdx]-1; iLayer >= 0; iLayer--)
         {
-            eleSize = mSoilLayers[iLayer].getLayerThickness()/(1.0*elemsInLayer[pileIdx][iLayer]);
+            double thickness = mSoilLayers[iLayer].getLayerThickness();
+            if (depthOfLayer[iLayer+1] > L2[pileIdx]) {
+                thickness = L2[pileIdx] - depthOfLayer[iLayer];
+            }
+
+            eleSize = thickness/(1.0*elemsInLayer[pileIdx][iLayer]);
             int numNodesLayer = elemsInLayer[pileIdx][iLayer] + 1;
 
             //
@@ -400,12 +406,25 @@ void MainWindow::doAnalysis(void)
 
                 gwtSwitch = (gwtDepth > -zCoord)?1:2;
 
+                int dummy = iLayer;
+
                 double depthInLayer = -zCoord - depthOfLayer[iLayer];
                 sigV = mSoilLayers[iLayer].getEffectiveStress(depthInLayer);
                 phi  = mSoilLayers[iLayer].getLayerFrictionAng();
 
                 UniaxialMaterial *theMat;
                 getPyParam(-zCoord, sigV, phi, pileDiameter[pileIdx], eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
+
+                if(pult <= 0.0 || y50 <= 0.0) {
+                    qDebug() << "WARNING -- only accepts positive nonzero pult and y50";
+                    qDebug() << "*** iLayer: " << iLayer << "   pile number" << pileIdx+1
+                             << "   depth: " << -zCoord
+                             << "   depth in layer: " << depthInLayer
+                             << "   sigV: "  << sigV
+                             << "   diameter: " << pileDiameter[pileIdx] << "   eleSize: " << eleSize;
+                    qDebug() << "*** pult: " << pult << "   y50: " << y50;
+                }
+
                 theMat = new PySimple1(numNode, 0, 2, pult, y50, 0.0, 0.0);
                 OPS_addUniaxialMaterial(theMat);
 
@@ -415,6 +434,15 @@ void MainWindow::doAnalysis(void)
 
                 // t-z spring material
                 getTzParam(phi, pileDiameter[pileIdx],  sigV,  eleSize, &tult, &z50);
+
+                if(tult <= 0.0 || z50 <= 0.0) {
+                    qDebug() << "WARNING -- only accepts positive nonzero tult and z50";
+                    qDebug() << "*** iLayer: " << iLayer << "   pile number" << pileIdx+1
+                             << "   depth: " << -zCoord << "   sigV: "  << sigV
+                             << "   diameter: " << pileDiameter[pileIdx] << "   eleSize: " << eleSize;
+                    qDebug() << "*** tult: " << tult << "   z50: " << z50;
+                }
+
                 theMat = new TzSimple1(numNode+ioffset, 0, 2, tult, z50, 0.0);
                 OPS_addUniaxialMaterial(theMat);
 
@@ -504,15 +532,6 @@ void MainWindow::doAnalysis(void)
         }
 
         //
-        // constrain pile cap, if requested
-        //
-        if (assumeRigidPileHeadConnection && numPiles == 1) {
-            SP_Constraint *theSP = 0;
-            theSP = new SP_Constraint(numNode+ioffset2, 4, 0., true);
-            theDomain.addSP_Constraint(theSP);
-        }
-
-        //
         // set up toe resistance, if requested
         //
         if (useToeResistance) {
@@ -538,8 +557,6 @@ void MainWindow::doAnalysis(void)
     // *** construct the pile head ***
     //
     if (numPiles > 0) {
-
-        int ioffset5 = ioffset4 + numNodePiles;
 
         // sort piles by xOffset
 
@@ -617,14 +634,18 @@ void MainWindow::doAnalysis(void)
             prevNode = nodeTag;
         }
     }
-    else {
-        /* this has been taken care of within the pile loop */
+
+    if (numPiles == 1) {
+        /* need extra fixities to prevent singular system matrix */
+        int nodeTag = numNode + ioffset5;
+
+        SP_Constraint *theSP = 0;
+        theSP = new SP_Constraint(nodeTag, 4, 0., true); theDomain.addSP_Constraint(theSP);
     }
 
     int numLoadedNode = headNodeList[0].nodeIdx;
 
     /* *** done with the pile head *** */
-
 
     if (numNode != numNodePiles) {
         qDebug() << "ERROR: " << numNode << " nodes generated but " << numNodePiles << "expected" << endln;
