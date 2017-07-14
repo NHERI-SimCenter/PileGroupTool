@@ -167,7 +167,8 @@ void MainWindow::doAnalysis(void)
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
-        numNodePile[pileIdx] = numElementsInAir+2; // free standing plus bottom plus surface node
+        numNodePile[pileIdx] = 2; // bottom plus surface node
+        if (L1 > 0.0001) numNodePile[pileIdx] += numElementsInAir; // free standing
 
         //
         // find active layers for pile #pileIdx
@@ -472,32 +473,37 @@ void MainWindow::doAnalysis(void)
         // add elements above ground
         //
 
-        if (L1 > 0.01) {
+        if (L1 > 0.0001) {
             eleSize = L1 / (1.0*numElementsInAir);
-            zCoord = -1.0e-3;
-
-            while (zCoord < (L1 + 1.0e-6)) {
-                numNode += 1;
-
-                nodeTag = numNode+ioffset2;
-
-                //qDebug() << "Node(" << nodeTag << "," << 6 << "," << xOffset[pileIdx] << "," << 0.0 << "," << zCoord << ")";
-
-                Node *theNode = new Node(nodeTag, 6, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
-                if (numNode != 1) {
-                    SP_Constraint *theSP = 0;
-                    theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
-                    theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
-                    theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
-                }
-
-                locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
-                y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
-
-                zCoord += eleSize;
-            }
+            zCoord = 0.0;
         }
+        else {
+            eleSize = 999.99;
+            zCoord = 0.0;
+        }
+
+        while (zCoord < (L1 + 1.0e-6)) {
+            numNode += 1;
+
+            nodeTag = numNode+ioffset2;
+
+            //qDebug() << "Node(" << nodeTag << "," << 6 << "," << xOffset[pileIdx] << "," << 0.0 << "," << zCoord << ")";
+
+            Node *theNode = new Node(nodeTag, 6, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
+            if (numNode != 1) {
+                SP_Constraint *theSP = 0;
+                theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
+                theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
+            }
+
+            locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+            pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
+            y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+
+            zCoord += eleSize;
+        }
+
 
         headNodeList[pileIdx] = {pileIdx, nodeTag, xOffset[pileIdx]};
 
