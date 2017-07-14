@@ -124,8 +124,7 @@ BandGenLinLapackSolver::solve(void)
 	// solve only using factored matrix
 	unsigned int sizeC = 1;
 	//DGBTRS("N", &sizeC, &n,&kl,&ku,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
-    char* temp;
-    strcpy(temp,"N");
+    char temp[] = "N";
     DGBTRS(temp, &n,&kl,&ku,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
     }}
 #else
