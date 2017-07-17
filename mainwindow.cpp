@@ -123,9 +123,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHeadConnection?Qt::Checked:Qt::Unchecked);
     ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
 
-    //connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)), this, SLOT(updateInfo(QTableWidgetItem*)));
-    connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(updateInfo(QTableWidgetItem*)));
-    //connect(ui->matTable, SIGNAL(itemEntered(QTableWidgetItem*)), this, SLOT(updateInfo(QTableWidgetItem*)));
+    //connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)), this, SLOT(on_updateInfo(QTableWidgetItem*)));
+    connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(on_updateInfo(QTableWidgetItem*)));
+    //connect(ui->matTable, SIGNAL(itemEntered(QTableWidgetItem*)), this, SLOT(on_updateInfo(QTableWidgetItem*)));
 
     inSetupState = false;
       
@@ -1130,26 +1130,46 @@ void MainWindow::reDrawTable()
 		ui->matTable->item(ii,jj)->setTextAlignment(Qt::AlignHCenter);
 }
 
-void MainWindow::updateInfo(QTableWidgetItem * item)
+void MainWindow::on_updateInfo(QTableWidgetItem * item)
 {
     //if (item && item == ui->matTable->currentItem()) {
-        if(item->row() == 0) {
-            double thickness = item->text().toDouble();
-            if (thickness < 0.10) item->setText("0.10");
-            mSoilLayers[item->column()].setLayerThickness(item->text().toDouble());
+    double value = item->text().toDouble();
+
+    if(item->row() == 0) {
+        if (value < 0.10) {
+            value = 0.10;
+            item->setText(QString("%1").arg(value));
         }
-        else if (item->row() == 1) {
-            mSoilLayers[item->column()].setLayerUnitWeight(item->text().toDouble());
+        mSoilLayers[item->column()].setLayerThickness(value);
+    }
+    else if (item->row() == 1) {
+        if (value < 0.50) {
+            value = 0.50;
+            item->setText(QString("%1").arg(value));
         }
-        else if (item->row() == 2) {
-            mSoilLayers[item->column()].setLayerSatUnitWeight(item->text().toDouble());
+        mSoilLayers[item->column()].setLayerUnitWeight(value);
+    }
+    else if (item->row() == 2) {
+        if (value < 1.00) {
+            value = 1.00;
+            item->setText(QString("%1").arg(value));
         }
-        else if (item->row() == 3) {
-            mSoilLayers[item->column()].setLayerFrictionAng(item->text().toDouble());
+        mSoilLayers[item->column()].setLayerSatUnitWeight(value);
+    }
+    else if (item->row() == 3) {
+        if (value < 5.) {
+            value = 5.;
+            item->setText(QString("%1").arg(value));
         }
-        else if (item->row() == 4) {
-            mSoilLayers[item->column()].setLayerStiffness(item->text().toDouble());
+        mSoilLayers[item->column()].setLayerFrictionAng(value);
+    }
+    else if (item->row() == 4) {
+        if (value < 1000.) {
+            value = 1000.;
+            item->setText(QString("%1").arg(value));
         }
+        mSoilLayers[item->column()].setLayerStiffness(value);
+    }
     //}
 
     this->doAnalysis();

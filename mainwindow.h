@@ -55,6 +55,9 @@ private slots:
     void on_actionExport_to_OpenSees_triggered();
     void on_actionReset_triggered();
     void on_actionFEA_parameters_triggered();
+    void on_actionLicense_Information_triggered();
+    void on_action_About_triggered();
+    void on_actionPreferences_triggered();
 
     // check boxes
     void on_chkBox_assume_rigid_cap_clicked(bool checked);
@@ -67,26 +70,15 @@ private slots:
     void on_freeLength_valueChanged(double arg1);
     void on_Emodulus_valueChanged(double arg1);
     void on_groundWaterTable_valueChanged(double arg1);
-
-    // material table slots
-    void updateInfo(QTableWidgetItem *);
-    void on_appliedForce_valueChanged(double arg1);
-    void on_appliedForce_editingFinished();
-
-
-    void on_actionLicense_Information_triggered();
-
+    void on_xOffset_valueChanged(double arg1);
+    void on_pileIndex_valueChanged(int arg1);
     void on_btn_deletePile_clicked();
-
     void on_btn_newPile_clicked();
 
-    void on_xOffset_valueChanged(double arg1);
-
-    void on_pileIndex_valueChanged(int arg1);
-
-    void on_action_About_triggered();
-
-    void on_actionPreferences_triggered();
+    // material table slots
+    void on_appliedForce_valueChanged(double arg1);
+    void on_appliedForce_editingFinished();
+    void on_updateInfo(QTableWidgetItem *);
 
 private:
     Q_OBJECT
