@@ -7,6 +7,9 @@
 #define MAXPILES 3
 #define MAXLAYERS 3
 
+// global constants
+#define GAMMA_WATER 9.81
+
 // functions
 #define ABS(X) (X<0.0?-X:X)
 
@@ -42,6 +45,7 @@ public:
     void doAnalysis(void);
     void fetchSettings();
     void updateUI();
+    void updateSystemPlot();
 
 private slots:
     // soil parameter values entered/changed

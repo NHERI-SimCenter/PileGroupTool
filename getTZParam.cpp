@@ -33,8 +33,8 @@ getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, d
   double delta = 0.8*phi*pi/180.;
   
   // if z = 0 (ground surface) need to specify a small non-zero value of sigV
-  if (sigV == 0.0 ) {
-    sigV = 0.01;
+  if (sigV <= 0.0 ) {
+    sigV = 0.001;
   }
   
   double tu = 0.4*sigV*pi*b*tan(delta);
