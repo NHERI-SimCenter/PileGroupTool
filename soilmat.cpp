@@ -1,5 +1,6 @@
-#include<soilmat.h>
-#include<math.h>
+#include <soilmat.h>
+#include <math.h>
+#include <mainwindow.h>
 
 const double pi = atan(1.0) * 4.0;
 
@@ -15,7 +16,8 @@ soilLayer::soilLayer()
   layerTopStress = 0.0;
   layerColor = QColor(100,100,100,100);
 
-  waterUnitWeight = 9.81;
+  // waterUnitWeight = 9.81;
+  waterUnitWeight = GAMMA_WATER;
 }
 
 soilLayer::soilLayer(QString lName, double nThick, double lUnitWeight, double lSatUnitWeight, double lStiffness, double lFrictionAng, QColor color)

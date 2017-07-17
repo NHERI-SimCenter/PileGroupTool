@@ -1150,8 +1150,8 @@ void MainWindow::on_updateInfo(QTableWidgetItem * item)
         mSoilLayers[item->column()].setLayerUnitWeight(value);
     }
     else if (item->row() == 2) {
-        if (value < 1.00) {
-            value = 1.00;
+        if (value < GAMMA_WATER) {
+            value = GAMMA_WATER;
             item->setText(QString("%1").arg(value));
         }
         mSoilLayers[item->column()].setLayerSatUnitWeight(value);
@@ -1325,4 +1325,38 @@ void MainWindow::updateUI()
     if (showY50 && ui->tabWidget->indexOf(ui->y50) < 0) {
         ui->tabWidget->addTab(ui->y50,"y50");
     }
+}
+
+
+void MainWindow::updateSystemPlot() {
+    // ui->systemPlot
+#if 0
+    // plot displacemenet
+    if (showDisplacements) {
+        ui->displPlot->clearPlottables();
+
+        ui->displPlot->autoAddPlottableToLegend();
+        ui->displPlot->legend->setVisible(true);
+        ui->displPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom|Qt::AlignRight);
+
+        ui->displPlot->addGraph();
+        ui->displPlot->graph(0)->setPen(QPen(Qt::black));
+        ui->displPlot->graph(0)->setData(zero,loc[0]);
+        ui->displPlot->graph(0)->removeFromLegend();
+
+        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+
+            QCPCurve *dispCurve = new QCPCurve(ui->displPlot->xAxis, ui->displPlot->yAxis);
+            dispCurve->setData(disp[pileIdx].mid(0,numNodePile[pileIdx]),loc[pileIdx].mid(0,numNodePile[pileIdx]));
+            dispCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
+            dispCurve->setName(QString("Pile #%1").arg(pileIdx+1));
+            ui->systemPlot->addPlottable(dispCurve);
+        }
+
+        ui->displPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+        ui->displPlot->axisRect()->setupFullAxesBox();
+        ui->displPlot->rescaleAxes();
+        ui->displPlot->replot();
+    }
+#endif
 }
