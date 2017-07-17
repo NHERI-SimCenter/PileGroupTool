@@ -128,12 +128,14 @@ BandGenLinLapackSolver::solve(void)
     DGBTRS(temp, &n,&kl,&ku,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
     }}
 #else
-    {if (theSOE->factored == false)      
-	// factor and solve 	
-	dgbsv_(&n,&kl,&ku,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
-    else
-	// solve only using factored matrix	
-	dgbtrs_("N",&n,&kl,&ku,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
+    {if (theSOE->factored == false)
+            // factor and solve
+            dgbsv_(&n,&kl,&ku,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
+        else {
+            // solve only using factored matrix
+            char temp[] = "N";
+            dgbtrs_(temp,&n,&kl,&ku,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
+        }
     }
 #endif
     // check if successfull
