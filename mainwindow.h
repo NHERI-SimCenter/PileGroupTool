@@ -86,6 +86,7 @@ private slots:
     void on_pileIndex_valueChanged(int arg1);
     void on_btn_deletePile_clicked();
     void on_btn_newPile_clicked();
+    void on_systemPlot_selectionChangedByUser();
 
     // material table slots
     void on_appliedForce_valueChanged(double arg1);
