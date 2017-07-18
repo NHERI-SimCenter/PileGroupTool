@@ -63,6 +63,13 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>kN </string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>
@@ -130,6 +137,129 @@
           <string>Pile(s) Configuration</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout">
+          <item row="2" column="2">
+           <widget class="QSpinBox" name="pileIndex">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>5</number>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="1">
+           <widget class="QPushButton" name="btn_deletePile">
+            <property name="text">
+             <string>Delete this Pile</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="3">
+           <widget class="QLabel" name="pilePropertyLabel">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Pile properties</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QDoubleSpinBox" name="embeddedLength"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>x (offset):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="diameterLabel">
+            <property name="text">
+             <string>Pile Diameter:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QDoubleSpinBox" name="xOffset">
+            <property name="minimum">
+             <double>-99.989999999999995</double>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QDoubleSpinBox" name="freeLength"/>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLabel" name="freeLengthLabel">
+            <property name="text">
+             <string>Length above ground:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="2">
+           <widget class="QPushButton" name="btn_newPile">
+            <property name="text">
+             <string>Add New Pile</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLabel" name="emodulusLabel">
+            <property name="text">
+             <string>Young's modulus (E)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLabel" name="lengthLabel">
+            <property name="text">
+             <string>Embedded length:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="1">
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="7" column="2">
+           <widget class="QDoubleSpinBox" name="Emodulus">
+            <property name="decimals">
+             <number>0</number>
+            </property>
+            <property name="minimum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>1000.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>20.000000000000000</double>
+            </property>
+           </widget>
+          </item>
           <item row="9" column="1" colspan="2">
            <widget class="QCheckBox" name="chkBox_assume_rigid_cap">
             <property name="sizePolicy">
@@ -168,136 +298,6 @@
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
-           <widget class="QLabel" name="freeLengthLabel">
-            <property name="text">
-             <string>Length above ground:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QLabel" name="emodulusLabel">
-            <property name="text">
-             <string>Young's modulus (E)</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="2">
-           <widget class="QDoubleSpinBox" name="Emodulus">
-            <property name="decimals">
-             <number>0</number>
-            </property>
-            <property name="minimum">
-             <double>10000000.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>100000000.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>100000.000000000000000</double>
-            </property>
-            <property name="value">
-             <double>25000000.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="11" column="1">
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="5" column="1">
-           <widget class="QLabel" name="lengthLabel">
-            <property name="text">
-             <string>Embedded length:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="12" column="2">
-           <widget class="QPushButton" name="btn_newPile">
-            <property name="text">
-             <string>Add New Pile</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="2">
-           <widget class="QDoubleSpinBox" name="freeLength"/>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLabel" name="diameterLabel">
-            <property name="text">
-             <string>Pile Diameter:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>x (offset):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="2">
-           <widget class="QDoubleSpinBox" name="embeddedLength"/>
-          </item>
-          <item row="3" column="2">
-           <widget class="QDoubleSpinBox" name="xOffset">
-            <property name="minimum">
-             <double>-99.989999999999995</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" colspan="3">
-           <widget class="QLabel" name="pilePropertyLabel">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Pile properties</string>
-            </property>
-           </widget>
-          </item>
-          <item row="12" column="1">
-           <widget class="QPushButton" name="btn_deletePile">
-            <property name="text">
-             <string>Delete this Pile</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QSpinBox" name="pileIndex">
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>5</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Pile number:</string>
-            </property>
-           </widget>
-          </item>
           <item row="4" column="2">
            <widget class="QDoubleSpinBox" name="pileDiameter">
             <property name="minimum">
@@ -311,10 +311,52 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Pile number:</string>
+            </property>
+           </widget>
+          </item>
           <item row="8" column="1" colspan="2">
            <widget class="Line" name="line">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>m</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="3">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>m</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="3">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>m</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="3">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>m</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="3">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>GPa</string>
             </property>
            </widget>
           </item>
@@ -338,6 +380,11 @@
          <zorder>xOffset</zorder>
          <zorder>verticalSpacer</zorder>
          <zorder>line</zorder>
+         <zorder>label_3</zorder>
+         <zorder>label_4</zorder>
+         <zorder>label_5</zorder>
+         <zorder>label_6</zorder>
+         <zorder>label_7</zorder>
         </widget>
         <widget class="QWidget" name="soilProperties">
          <property name="sizePolicy">
@@ -469,6 +516,7 @@
             <height>0</height>
            </size>
           </property>
+          <zorder>properties</zorder>
          </widget>
         </item>
        </layout>

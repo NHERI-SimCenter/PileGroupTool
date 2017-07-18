@@ -116,7 +116,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->embeddedLength->setValue(L2[pileIdx]);
-    ui->Emodulus->setValue(E[pileIdx]);
+    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
 
     ui->groundWaterTable->setValue(gwtDepth);
 
@@ -126,6 +126,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)), this, SLOT(on_updateInfo(QTableWidgetItem*)));
     connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(on_updateInfo(QTableWidgetItem*)));
     //connect(ui->matTable, SIGNAL(itemEntered(QTableWidgetItem*)), this, SLOT(on_updateInfo(QTableWidgetItem*)));
+
+    connect(ui->systemPlot, SIGNAL(selectionChangedByUser()), this, SLOT(on_systemPlot_selectionChangedByUser()));
 
     inSetupState = false;
       
@@ -1077,7 +1079,7 @@ void MainWindow::on_Emodulus_valueChanged(double arg1)
 {
     int pileIdx = ui->pileIndex->value() - 1;
 
-    E[pileIdx] = arg1;
+    E[pileIdx] = arg1*10.0e6;
     this->doAnalysis();
 }
 
@@ -1221,7 +1223,7 @@ void MainWindow::on_btn_deletePile_clicked()
     int pileIdx = ui->pileIndex->value() - 1;
     if (pileIdx < numPiles && numPiles > 1) {
         if ( pileIdx < numPiles ) {
-            for (int j=pileIdx; j<numPiles; j++) {
+            for (int j=pileIdx+1; j<numPiles; j++) {
                 L2[j-1]           = L2[j];
                 pileDiameter[j-1] = pileDiameter[j];
                 E[j-1]            = E[j];
@@ -1271,7 +1273,7 @@ void MainWindow::on_pileIndex_valueChanged(int arg1)
 {
     int pileIdx = ui->pileIndex->value() - 1;
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
-    ui->Emodulus->setValue(E[pileIdx]);
+    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
     ui->embeddedLength->setValue(L2[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->xOffset->setValue(xOffset[pileIdx]);
@@ -1386,8 +1388,8 @@ void MainWindow::updateSystemPlot() {
     if ( L1 > 0.0 ) H += L1;
 
     WP = maxX0 - minX0;
-    W  = (1.10*WP + 0.10*H);
-    if ( (WP + 0.20*H) < W ) { W = WP + 0.20*H; }
+    W  = (1.10*WP + 0.20*H);
+    if ( (WP + 0.30*H) < W ) { W = WP + 0.30*H; }
 
     maxH = maxD;
     if (maxH > L1/2.) maxH = L1/2.;
@@ -1490,4 +1492,42 @@ void MainWindow::updateSystemPlot() {
     //setupFullAxesBox();
     ui->systemPlot->rescaleAxes();
     ui->systemPlot->replot();
+}
+
+void MainWindow::on_systemPlot_selectionChangedByUser()
+{
+    foreach (QCPAbstractPlottable * item, ui->systemPlot->selectedPlottables()) {
+
+        QString name = item->name();
+        if (name.length()<1) name = "X";
+
+        int layerIdx = -1;
+        int pileIdx  = -1;
+
+        switch (name.at(0).unicode()) {
+        case 'P':
+        case 'p':
+            if (name.toLower() == QString("pile cap")) break;
+
+            //qDebug() << "PILE: " << name;
+            ui->properties->setCurrentWidget(ui->pileProperties);
+            pileIdx = name.mid(6,1).toInt();
+            ui->pileIndex->setValue(pileIdx);
+            break;
+
+        case 'L':
+        case 'l':
+            //qDebug() << "LAYER: " << name;
+            ui->properties->setCurrentWidget(ui->soilProperties);
+            layerIdx = name.mid(7,1).toInt();
+            break;
+
+        default:
+            qDebug() << "WHAT IS THIS? " << name;
+        }
+
+        // check for selected piles
+
+        // check for selected soil layers
+    }
 }
