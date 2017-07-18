@@ -134,7 +134,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::doAnalysis(void)
 {
-    QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
+    //QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
 
     for (int k=0; k<MAXPILES; k++) {
         headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
@@ -224,6 +224,8 @@ void MainWindow::doAnalysis(void)
 
     /* ******** done with sizing and adjustments ******** */
 
+    this->updateSystemPlot();
+
     QVector<QVector<double> > locList(MAXPILES, QVector<double>(numNodePiles+1,0.0));
     QVector<QVector<double> > pultList(MAXPILES, QVector<double>(numNodePiles+1,0.0));
     QVector<QVector<double> > y50List(MAXPILES, QVector<double>(numNodePiles+1,0.0));
@@ -270,7 +272,7 @@ void MainWindow::doAnalysis(void)
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
-        qDebug() << "+ pile index: " << pileIdx;
+        //qDebug() << "+ pile index: " << pileIdx;
 
         //
         // compute pile properties (compute once; used for all pile elements)
@@ -594,7 +596,7 @@ void MainWindow::doAnalysis(void)
             numNode++;
             int nodeTag = numNode + ioffset5;
 
-            qDebug() << "Node(" << nodeTag << "," << 6 << "," << headNodeList[pileIdx].x << "," << 0.0 << "," << L1 << ")";
+            //qDebug() << "Node(" << nodeTag << "," << 6 << "," << headNodeList[pileIdx].x << "," << 0.0 << "," << L1 << ")";
 
             Node *theNode = new Node(nodeTag, 6, headNodeList[pileIdx].x, 0., L1);  theDomain.addNode(theNode);
 
@@ -607,7 +609,7 @@ void MainWindow::doAnalysis(void)
                 static ID hcDof (6);
                 hcDof(0) = 0; hcDof(1) = 1; hcDof(2) = 2; hcDof(3) = 3; hcDof(4) = 4; hcDof(5) = 5;
 
-                qDebug() << "MP_Constraint(" << nodeTag << "," << headNodeList[pileIdx].nodeIdx << "," << "Idty(6,6)" << "," << "{0,1,2,3,4,5}" << "," << "{0,1,2,3,4,5}" << ")";
+                //qDebug() << "MP_Constraint(" << nodeTag << "," << headNodeList[pileIdx].nodeIdx << "," << "Idty(6,6)" << "," << "{0,1,2,3,4,5}" << "," << "{0,1,2,3,4,5}" << ")";
 
                 MP_Constraint *theMP = new MP_Constraint(nodeTag, headNodeList[pileIdx].nodeIdx, Chr, hcDof, hcDof);
                 theDomain.addMP_Constraint(theMP);
@@ -620,7 +622,7 @@ void MainWindow::doAnalysis(void)
                 static ID hlDof (5);
                 hlDof(0) = 0; hlDof(1) = 1; hlDof(2) = 2; hlDof(3) = 3; hlDof(4) = 5;
 
-                qDebug() << "MP_Constraint(" << nodeTag << "," << headNodeList[pileIdx].nodeIdx << "," << "Idty(5,5)" << "," << "{0,1,2,3,5}" << "," << "{0,1,2,3,5}" << ")";
+                //qDebug() << "MP_Constraint(" << nodeTag << "," << headNodeList[pileIdx].nodeIdx << "," << "Idty(5,5)" << "," << "{0,1,2,3,5}" << "," << "{0,1,2,3,5}" << ")";
 
                 MP_Constraint *theMP = new MP_Constraint(nodeTag, headNodeList[pileIdx].nodeIdx, Chl, hlDof, hlDof);
                 theDomain.addMP_Constraint(theMP);
@@ -630,7 +632,7 @@ void MainWindow::doAnalysis(void)
             if (prevNode > 0) {
                 numElem++;
 
-                qDebug() << "DispBeamColumn3d(" << numElem << "," << prevNode << "," << numNode << ")";
+                //qDebug() << "DispBeamColumn3d(" << numElem << "," << prevNode << "," << numNode << ")";
 
                 Element *theEle = new DispBeamColumn3d(numElem, prevNode, nodeTag,
                                                        3, theSections, *theIntegration, *theTransformation);
@@ -811,7 +813,7 @@ void MainWindow::doAnalysis(void)
         }
 
         ui->displPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->displPlot->axisRect()->setupFullAxesBox();
+        ui->displPlot->axisRect()->autoMargins();
         ui->displPlot->rescaleAxes();
         ui->displPlot->replot();
     }
@@ -839,7 +841,7 @@ void MainWindow::doAnalysis(void)
         }
 
         ui->shearPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->shearPlot->axisRect()->setupFullAxesBox();
+        ui->shearPlot->axisRect()->autoMargins();
         ui->shearPlot->rescaleAxes();
         ui->shearPlot->replot();
     }
@@ -866,7 +868,7 @@ void MainWindow::doAnalysis(void)
         }
 
         ui->momentPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->momentPlot->axisRect()->setupFullAxesBox();
+        ui->momentPlot->axisRect()->autoMargins();
         ui->momentPlot->rescaleAxes();
         ui->momentPlot->replot();
     }
@@ -893,7 +895,7 @@ void MainWindow::doAnalysis(void)
         }
 
         ui->stressPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->stressPlot->axisRect()->setupFullAxesBox();
+        ui->stressPlot->axisRect()->autoMargins();
         ui->stressPlot->rescaleAxes();
         ui->stressPlot->replot();
     }
@@ -919,7 +921,7 @@ void MainWindow::doAnalysis(void)
         }
 
         ui->pultPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->pultPlot->axisRect()->setupFullAxesBox();
+        ui->pultPlot->axisRect()->autoMargins();
         ui->pultPlot->rescaleAxes();
         ui->pultPlot->replot();
     }
@@ -945,7 +947,7 @@ void MainWindow::doAnalysis(void)
         }
 
         ui->y50Plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->y50Plot->axisRect()->setupFullAxesBox();
+        ui->y50Plot->axisRect()->autoMargins();
         ui->y50Plot->rescaleAxes();
         ui->y50Plot->replot();
     }
@@ -1095,11 +1097,12 @@ void MainWindow::setupLayers()
     mSoilLayers.push_back(soilLayer("Layer 2", 3.0, 16.0, 19.0, 2.0e5, 35, QColor(0,100,0,100)));
     mSoilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 25, QColor(0,0,100,100)));
 
-    // set the GWT depth for each layer
+    // set depth and GWT depth for each layer
     int numLayers = mSoilLayers.size();
     double layerDepthFromSurface = 0.0;
     for (int ii = 0; ii < numLayers; ii++)
     {
+        mSoilLayers[ii].setLayerDepth(layerDepthFromSurface);
         mSoilLayers[ii].setGWTdepth(gwtDepth - layerDepthFromSurface);
         layerDepthFromSurface += mSoilLayers[ii].getLayerThickness();
         if (ii > 0)
@@ -1170,7 +1173,18 @@ void MainWindow::on_updateInfo(QTableWidgetItem * item)
         }
         mSoilLayers[item->column()].setLayerStiffness(value);
     }
-    //}
+
+    // set depth and GWT depth for each layer
+    //int numLayers = mSoilLayers.size();
+    double layerDepthFromSurface = 0.0;
+    for (int ii = 0; ii < MAXLAYERS; ii++)
+    {
+        mSoilLayers[ii].setLayerDepth(layerDepthFromSurface);
+        mSoilLayers[ii].setGWTdepth(gwtDepth - layerDepthFromSurface);
+        layerDepthFromSurface += mSoilLayers[ii].getLayerThickness();
+        if (ii > 0)
+            mSoilLayers[ii].setLayerTopStress(mSoilLayers[ii-1].getLayerBottomStress());
+    }
 
     this->doAnalysis();
 }
@@ -1329,34 +1343,151 @@ void MainWindow::updateUI()
 
 
 void MainWindow::updateSystemPlot() {
-    // ui->systemPlot
-#if 0
-    // plot displacemenet
-    if (showDisplacements) {
-        ui->displPlot->clearPlottables();
 
-        ui->displPlot->autoAddPlottableToLegend();
-        ui->displPlot->legend->setVisible(true);
-        ui->displPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom|Qt::AlignRight);
-
-        ui->displPlot->addGraph();
-        ui->displPlot->graph(0)->setPen(QPen(Qt::black));
-        ui->displPlot->graph(0)->setData(zero,loc[0]);
-        ui->displPlot->graph(0)->removeFromLegend();
-
-        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
-
-            QCPCurve *dispCurve = new QCPCurve(ui->displPlot->xAxis, ui->displPlot->yAxis);
-            dispCurve->setData(disp[pileIdx].mid(0,numNodePile[pileIdx]),loc[pileIdx].mid(0,numNodePile[pileIdx]));
-            dispCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
-            dispCurve->setName(QString("Pile #%1").arg(pileIdx+1));
-            ui->systemPlot->addPlottable(dispCurve);
-        }
-
-        ui->displPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->displPlot->axisRect()->setupFullAxesBox();
-        ui->displPlot->rescaleAxes();
-        ui->displPlot->replot();
+    for (int k=0; k<MAXPILES; k++) {
+        headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
     }
-#endif
+
+    //if (inSetupState) return;
+
+    //
+    // find dimensions for plotting
+    //
+    QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
+
+    /* ******** sizing and adjustments ******** */
+
+    double minX0 =  999999.;
+    double maxX0 = -999999.;
+    double xbar  = 0.0;
+    double H     = 0.0;
+    double maxL2 = 0.0;
+    double W, WP;
+    double depthSoil = 0.0;
+    double nPiles = 0.;
+    double maxD = 0.0;
+    double maxH = 0.0;
+
+    //
+    // find depth of defined soil layers
+    //
+    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) { depthSoil += mSoilLayers[iLayer].getLayerThickness(); }
+
+    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
+        if ( xOffset[pileIdx] < minX0) { minX0 = xOffset[pileIdx]; }
+        if ( xOffset[pileIdx] > maxX0) { maxX0 = xOffset[pileIdx]; }
+        if (L2[pileIdx] > H) { H = L2[pileIdx]; }
+        double D = pileDiameter[pileIdx];
+        if (D>maxD) maxD = D;
+
+        xbar += xOffset[pileIdx]; nPiles++;
+    }
+    xbar /= nPiles;
+    if ( L1 > 0.0 ) H += L1;
+
+    WP = maxX0 - minX0;
+    W  = (1.10*WP + 0.10*H);
+    if ( (WP + 0.20*H) < W ) { W = WP + 0.20*H; }
+
+    maxH = maxD;
+    if (maxH > L1/2.) maxH = L1/2.;
+
+    // setup system plot
+    ui->systemPlot->clearPlottables();
+    //ui->systemPlot->clearGraphs();
+
+    ui->systemPlot->autoAddPlottableToLegend();
+    ui->systemPlot->legend->setVisible(true);
+    ui->systemPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom);
+    ui->systemPlot->xAxis->setScaleRatio(ui->systemPlot->yAxis);
+
+    QVector<double> zero(2,xbar-0.5*W);
+    QVector<double> loc(2,0.0);
+    loc[0] = -(H-L1); loc[1] = L1;
+
+    ui->systemPlot->addGraph();
+    ui->systemPlot->graph(0)->setData(zero,loc);
+    ui->systemPlot->graph(0)->setPen(QPen(Qt::black,1));
+    ui->systemPlot->graph(0)->removeFromLegend();
+
+    // create layers
+    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
+
+        QVector<double> x(5,0.0);
+        QVector<double> y(5,0.0);
+
+        x[0] = xbar - W/2.; y[0] = -mSoilLayers[iLayer].getLayerDepth();
+        x[1] = x[0];        y[1] = y[0] - mSoilLayers[iLayer].getLayerThickness();
+        x[2] = xbar + W/2.; y[2] = y[1];
+        x[3] = x[2];        y[3] = y[0];
+        x[4] = x[0];        y[4] = y[0];
+
+        QCPCurve *layerII = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
+        layerII->setData(x,y);
+        layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
+        layerII->setName(QString("Layer #%1").arg(iLayer+1));
+        layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
+
+        ui->systemPlot->addPlottable(layerII);
+    }
+
+    int activePileIdx = ui->pileIndex->value() - 1;
+
+    // plot the pile cap
+    QVector<double> x(5,0.0);
+    QVector<double> y(5,0.0);
+
+    x[0] = minX0 - maxD/2.; y[0] = L1 + maxH;
+    x[1] = x[0];            y[1] = L1 - maxH;
+    x[2] = maxX0 + maxD/2.; y[2] = y[1];
+    x[3] = x[2];            y[3] = y[0];
+    x[4] = x[0];            y[4] = y[0];
+
+    QCPCurve *pileCap = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
+    pileCap->setData(x,y);
+    pileCap->setPen(QPen(Qt::black, 1));
+    pileCap->setBrush(QBrush(Qt::gray));
+    pileCap->setName(QString("pile cap"));
+    pileCap->removeFromLegend();  // why doesn't this work?
+
+    ui->systemPlot->addPlottable(pileCap);
+
+    // plot the piles
+    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
+
+        QVector<double> x(5,0.0);
+        QVector<double> y(5,0.0);
+
+        double D = pileDiameter[pileIdx];
+
+        x[0] = xOffset[pileIdx] - D/2.; y[0] = L1;
+        x[1] = x[0];                    y[1] = -L2[pileIdx];
+        x[2] = xOffset[pileIdx] + D/2.; y[2] = y[1];
+        x[3] = x[2];                    y[3] = y[0];
+        x[4] = x[0];                    y[4] = y[0];
+
+        QCPCurve *pileII = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
+        pileII->setData(x,y);
+        pileII->setPen(QPen(Qt::black, 1));
+        if (pileIdx == activePileIdx) {
+            pileII->setBrush(QBrush(Qt::red));
+        }
+        else {
+            pileII->setBrush(QBrush(Qt::black));
+        }
+        //pileII->setBrush(QBrush(Qt::black));
+        pileII->setName(QString("Pile #%1").arg(pileIdx+1));
+
+        ui->systemPlot->addPlottable(pileII);
+    }
+
+    // add force to the plot
+
+    //
+
+    ui->systemPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->systemPlot->axisRect()->autoMargins();
+    //setupFullAxesBox();
+    ui->systemPlot->rescaleAxes();
+    ui->systemPlot->replot();
 }

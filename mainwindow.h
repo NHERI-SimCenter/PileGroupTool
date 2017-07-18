@@ -25,6 +25,14 @@ typedef struct {
 #define SWAP(X,Y) {HEAD_NODE_TYPE tmp=Y; Y=X, Y=tmp; }
 
 static QVector<QColor> LINE_COLOR({Qt::blue,Qt::red,Qt::green,Qt::cyan,Qt::magenta,Qt::yellow});
+static QVector<QColor> BRUSH_COLOR({
+                                       QColor(255, 127, 0, 127),
+                                       QColor(191,  95, 0, 127),
+                                       QColor(127,  63, 0, 127),
+                                       QColor(127, 255, 0, 127),
+                                       QColor( 95, 191, 0, 127),
+                                       QColor( 63, 127, 0, 127)
+                                    });
 
 // forward declaration of classes
 class soilLayer;
@@ -164,6 +172,9 @@ private:
     double EI = 1.;
     double EA = 1.;
     double GJ = 1.0e12;
+
+    // others
+    QVector<HEAD_NODE_TYPE> headNodeList = QVector<HEAD_NODE_TYPE>(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
 
 };
 
