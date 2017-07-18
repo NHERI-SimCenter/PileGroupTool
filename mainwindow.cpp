@@ -91,7 +91,9 @@ MainWindow::MainWindow(QWidget *parent) :
     // analysis parameters
     displacementRatio = 0.0;
 
+#ifdef USE_TABLES
     // setup table of soil layers
+
     QStringList matTableLabels;
     matTableLabels << "Thickness" << "Wet Unit Weight" << "Saturated Unit Weight" << "Friction Angle" << "Shear Modulus";
     ui->matTable->setRowCount(5);
@@ -100,11 +102,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->matTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
     ui->matTable->setItemPrototype(ui->matTable->item(3,0));
     ui->matTable->setItemDelegate(new QItemDelegate());
-    
+#else
+    ui->matTable->hide();
+#endif
     // set up initial values before activating live analysis (= connecting the slots)
     //    or the program will fail in the analysis due to missing information
     setupLayers();
-    reDrawTable();    
+
+    //reDrawTable();
+
+    setActiveLayer(0);
+
+    // set up pile input
 
     ui->pileIndex->setValue(1);
     ui->pileIndex->setMinimum(1);
@@ -123,9 +132,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHeadConnection?Qt::Checked:Qt::Unchecked);
     ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
 
-    //connect(ui->matTable, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)), this, SLOT(on_updateInfo(QTableWidgetItem*)));
+#ifdef USE_TABLES
     connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(on_updateInfo(QTableWidgetItem*)));
-    //connect(ui->matTable, SIGNAL(itemEntered(QTableWidgetItem*)), this, SLOT(on_updateInfo(QTableWidgetItem*)));
+#endif
 
     connect(ui->systemPlot, SIGNAL(selectionChangedByUser()), this, SLOT(on_systemPlot_selectionChangedByUser()));
 
@@ -738,8 +747,6 @@ void MainWindow::doAnalysis(void)
     double minShear  = 0.0;
     double maxMoment = 0.0;
     double minMoment = 0.0;
-    //double maxStress = 0.0;
-    //double minStress = 0.0;
 
     int pileIdx;
 
@@ -792,167 +799,23 @@ void MainWindow::doAnalysis(void)
     // plot results
     //
 
-    // plot displacemenet
-    if (showDisplacements) {
-        ui->displPlot->clearPlottables();
+    // displacements
+    if (showDisplacements) { this->plotResults(ui->displPlot, zero, loc[0], disp, loc); }
 
-        ui->displPlot->autoAddPlottableToLegend();
-        ui->displPlot->legend->setVisible(true);
-        ui->displPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom|Qt::AlignRight);
+    // shear
+    if (showShear) { this->plotResults(ui->shearPlot, zero, loc[0], shear, loc); }
 
-        ui->displPlot->addGraph();
-        ui->displPlot->graph(0)->setPen(QPen(Qt::black));
-        ui->displPlot->graph(0)->setData(zero,loc[0]);
-        ui->displPlot->graph(0)->removeFromLegend();
+    // moments
+    if (showMoments) { this->plotResults(ui->momentPlot, zero, loc[0], moment, loc); }
 
-        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+    // vertical stress
+    if (showStress) { this->plotResults(ui->stressPlot, zero, loc[0], stress, loc); }
 
-            QCPCurve *dispCurve = new QCPCurve(ui->displPlot->xAxis, ui->displPlot->yAxis);
-            dispCurve->setData(disp[pileIdx].mid(0,numNodePile[pileIdx]),loc[pileIdx].mid(0,numNodePile[pileIdx]));
-            dispCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
-            dispCurve->setName(QString("Pile #%1").arg(pileIdx+1));
-            ui->displPlot->addPlottable(dispCurve);
-        }
+    // p_ultimate
+    if (showPultimate) { this->plotResults(ui->pultPlot, zero, loc[0], pultList, locList); }
 
-        ui->displPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->displPlot->axisRect()->autoMargins();
-        ui->displPlot->rescaleAxes();
-        ui->displPlot->replot();
-    }
-
-    // plot shear
-    if (showShear) {
-        ui->shearPlot->clearPlottables();
-
-        ui->shearPlot->autoAddPlottableToLegend();
-        ui->shearPlot->legend->setVisible(true);
-        ui->shearPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom|Qt::AlignRight);
-
-        ui->shearPlot->addGraph();
-        ui->shearPlot->graph(0)->setData(zero,loc[0]);
-        ui->shearPlot->graph(0)->setPen(QPen(Qt::black));
-        ui->shearPlot->graph(0)->removeFromLegend();
-
-        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
-
-            QCPCurve *shearCurve = new QCPCurve(ui->shearPlot->xAxis, ui->shearPlot->yAxis);
-            shearCurve->setData(shear[pileIdx].mid(0,numNodePile[pileIdx]),loc[pileIdx].mid(0,numNodePile[pileIdx]));
-            shearCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
-            shearCurve->setName(QString("Pile #%1").arg(pileIdx+1));
-            ui->shearPlot->addPlottable(shearCurve);
-        }
-
-        ui->shearPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->shearPlot->axisRect()->autoMargins();
-        ui->shearPlot->rescaleAxes();
-        ui->shearPlot->replot();
-    }
-
-    // plot moments
-    if (showMoments) {
-        ui->momentPlot->clearPlottables();
-
-        ui->momentPlot->autoAddPlottableToLegend();
-        ui->momentPlot->legend->setVisible(true);
-        ui->momentPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom|Qt::AlignRight);
-
-        ui->momentPlot->addGraph();
-        ui->momentPlot->graph(0)->setData(zero,loc[0]);
-        ui->momentPlot->graph(0)->setPen(QPen(Qt::black));
-        ui->momentPlot->graph(0)->removeFromLegend();
-
-        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
-            QCPCurve *momCurve = new QCPCurve(ui->momentPlot->xAxis, ui->momentPlot->yAxis);
-            momCurve->setData(moment[pileIdx].mid(0,numNodePile[pileIdx]),loc[pileIdx].mid(0,numNodePile[pileIdx]));
-            momCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
-            momCurve->setName(QString("Pile #%1").arg(pileIdx+1));
-            ui->momentPlot->addPlottable(momCurve);
-        }
-
-        ui->momentPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->momentPlot->axisRect()->autoMargins();
-        ui->momentPlot->rescaleAxes();
-        ui->momentPlot->replot();
-    }
-
-    // plot vertical stress
-    if (showStress) {
-        ui->stressPlot->clearPlottables();
-
-        ui->stressPlot->autoAddPlottableToLegend();
-        ui->stressPlot->legend->setVisible(true);
-        ui->stressPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignRight);
-
-        ui->stressPlot->addGraph();
-        ui->stressPlot->graph(0)->setData(zero,loc[0]);
-        ui->stressPlot->graph(0)->setPen(QPen(Qt::black));
-        ui->stressPlot->graph(0)->removeFromLegend();
-
-        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
-            QCPCurve *stressCurve = new QCPCurve(ui->stressPlot->xAxis, ui->stressPlot->yAxis);
-            stressCurve->setData(stress[pileIdx],loc[pileIdx]);
-            stressCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
-            stressCurve->setName(QString("Pile #%1").arg(pileIdx+1));
-            ui->stressPlot->addPlottable(stressCurve);
-        }
-
-        ui->stressPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->stressPlot->axisRect()->autoMargins();
-        ui->stressPlot->rescaleAxes();
-        ui->stressPlot->replot();
-    }
-
-    // plot p_ultimate
-    if (showPultimate) {
-        ui->pultPlot->clearPlottables();
-
-        ui->pultPlot->autoAddPlottableToLegend();
-        ui->pultPlot->legend->setVisible(true);
-
-        ui->pultPlot->addGraph();
-        ui->pultPlot->graph(0)->setData(zero,loc[0]);
-        ui->pultPlot->graph(0)->setPen(QPen(Qt::black));
-        ui->pultPlot->graph(0)->removeFromLegend();
-
-        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
-            QCPCurve *pultCurve = new QCPCurve(ui->pultPlot->xAxis, ui->pultPlot->yAxis);
-            pultCurve->setData(pultList[pileIdx].mid(0,numNodePile[pileIdx]),locList[pileIdx].mid(0,numNodePile[pileIdx]));
-            pultCurve->setPen(QPen(LINE_COLOR[pileIdx], 3));
-            pultCurve->setName(QString("Pile #%1").arg(pileIdx+1));
-            ui->pultPlot->addPlottable(pultCurve);
-        }
-
-        ui->pultPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->pultPlot->axisRect()->autoMargins();
-        ui->pultPlot->rescaleAxes();
-        ui->pultPlot->replot();
-    }
-
-    // plot y_50
-    if (showY50) {
-        ui->y50Plot->clearPlottables();
-
-        ui->y50Plot->autoAddPlottableToLegend();
-        ui->y50Plot->legend->setVisible(true);
-
-        ui->y50Plot->addGraph();
-        ui->y50Plot->graph(0)->setData(zero,loc[0]);
-        ui->y50Plot->graph(0)->setPen(QPen(Qt::black));
-        ui->y50Plot->graph(0)->removeFromLegend();
-
-        for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
-            QCPCurve *y50Curve = new QCPCurve(ui->y50Plot->xAxis, ui->y50Plot->yAxis);
-            y50Curve->setData(y50List[pileIdx].mid(0,numNodePile[pileIdx]),locList[pileIdx].mid(0,numNodePile[pileIdx]));
-            y50Curve->setPen(QPen(LINE_COLOR[pileIdx], 3));
-            y50Curve->setName(QString("Pile #%1").arg(pileIdx+1));
-            ui->y50Plot->addPlottable(y50Curve);
-        }
-
-        ui->y50Plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        ui->y50Plot->axisRect()->autoMargins();
-        ui->y50Plot->rescaleAxes();
-        ui->y50Plot->replot();
-    }
+    // y_50
+    if (showY50) { this->plotResults(ui->y50Plot, zero, loc[0], y50List, locList); }
 }
 
 MainWindow::~MainWindow()
@@ -1099,8 +962,14 @@ void MainWindow::setupLayers()
     mSoilLayers.push_back(soilLayer("Layer 2", 3.0, 16.0, 19.0, 2.0e5, 35, QColor(0,100,0,100)));
     mSoilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 25, QColor(0,0,100,100)));
 
+    updateLayerState();
+}
+
+void MainWindow::updateLayerState()
+{
     // set depth and GWT depth for each layer
     int numLayers = mSoilLayers.size();
+
     double layerDepthFromSurface = 0.0;
     for (int ii = 0; ii < numLayers; ii++)
     {
@@ -1363,7 +1232,6 @@ void MainWindow::updateSystemPlot() {
     double maxX0 = -999999.;
     double xbar  = 0.0;
     double H     = 0.0;
-    double maxL2 = 0.0;
     double W, WP;
     double depthSoil = 0.0;
     double nPiles = 0.;
@@ -1519,7 +1387,8 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
         case 'l':
             //qDebug() << "LAYER: " << name;
             ui->properties->setCurrentWidget(ui->soilProperties);
-            layerIdx = name.mid(7,1).toInt();
+            layerIdx = name.mid(7,1).toInt() - 1;
+            setActiveLayer(layerIdx);
             break;
 
         default:
@@ -1531,3 +1400,175 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
         // check for selected soil layers
     }
 }
+
+//
+// layer properties and setup methods
+//
+
+void MainWindow::setActiveLayer(int layerIdx)
+{
+    ui->chkBox_layer1->setChecked((layerIdx==0));
+    ui->chkBox_layer2->setChecked((layerIdx==1));
+    ui->chkBox_layer3->setChecked((layerIdx==2));
+
+    ui->layerThickness->setValue(mSoilLayers[layerIdx].getLayerThickness());
+    ui->layerDryWeight->setValue(mSoilLayers[layerIdx].getLayerUnitWeight());
+    ui->layerSaturatedWeight->setValue(mSoilLayers[layerIdx].getLayerSatUnitWeight());
+    ui->layerFrictionAngle->setValue(mSoilLayers[layerIdx].getLayerFrictionAng());
+    ui->layerShearModulus->setValue((mSoilLayers[layerIdx].getLayerStiffness()/10.e3));
+}
+
+void MainWindow::on_chkBox_layer1_clicked()
+{
+    setActiveLayer(0);
+}
+
+void MainWindow::on_chkBox_layer2_clicked()
+{
+    setActiveLayer(1);
+}
+
+void MainWindow::on_chkBox_layer3_clicked()
+{
+    setActiveLayer(2);
+}
+
+int MainWindow::findActiveLayer()
+{
+    int layerIdx = -1;
+    if (ui->chkBox_layer1->checkState() == Qt::Checked) layerIdx = 0;
+    if (ui->chkBox_layer2->checkState() == Qt::Checked) layerIdx = 1;
+    if (ui->chkBox_layer3->checkState() == Qt::Checked) layerIdx = 2;
+    return layerIdx;
+}
+
+void MainWindow::on_layerThickness_valueChanged(double arg1)
+{
+    double val;
+    int layerIdx = findActiveLayer();
+
+    if (arg1 < 0.10) {
+        val = 0.10;
+        ui->layerThickness->setValue(val);
+    }
+    else {
+        val = arg1;
+    }
+    if (layerIdx >= 0) {
+        mSoilLayers[layerIdx].setLayerThickness(val);
+        this->updateLayerState();
+        this->doAnalysis();
+    }
+}
+
+void MainWindow::on_layerDryWeight_valueChanged(double arg1)
+{
+    double val;
+    int layerIdx = findActiveLayer();
+
+    if (arg1 < 0.5*GAMMA_WATER) {
+        val = 0.5*GAMMA_WATER;
+        ui->layerDryWeight->setValue(val);
+    }
+    else {
+        val = arg1;
+    }
+    if (layerIdx >= 0) {
+        mSoilLayers[layerIdx].setLayerUnitWeight(val);
+        this->updateLayerState();
+        this->doAnalysis();
+    }
+}
+
+void MainWindow::on_layerSaturatedWeight_valueChanged(double arg1)
+{
+    double val;
+    int layerIdx = findActiveLayer();
+
+    if (arg1 < GAMMA_WATER) {
+        val = GAMMA_WATER;
+        ui->layerSaturatedWeight->setValue(val);
+    }
+    else {
+        val = arg1;
+    }
+    if (layerIdx >= 0) {
+        mSoilLayers[layerIdx].setLayerSatUnitWeight(val);
+        this->updateLayerState();
+        this->doAnalysis();
+    }
+}
+
+void MainWindow::on_layerFrictionAngle_valueChanged(double arg1)
+{
+    double val;
+    int layerIdx = findActiveLayer();
+
+    if (arg1 < 1.0) {
+        val = 1.0;
+        ui->layerFrictionAngle->setValue(val);
+    }
+    else {
+        val = arg1;
+    }
+    if (layerIdx >= 0) {
+        mSoilLayers[layerIdx].setLayerFrictionAng(val);
+        this->updateLayerState();
+        this->doAnalysis();
+    }
+}
+
+void MainWindow::on_layerShearModulus_valueChanged(double arg1)
+{
+    double val;
+    int layerIdx = findActiveLayer();
+
+    if (arg1 < 1.0) {
+        val = 10.0e3;
+        ui->layerShearModulus->setValue(1.0);
+    }
+    else {
+        val = arg1*10.0e3;
+    }
+    if (layerIdx >= 0) {
+        mSoilLayers[layerIdx].setLayerStiffness( (val) );
+        this->updateLayerState();
+        this->doAnalysis();
+    }
+}
+
+int  MainWindow::adjustLayersToPiles()
+{
+
+}
+
+//
+// plotter functions
+//
+void MainWindow::plotResults(QCustomPlot *qcp, QVector<double> z, QVector<double> xOffset, \
+                             QVector<QVector<double> > x, QVector<QVector<double> > y)
+{
+    qcp->clearPlottables();
+
+    qcp->autoAddPlottableToLegend();
+    qcp->legend->setVisible(true);
+
+    qcp->addGraph();
+    qcp->graph(0)->setData(z,xOffset);
+    qcp->graph(0)->setPen(QPen(Qt::black));
+    qcp->graph(0)->removeFromLegend();
+
+    for (int ii=0; ii<numPiles; ii++) {
+        QCPCurve *mCurve = new QCPCurve(qcp->xAxis, qcp->yAxis);
+        mCurve->setData(x[ii].mid(0,numNodePile[ii]),y[ii].mid(0,numNodePile[ii]));
+        mCurve->setPen(QPen(LINE_COLOR[ii], 3));
+        mCurve->setName(QString("Pile #%1").arg(ii+1));
+        qcp->addPlottable(mCurve);
+    }
+
+    qcp->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    qcp->axisRect()->autoMargins();
+    qcp->rescaleAxes();
+    qcp->replot();
+}
+

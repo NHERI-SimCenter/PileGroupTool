@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <qcustomplot.h>
 
 // fixed parameters (limits for piles and soil layers)
 #define MAXPILES 3
@@ -54,6 +55,12 @@ public:
     void fetchSettings();
     void updateUI();
     void updateSystemPlot();
+    void setActiveLayer(int);
+    void updateLayerState();
+    int  findActiveLayer();
+    int  adjustLayersToPiles();
+    void plotResults(QCustomPlot *, QVector<double> z, QVector<double> xOffset,
+                     QVector<QVector<double> >, QVector<QVector<double> >);
 
 private slots:
     // soil parameter values entered/changed
@@ -92,6 +99,18 @@ private slots:
     void on_appliedForce_valueChanged(double arg1);
     void on_appliedForce_editingFinished();
     void on_updateInfo(QTableWidgetItem *);
+
+    // layer selection slots
+    void on_chkBox_layer1_clicked();
+    void on_chkBox_layer2_clicked();
+    void on_chkBox_layer3_clicked();
+
+    // soil property slots
+    void on_layerThickness_valueChanged(double arg1);
+    void on_layerDryWeight_valueChanged(double arg1);
+    void on_layerSaturatedWeight_valueChanged(double arg1);
+    void on_layerFrictionAngle_valueChanged(double arg1);
+    void on_layerShearModulus_valueChanged(double arg1);
 
 private:
     Q_OBJECT
