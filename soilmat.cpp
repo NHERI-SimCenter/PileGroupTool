@@ -22,14 +22,15 @@ soilLayer::soilLayer()
 
 soilLayer::soilLayer(QString lName, double nThick, double lUnitWeight, double lSatUnitWeight, double lStiffness, double lFrictionAng, QColor color)
 {
-  layerName = lName;
-  layerH = nThick;
-  layerG = lStiffness;
-  layerPhi = lFrictionAng;
-  layerGamma = lUnitWeight;
-  layerGammaSat = lSatUnitWeight;
+  layerName      = lName;
+  layerDepth     = 0.0;
+  layerH         = nThick;
+  layerG         = lStiffness;
+  layerPhi       = lFrictionAng;
+  layerGamma     = lUnitWeight;
+  layerGammaSat  = lSatUnitWeight;
   layerTopStress = 0.0;
-  layerColor = color;
+  layerColor     = color;
 
   waterUnitWeight = 9.81;
 }

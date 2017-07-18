@@ -19,6 +19,7 @@ public:
   void setLayerUnitWeight(double gamma){layerGamma = gamma;}
   void setLayerSatUnitWeight(double gamma){layerGammaSat = gamma;}
   void setLayerTopStress(double stress){layerTopStress = stress;}
+  void setLayerDepth(double depth){layerDepth = depth;}
   void setGWTdepth(double gwt){layerGWT = gwt;}
   void setLayerGWHead(double gwt){layerGWT = gwt;}
   void setWaterUnitWeight(double gamma){waterUnitWeight = gamma;}
@@ -31,6 +32,7 @@ public:
   double getLayerFrictionAng(){return layerPhi;}
   double getLayerUnitWeight(){return layerGamma;}
   double getLayerSatUnitWeight(){return layerGammaSat;}
+  double getLayerDepth(){return layerDepth;}
   double getLayerGWTdepth(){return layerGWT;}
   double getLayerTopStress();
   double getLayerBottomStress();
@@ -39,6 +41,7 @@ public:
 private:
   QString layerName;
   double layerTopStress;
+  double layerDepth;
   double layerH;
   double layerGamma;
   double layerGammaSat;
