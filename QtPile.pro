@@ -38,8 +38,9 @@ SOURCES += main.cpp\
         surveysplashscreen.cpp \
         soilmat.cpp \
         utilWindows/copyrightdialog.cpp \
-    utilWindows/dialogabout.cpp \
-    utilWindows/dialogpreferences.cpp
+        utilWindows/dialogabout.cpp \
+        utilWindows/dialogpreferences.cpp \
+        utilWindows/dialogfuturefeature.cpp
         
 HEADERS  += mainwindow.h \
         qcustomplot.h \
@@ -47,16 +48,17 @@ HEADERS  += mainwindow.h \
         surveysplashscreen.h \
         soilmat.h \
         utilWindows/copyrightdialog.h \
-    utilWindows/dialogabout.h \
-    utilWindows/dialogpreferences.h
+        utilWindows/dialogabout.h \
+        utilWindows/dialogpreferences.h \
+        utilWindows/dialogfuturefeature.h
 
 FORMS    += mainwindow.ui \
         materialdbinterface.ui \
         surveysplashscreen.ui \
         utilWindows/copyrightdialog.ui \
-    utilWindows/dialogabout.ui \
-    utilWindows/dialogpreferences.ui
-        
+        utilWindows/dialogabout.ui \
+        utilWindows/dialogpreferences.ui \
+        utilWindows/dialogfuturefeature.ui
 
 RESOURCES += \
     qtpileresources.qrc

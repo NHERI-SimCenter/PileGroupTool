@@ -32,7 +32,13 @@ static QVector<QColor> BRUSH_COLOR({
                                        QColor(127,  63, 0, 127),
                                        QColor(127, 255, 0, 127),
                                        QColor( 95, 191, 0, 127),
-                                       QColor( 63, 127, 0, 127)
+                                       QColor( 63, 127, 0, 127),
+                                       QColor(127, 255, 255, 255),
+                                       QColor( 95, 191, 255, 255),
+                                       QColor( 63, 127, 255, 255),
+                                       QColor(127, 255, 255, 127),
+                                       QColor( 95, 191, 255, 127),
+                                       QColor( 63, 127, 255, 127)
                                     });
 
 // forward declaration of classes
@@ -70,6 +76,8 @@ private slots:
 
     // menu actions
     void on_actionExit_triggered();
+    void on_actionNew_triggered();
+    void on_actionSave_triggered();
     void on_action_Open_triggered();
     void on_actionExport_to_OpenSees_triggered();
     void on_actionReset_triggered();
@@ -111,6 +119,8 @@ private slots:
     void on_layerSaturatedWeight_valueChanged(double arg1);
     void on_layerFrictionAngle_valueChanged(double arg1);
     void on_layerShearModulus_valueChanged(double arg1);
+
+    void on_properties_currentChanged(int index);
 
 private:
     Q_OBJECT
@@ -195,6 +205,8 @@ private:
 
     // others
     QVector<HEAD_NODE_TYPE> headNodeList = QVector<HEAD_NODE_TYPE>(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
+    int activePileIdx;
+    int activeLayerIdx;
 
 };
 
