@@ -1390,6 +1390,7 @@ void MainWindow::updateSystemPlot() {
         xbar += xOffset[pileIdx]; nPiles++;
     }
     xbar /= nPiles;
+    if (depthSoil > H) H = depthSoil;
     if ( L1 > 0.0 ) H += L1;
 
     WP = maxX0 - minX0;
@@ -1744,7 +1745,7 @@ void MainWindow::on_layerShearModulus_valueChanged(double arg1)
 
 int  MainWindow::adjustLayersToPiles()
 {
-
+    return 0;
 }
 
 //
