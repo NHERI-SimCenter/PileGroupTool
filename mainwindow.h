@@ -76,6 +76,8 @@ private slots:
 
     // menu actions
     void on_actionExit_triggered();
+    void on_actionNew_triggered();
+    void on_actionSave_triggered();
     void on_action_Open_triggered();
     void on_actionExport_to_OpenSees_triggered();
     void on_actionReset_triggered();

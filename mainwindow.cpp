@@ -4,6 +4,7 @@
 #include "utilWindows/copyrightdialog.h"
 #include "utilWindows/dialogpreferences.h"
 #include "utilWindows/dialogabout.h"
+#include "utilWindows/dialogfuturefeature.h"
 
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
@@ -62,6 +63,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    inSetupState = true;
 
     this->fetchSettings();
     this->updateUI();
@@ -122,6 +125,7 @@ MainWindow::MainWindow(QWidget *parent) :
     int pileIdx = ui->pileIndex->value() - 1;
 
     ui->appliedForce->setValue(P);
+    ui->xOffset->setValue(xOffset[pileIdx]);
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->embeddedLength->setValue(L2[pileIdx]);
@@ -164,7 +168,6 @@ MainWindow::MainWindow(QWidget *parent) :
     inSetupState = false;
       
     this->doAnalysis();
-
     this->updateSystemPlot();
 }
 
@@ -937,6 +940,7 @@ void MainWindow::on_displacementSlider_valueChanged(int value)
     ui->appliedForce->setValue(P);
 
     this->doAnalysis();
+    this->updateSystemPlot();
 }
 
 /* ***** analysis parameter changes ***** */
@@ -947,6 +951,7 @@ void MainWindow::on_pileDiameter_valueChanged(double arg1)
 
     pileDiameter[pileIdx] = arg1;
     this->doAnalysis();
+    this->updateSystemPlot();
 }
 
 void MainWindow::on_embeddedLength_valueChanged(double arg1)
@@ -955,12 +960,14 @@ void MainWindow::on_embeddedLength_valueChanged(double arg1)
 
     L2[pileIdx] = arg1;
     this->doAnalysis();
+    this->updateSystemPlot();
 }
 
 void MainWindow::on_freeLength_valueChanged(double arg1)
 {
     L1 = arg1;
     this->doAnalysis();
+    this->updateSystemPlot();
 }
 
 void MainWindow::on_Emodulus_valueChanged(double arg1)
@@ -969,12 +976,14 @@ void MainWindow::on_Emodulus_valueChanged(double arg1)
 
     E[pileIdx] = arg1*10.0e6;
     this->doAnalysis();
+    this->updateSystemPlot();
 }
 
 void MainWindow::on_groundWaterTable_valueChanged(double arg1)
 {
     gwtDepth = arg1;
     this->doAnalysis();
+    this->updateSystemPlot();
 }
 
 
@@ -1085,25 +1094,121 @@ void MainWindow::on_updateInfo(QTableWidgetItem * item)
     this->doAnalysis();
 }
 
+void MainWindow::on_actionNew_triggered()
+{
+    DialogFutureFeature *dlg = new DialogFutureFeature();
+    dlg->exec();
+    delete dlg;
+}
 
 void MainWindow::on_action_Open_triggered()
 {
+    DialogFutureFeature *dlg = new DialogFutureFeature();
+    dlg->exec();
+    delete dlg;
+}
 
+void MainWindow::on_actionSave_triggered()
+{
+    DialogFutureFeature *dlg = new DialogFutureFeature();
+    dlg->exec();
+    delete dlg;
 }
 
 void MainWindow::on_actionExport_to_OpenSees_triggered()
 {
-
+    DialogFutureFeature *dlg = new DialogFutureFeature();
+    dlg->exec();
+    delete dlg;
 }
 
 void MainWindow::on_actionReset_triggered()
 {
+    inSetupState = true;
 
+    this->fetchSettings();
+    this->updateUI();
+
+    // setup data
+    numPiles = 1;
+    P        = 0.0;
+
+    L1                       = 1.0;
+    L2[numPiles-1]           = 20.0;
+    pileDiameter[numPiles-1] = 1.0;
+    E[numPiles-1]            = 25.0e6;
+    xOffset[numPiles-1]      = 0.0;
+
+    gwtDepth = 3.00;
+    gamma    = 17.0;
+    phi      = 36.0;
+    gSoil    = 150000;
+    puSwitch = 1;
+    kSwitch  = 1;
+    gwtSwitch= 1;
+
+     // set initial state of check boxes
+    useToeResistance    = false;
+    assumeRigidPileHeadConnection = false;
+
+    // analysis parameters
+    displacementRatio = 0.0;
+
+#ifdef USE_TABLES
+    // setup table of soil layers
+
+    QStringList matTableLabels;
+    matTableLabels << "Thickness" << "Wet Unit Weight" << "Saturated Unit Weight" << "Friction Angle" << "Shear Modulus";
+    ui->matTable->setRowCount(5);
+    ui->matTable->setColumnCount(1);
+    ui->matTable->setVerticalHeaderLabels(matTableLabels);
+    ui->matTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
+    ui->matTable->setItemPrototype(ui->matTable->item(3,0));
+    ui->matTable->setItemDelegate(new QItemDelegate());
+#else
+    ui->matTable->hide();
+#endif
+    // set up initial values before activating live analysis (= connecting the slots)
+    //    or the program will fail in the analysis due to missing information
+    setupLayers();
+
+    //reDrawTable();
+
+    setActiveLayer(0);
+
+    // set up pile input
+
+    ui->pileIndex->setValue(1);
+    ui->pileIndex->setMinimum(1);
+    ui->pileIndex->setMaximum(numPiles);
+
+    int pileIdx = ui->pileIndex->value() - 1;
+
+    ui->appliedForce->setValue(P);
+    ui->xOffset->setValue(xOffset[pileIdx]);
+    ui->pileDiameter->setValue(pileDiameter[pileIdx]);
+    ui->freeLength->setValue(L1);
+    ui->embeddedLength->setValue(L2[pileIdx]);
+    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
+
+    ui->groundWaterTable->setValue(gwtDepth);
+
+    ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHeadConnection?Qt::Checked:Qt::Unchecked);
+    ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
+
+    // plotsetting
+    activePileIdx = 0;
+    activeLayerIdx = -1;
+
+    inSetupState = false;
+
+    this->doAnalysis();
+    this->updateSystemPlot();
 }
 
 void MainWindow::on_actionFEA_parameters_triggered()
 {
-
+    this->on_actionPreferences_triggered();
 }
 
 void MainWindow::on_actionLicense_Information_triggered()
@@ -1161,6 +1266,7 @@ void MainWindow::on_xOffset_valueChanged(double arg1)
     xOffset[pileIdx] = ui->xOffset->value();
 
     this->doAnalysis();
+    this->updateSystemPlot();
 }
 
 void MainWindow::on_pileIndex_valueChanged(int arg1)
@@ -1295,7 +1401,8 @@ void MainWindow::updateSystemPlot() {
 
     // setup system plot
     ui->systemPlot->clearPlottables();
-    //ui->systemPlot->clearGraphs();
+    ui->systemPlot->clearGraphs();
+    ui->systemPlot->clearItems();
 
     ui->systemPlot->autoAddPlottableToLegend();
     ui->systemPlot->legend->setVisible(true);
@@ -1308,8 +1415,6 @@ void MainWindow::updateSystemPlot() {
     ui->systemPlot->graph(0)->setData(zero,loc);
     ui->systemPlot->graph(0)->setPen(QPen(Qt::black,1));
     ui->systemPlot->graph(0)->removeFromLegend();
-
-    ui->systemPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom);
 
     // create layers
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
@@ -1336,6 +1441,28 @@ void MainWindow::updateSystemPlot() {
         layerII->setName(QString("Layer #%1").arg(iLayer+1));
 
         //ui->systemPlot->addPlottable(layerII);
+    }
+
+    // ground water table
+    if (gwtDepth < (H-L1)) {
+        QVector<double> x(5,0.0);
+        QVector<double> y(5,0.0);
+
+        x[0] = xbar - W/2.; y[0] = -gwtDepth;
+        x[1] = x[0];        y[1] = -(H - L1);
+        x[2] = xbar + W/2.; y[2] = y[1];
+        x[3] = x[2];        y[3] = y[0];
+        x[4] = x[0];        y[4] = y[0];
+
+        QCPCurve *water = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
+        water->setData(x,y);
+
+        water->setPen(QPen(Qt::blue, 2));
+        water->setBrush(QBrush(QColor(127,127,255,64)));
+
+        water->setName(QString("groundwater"));
+
+        //ui->systemPlot->addPlottable(water);
     }
 
     // plot the pile cap
@@ -1389,7 +1516,22 @@ void MainWindow::updateSystemPlot() {
 
     // add force to the plot
 
+    if (ABS(P) > 0.0) {
+        double force = 0.45*W*P/5000.0;
+
+        // add the arrow:
+        QCPItemLine *arrow = new QCPItemLine(ui->systemPlot);
+        //ui->systemPlot->addItem(arrow);
+        arrow->setPen(QPen(Qt::red, 3));
+        arrow->start->setCoords(xbar, L1);
+        arrow->end->setCoords(xbar + force, L1);
+        arrow->setHead(QCPLineEnding::esSpikeArrow);
+    }
+
+    // plot scaling options
+
     ui->systemPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+
     //ui->systemPlot->axisRect()->autoMargins();
     //setupFullAxesBox();
     ui->systemPlot->xAxis->setScaleRatio(ui->systemPlot->yAxis);
@@ -1655,3 +1797,4 @@ void MainWindow::on_properties_currentChanged(int index)
 
     this->updateSystemPlot();
 }
+
