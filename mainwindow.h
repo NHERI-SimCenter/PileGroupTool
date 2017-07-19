@@ -40,6 +40,7 @@ static QVector<QColor> BRUSH_COLOR({
                                        QColor( 95, 191, 255, 127),
                                        QColor( 63, 127, 255, 127)
                                     });
+#define GROUND_WATER_BLUE QColor(127,127,255,192)
 
 // forward declaration of classes
 class soilLayer;
@@ -112,6 +113,7 @@ private slots:
     void on_chkBox_layer1_clicked();
     void on_chkBox_layer2_clicked();
     void on_chkBox_layer3_clicked();
+    void on_layerSelectedInSystemPlot(bool selected);
 
     // soil property slots
     void on_layerThickness_valueChanged(double arg1);

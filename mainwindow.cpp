@@ -1405,6 +1405,13 @@ void MainWindow::updateSystemPlot() {
     ui->systemPlot->clearGraphs();
     ui->systemPlot->clearItems();
 
+    if (!ui->systemPlot->layer("groundwater"))
+        { ui->systemPlot->addLayer("groundwater", ui->systemPlot->layer("grid"), QCustomPlot::limAbove); }
+    if (!ui->systemPlot->layer("soil"))
+        { ui->systemPlot->addLayer("soil", ui->systemPlot->layer("groundwater"), QCustomPlot::limAbove); }
+    if (!ui->systemPlot->layer("piles"))
+        { ui->systemPlot->addLayer("piles", ui->systemPlot->layer("soil"), QCustomPlot::limAbove); }
+
     ui->systemPlot->autoAddPlottableToLegend();
     ui->systemPlot->legend->setVisible(true);
 
@@ -1418,8 +1425,19 @@ void MainWindow::updateSystemPlot() {
     ui->systemPlot->graph(0)->removeFromLegend();
 
     // create layers
+
+    ui->systemPlot->setCurrentLayer("soil");
+
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
+/* set the following to #if 1 once we can select a rectangle */
+#if 0
+        QCPItemRect* layerII = new QCPItemRect(ui->systemPlot);
+        layerII->topLeft->setCoords(xbar - W/2., -mSoilLayers[iLayer].getLayerDepth());
+        layerII->bottomRight->setCoords(xbar + W/2.,-mSoilLayers[iLayer].getLayerDepth() - mSoilLayers[iLayer].getLayerThickness());
+
+        connect(layerII, SIGNAL(selectionChanged(bool) ), this, SLOT(on_layerSelectedInSystemPlot(bool)));
+#else
         QVector<double> x(5,0.0);
         QVector<double> y(5,0.0);
 
@@ -1431,6 +1449,8 @@ void MainWindow::updateSystemPlot() {
 
         QCPCurve *layerII = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
         layerII->setData(x,y);
+        layerII->setName(QString("Layer #%1").arg(iLayer+1));
+#endif
         if (iLayer == activeLayerIdx) {
             layerII->setPen(QPen(Qt::red, 2));
             layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
@@ -1439,12 +1459,14 @@ void MainWindow::updateSystemPlot() {
             layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
             layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
         }
-        layerII->setName(QString("Layer #%1").arg(iLayer+1));
 
         //ui->systemPlot->addPlottable(layerII);
     }
 
     // ground water table
+
+    ui->systemPlot->setCurrentLayer("groundwater");
+
     if (gwtDepth < (H-L1)) {
         QVector<double> x(5,0.0);
         QVector<double> y(5,0.0);
@@ -1459,7 +1481,7 @@ void MainWindow::updateSystemPlot() {
         water->setData(x,y);
 
         water->setPen(QPen(Qt::blue, 2));
-        water->setBrush(QBrush(QColor(127,127,255,64)));
+        water->setBrush(QBrush(GROUND_WATER_BLUE));
 
         water->setName(QString("groundwater"));
 
@@ -1467,6 +1489,9 @@ void MainWindow::updateSystemPlot() {
     }
 
     // plot the pile cap
+
+    ui->systemPlot->setCurrentLayer("piles");
+
     QVector<double> x(5,0.0);
     QVector<double> y(5,0.0);
 
@@ -1540,6 +1565,11 @@ void MainWindow::updateSystemPlot() {
     ui->systemPlot->replot();
 }
 
+void MainWindow::on_layerSelectedInSystemPlot(bool selected)
+{
+    qDebug() << "on_layerSelectedInSystemPlot(" << selected << ") triggered";
+}
+
 void MainWindow::on_systemPlot_selectionChangedByUser()
 {
     foreach (QCPAbstractPlottable * item, ui->systemPlot->selectedPlottables()) {
@@ -1575,6 +1605,15 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
             activeLayerIdx = layerIdx;
 
             setActiveLayer(layerIdx);
+            break;
+
+        case 'G':
+        case 'g':
+            //qDebug() << "LAYER: " << name;
+            ui->properties->setCurrentWidget(ui->soilProperties);
+
+            activePileIdx  = -1;
+            activeLayerIdx = -1;
             break;
 
         default:
