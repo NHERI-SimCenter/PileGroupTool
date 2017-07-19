@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // setup data
     numPiles = 1;
-    P        = 0.0;
+    P        = 1000.0;
 
     L1                       = 1.0;
     L2[numPiles-1]           = 20.0;
@@ -1091,7 +1091,7 @@ void MainWindow::on_actionReset_triggered()
 
     // setup data
     numPiles = 1;
-    P        = 0.0;
+    P        = 1000.0;
 
     L1                       = 1.0;
     L2[numPiles-1]           = 20.0;
