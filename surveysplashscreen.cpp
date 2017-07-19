@@ -22,9 +22,9 @@ surveySplashScreen::surveySplashScreen(QWidget *parent) :
             All contributors of NHERI SimCenter are free of responsibility and liability resulting\
             from the use of this software.  Use of this software is at your own risk.\
             <p>\
-            We, the SimCenter software designers, are asking you to share your suggestions on how \
-            to improve this educational tool at \
-            <a href=\"http://uw.edu\">http://uw.edu</a>.  \
+            We, the SimCenter software designers, are asking you to share your suggestions on how to improve \
+            this educational tool by reporting issues at \
+            <a target=\"extern\" href=\"https://github.com/NHERI-SimCenter/QtPile\">https://github.com/NHERI-SimCenter/QtPile</a>.  \
             <p>\
             Your SimCenter team";
     ui->surveyText->insertHtml(HTMLtext);
