@@ -166,7 +166,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->systemPlot, SIGNAL(selectionChangedByUser()), this, SLOT(on_systemPlot_selectionChangedByUser()));
 
     inSetupState = false;
-      
+    QRect rec = QApplication::desktop()->screenGeometry();
+
+    int height = 0.7*rec.height();
+    int width = 0.7*rec.width();
+
+    this->resize(width, height);
+
     this->doAnalysis();
     this->updateSystemPlot();
 }
