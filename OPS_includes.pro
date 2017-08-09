@@ -239,9 +239,9 @@ DEFINES += "_MacOSX"
 #LIBS += /Users/fmk/lib/libLapack.a
 #LIBS += /Users/fmk/lib/libBlas.a
 #LIBS += /usr/local/llvm-gcc/lib/libgfortran.a
-win32:
-unix: LIBS += -llapack
-unix: LIBS += -lblas
+
+LIBS += -llapack
+LIBS += -lblas
 
 
 INCLUDEPATH += .include "./ops"
@@ -271,7 +271,7 @@ INCLUDEPATH += "%MKLROOT%"\include
 # this is specified in C++ -> Code Generation -> RunTime Library
 # this is because Qt must be built with this option as they have memory issues if built /MT
 
-#LIBS += -L"C:\Program Files (x86)\IntelSWTools\compilers_and_libraries_2017.4.210\windows\mkl\lib\intel64_win" mkl_intel_lp64.lib mkl_sequential.lib mkl_core.lib
+LIBS += -L"C:\Program Files (x86)\IntelSWTools\compilers_and_libraries_2017.4.210\windows\mkl\lib\intel64_win" mkl_intel_lp64.lib mkl_sequential.lib mkl_core.lib
 LIBS += -L".\..\QtPile\lib" lapack.lib blas.lib
 
 DEFINES += -D_FORTRAN -D_RELIABILITY -D_TCL85
