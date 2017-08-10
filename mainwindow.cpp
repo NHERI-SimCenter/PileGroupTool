@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
     ui->textBrowser->clear();
     ui->textBrowser->setFontPointSize(8);
-    ui->textBrowser->setHtml("<h1>Hints</h1><p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
+    ui->textBrowser->setHtml("<b>Hints</b><p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
 
     // setup data
     numPiles = 1;

@@ -67,5 +67,4 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     qtpileresources.qrc
 
-DISTFILES += \
-    ../widgets/Common/style.qss
+DISTFILES +=

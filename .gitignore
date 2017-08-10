@@ -39,3 +39,5 @@ moc*
 *.user
 
 *.autosave
+
+mainwindow - Copy.ui
