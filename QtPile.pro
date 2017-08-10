@@ -40,7 +40,9 @@ SOURCES += main.cpp\
         utilWindows/copyrightdialog.cpp \
         utilWindows/dialogabout.cpp \
         utilWindows/dialogpreferences.cpp \
-        utilWindows/dialogfuturefeature.cpp
+        utilWindows/dialogfuturefeature.cpp \
+    ../widgets/Common/FooterWidget.cpp \
+    ../widgets/Common/HeaderWidget.cpp
         
 HEADERS  += mainwindow.h \
         qcustomplot.h \
@@ -50,7 +52,9 @@ HEADERS  += mainwindow.h \
         utilWindows/copyrightdialog.h \
         utilWindows/dialogabout.h \
         utilWindows/dialogpreferences.h \
-        utilWindows/dialogfuturefeature.h
+        utilWindows/dialogfuturefeature.h \
+    ../widgets/Common/FooterWidget.h \
+    ../widgets/Common/HeaderWidget.h
 
 FORMS    += mainwindow.ui \
         materialdbinterface.ui \
@@ -62,3 +66,6 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     qtpileresources.qrc
+
+DISTFILES += \
+    ../widgets/Common/style.qss

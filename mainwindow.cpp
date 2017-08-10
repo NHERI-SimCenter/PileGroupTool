@@ -68,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->fetchSettings();
     this->updateUI();
+    ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
 
     // setup data
     numPiles = 1;
