@@ -68,6 +68,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->fetchSettings();
     this->updateUI();
+    ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
+    ui->textBrowser->clear();
+#ifdef Q_OS_WIN
+    QFont font = ui->textBrowser->font();
+    font.setPointSize(8);
+    ui->textBrowser->setFont(font);
+#endif
+    ui->textBrowser->setHtml("<b>Hints</b><p><ul><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
 
     // setup data
     numPiles = 1;

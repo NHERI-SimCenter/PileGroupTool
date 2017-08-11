@@ -5,5 +5,8 @@
         <file>images/LayerSchematic@0,5x.png</file>
         <file>images/LayerSchematic@1x.png</file>
         <file>images/PileSchematic@1x.png</file>
+        <file>imagesCommon/nsf.gif</file>
+        <file>imagesCommon/sim_logo_footer.png</file>
+        <file>style.qss</file>
     </qresource>
 </RCC>
