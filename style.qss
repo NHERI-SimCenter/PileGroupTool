@@ -152,6 +152,16 @@ QLabel#inTitle {
     font-weight: bold;
 }
 
+QLabel#labelChangingLayer {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+QLabel#labelLayerProperties {
+    font-size: 12px;
+    font-weight: bold;
+}
+
 /*
 * ======= <SECTION LABEL STYLES> =======
 */
@@ -205,4 +215,30 @@ QFrame#outputDataFrame {
 QFrame#pushButtons {
     border:none;
 }
+
+QFrame#layerSelection {
+    background-color: #FFFFFF;
+    border:none;
+}
+
+QFrame#propertiesFrame {
+    background-color: #FFFFFF;
+    border:none;
+}
+
+QFrame#pileProperties {
+    background-color: #FFFFFF;
+    border:none;
+}
+
+QFrame#soilProperties {
+    background-color: #FFFFFF;
+    border:none;
+}
+
+QFrame#forceFrame {
+    background-color: #FFFFFF;
+    border:none;
+}
+
 
