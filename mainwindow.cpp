@@ -102,20 +102,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // analysis parameters
     displacementRatio = 0.0;
 
-#ifdef USE_TABLES
-    // setup table of soil layers
-
-    QStringList matTableLabels;
-    matTableLabels << "Thickness" << "Wet Unit Weight" << "Saturated Unit Weight" << "Friction Angle" << "Shear Modulus";
-    ui->matTable->setRowCount(5);
-    ui->matTable->setColumnCount(1);
-    ui->matTable->setVerticalHeaderLabels(matTableLabels);
-    ui->matTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
-    ui->matTable->setItemPrototype(ui->matTable->item(3,0));
-    ui->matTable->setItemDelegate(new QItemDelegate());
-#else
-    ui->matTable->hide();
-#endif
     // set up initial values before activating live analysis (= connecting the slots)
     //    or the program will fail in the analysis due to missing information
     setupLayers();
@@ -942,29 +928,6 @@ void MainWindow::updateLayerState()
     }
 }
 
-void MainWindow::reDrawTable()
-{
-  // update and redraw the ui->matTable
-    int numLayers = mSoilLayers.size();
-    QStringList matTableHeaders;
-    ui->matTable->setColumnCount(numLayers);
-    for (int ii = 0; ii < numLayers; ii++)
-    {
-        matTableHeaders << mSoilLayers[ii].getLayerName();
-        ui->matTable->setItem(0, ii, new QTableWidgetItem(QString::number(mSoilLayers[ii].getLayerThickness())));
-        ui->matTable->setItem(1, ii, new QTableWidgetItem(QString::number(mSoilLayers[ii].getLayerUnitWeight())));
-        ui->matTable->setItem(2, ii, new QTableWidgetItem(QString::number(mSoilLayers[ii].getLayerSatUnitWeight())));
-        ui->matTable->setItem(3, ii, new QTableWidgetItem(QString::number(mSoilLayers[ii].getLayerFrictionAng())));
-        ui->matTable->setItem(4, ii, new QTableWidgetItem(QString::number(mSoilLayers[ii].getLayerStiffness())));
-    }
-
-    ui->matTable->setHorizontalHeaderLabels(matTableHeaders);
-
-    for (int ii = 0; ii < ui->matTable->rowCount(); ii++)
-	for (int jj = 0; jj < ui->matTable->columnCount(); jj++)
-		ui->matTable->item(ii,jj)->setTextAlignment(Qt::AlignHCenter);
-}
-
 void MainWindow::on_updateInfo(QTableWidgetItem * item)
 {
     //if (item && item == ui->matTable->currentItem()) {
@@ -1128,20 +1091,6 @@ void MainWindow::on_actionReset_triggered()
     // analysis parameters
     displacementRatio = 0.0;
 
-#ifdef USE_TABLES
-    // setup table of soil layers
-
-    QStringList matTableLabels;
-    matTableLabels << "Thickness" << "Wet Unit Weight" << "Saturated Unit Weight" << "Friction Angle" << "Shear Modulus";
-    ui->matTable->setRowCount(5);
-    ui->matTable->setColumnCount(1);
-    ui->matTable->setVerticalHeaderLabels(matTableLabels);
-    ui->matTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
-    ui->matTable->setItemPrototype(ui->matTable->item(3,0));
-    ui->matTable->setItemDelegate(new QItemDelegate());
-#else
-    ui->matTable->hide();
-#endif
     // set up initial values before activating live analysis (= connecting the slots)
     //    or the program will fail in the analysis due to missing information
     setupLayers();
