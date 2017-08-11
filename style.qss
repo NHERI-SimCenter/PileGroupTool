@@ -65,13 +65,36 @@ QLineEdit {
     border-radius: 5px;
 }
 
+QSpinBox {
+    background-color: #E0E0E0;
+    border-radius: 5px;
+}
+
+QDoubleSpinBox {
+    background-color: #E0E0E0;
+    border-radius: 5px;
+}
+
 /*
 * ======= <HEADER AND FOOTER> =======
 */
 
-QGroupBox {
+QGroupBox#headerWidget {
     background-color: #B0BEC5;
     height: 30px;
+    border-radius: 5px;
+}
+
+
+QGroupBox#footerWidget {
+    background-color: #B0BEC5;
+    height: 30px;
+    border-radius: 5px;
+}
+
+
+QGroupBox {
+    background-color: #ffffff;
     border-radius: 5px;
 }
 

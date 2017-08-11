@@ -162,8 +162,8 @@ MainWindow::MainWindow(QWidget *parent) :
     inSetupState = false;
     QRect rec = QApplication::desktop()->screenGeometry();
 
-    int height = 0.7*rec.height();
-    int width = 0.7*rec.width();
+    int height = 0.85*rec.height();
+    int width  = 0.85*rec.width();
 
     this->resize(width, height);
 
