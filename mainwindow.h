@@ -148,7 +148,6 @@ private:
     QVector<soilLayer> mSoilLayers;
 
     void setupLayers();
-    void reDrawTable();
 
     // temporary variables
     double gamma;
