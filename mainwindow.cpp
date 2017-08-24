@@ -152,19 +152,13 @@ MainWindow::MainWindow(QWidget *parent) :
     activePileIdx = 0;
     activeLayerIdx = -1;
 
-
-#ifdef USE_TABLES
-    connect(ui->matTable, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(on_updateInfo(QTableWidgetItem*)));
-#endif
-
     connect(ui->systemPlot, SIGNAL(selectionChangedByUser()), this, SLOT(on_systemPlot_selectionChangedByUser()));
 
     inSetupState = false;
+
     QRect rec = QApplication::desktop()->screenGeometry();
-
-    int height = 0.85*rec.height();
-    int width  = 0.85*rec.width();
-
+    int height = this->height()<0.85*rec.height()?this->height():0.85*rec.height();
+    int width  = this->width()<0.85*rec.width()?this->width():0.85*rec.width();
     this->resize(width, height);
 
     this->doAnalysis();
@@ -1180,6 +1174,7 @@ void MainWindow::on_btn_deletePile_clicked()
         ui->pileIndex->setMaximum(numPiles);
         ui->pileIndex->setValue(pileIdx+1);
 
+        this->updateSystemPlot();
         this->doAnalysis();
     }
 }
