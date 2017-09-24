@@ -83,7 +83,16 @@ private slots:
     void on_actionExport_to_OpenSees_triggered();
     void on_actionReset_triggered();
     void on_actionFEA_parameters_triggered();
+
     void on_actionLicense_Information_triggered();
+    void on_actionLicense_triggered();
+    void on_actionVersion_triggered();
+    void on_actionProvide_Feedback_triggered();
+
+  //  void on_actionLicense_triggered();
+  //  void on_actionVersion_triggered();
+  //  void on_actionProvide_Feedback_triggered();
+
     void on_action_About_triggered();
     void on_actionPreferences_triggered();
 
@@ -123,6 +132,8 @@ private slots:
     void on_layerShearModulus_valueChanged(double arg1);
 
     void on_properties_currentChanged(int index);
+
+
 
 private:
     Q_OBJECT

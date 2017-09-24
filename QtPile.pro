@@ -10,6 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = QtPile
 TEMPLATE = app
+VERSION=1.0
 
 #M_VERSION = 1.0.
 #M_REV     = $Rev: $

@@ -6,8 +6,8 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    surveySplashScreen splash;
-    splash.exec();
+    //surveySplashScreen splash;
+   // splash.exec();
 
     MainWindow w;
     w.show();
