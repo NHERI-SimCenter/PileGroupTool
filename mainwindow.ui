@@ -28,7 +28,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_11">
     <item row="0" column="0" colspan="3">
-     <widget class="HeaderWidget" name="headerWidget" native="true">
+     <widget class="HeaderWidget" name="headerWidget">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -38,7 +38,7 @@
      </widget>
     </item>
     <item row="2" column="0" colspan="3">
-     <widget class="FooterWidget" name="footerWidget" native="true">
+     <widget class="FooterWidget" name="footerWidget">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -1014,21 +1014,21 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>QCustomPlot</class>
-   <extends>QWidget</extends>
-   <header>qcustomplot.h</header>
+   <class>HeaderWidget</class>
+   <extends>QFrame</extends>
+   <header>../AgaveExplorer/SimCenterCommon/HeaderWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>FooterWidget</class>
-   <extends>QWidget</extends>
-   <header>../widgets/Common/footerwidget.h</header>
+   <extends>QFrame</extends>
+   <header>../AgaveExplorer/SimCenterCommon/FooterWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>HeaderWidget</class>
+   <class>QCustomPlot</class>
    <extends>QWidget</extends>
-   <header>../widgets/Common/headerwidget.h</header>
+   <header>qcustomplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
