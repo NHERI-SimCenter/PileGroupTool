@@ -1761,7 +1761,7 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
             if (name.toLower() == QString("pile cap")) break;
 
             //qDebug() << "PILE: " << name;
-            ui->properties->setCurrentWidget(ui->pileProperties);
+            ui->properties->setCurrentWidget(ui->pilePropertiesWidget);
             pileIdx = name.mid(6,1).toInt() - 1;
 
             activePileIdx  = pileIdx;
@@ -1773,7 +1773,7 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
         case 'L':
         case 'l':
             //qDebug() << "LAYER: " << name;
-            ui->properties->setCurrentWidget(ui->soilProperties);
+            ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
             layerIdx = name.mid(7,1).toInt() - 1;
 
             activePileIdx  = -1;
@@ -1785,7 +1785,7 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
         case 'G':
         case 'g':
             //qDebug() << "LAYER: " << name;
-            ui->properties->setCurrentWidget(ui->soilProperties);
+            ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
 
             activePileIdx  = -1;
             activeLayerIdx = -1;
