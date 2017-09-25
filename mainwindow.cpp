@@ -53,6 +53,10 @@ extern int getPyParam(double pyDepth,
 
 #include <soilmat.h>
 
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
+
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 Domain theDomain;
@@ -163,6 +167,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->doAnalysis();
     this->updateSystemPlot();
+
+    manager = new QNetworkAccessManager(this);
+
+    connect(manager, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(replyFinished(QNetworkReply*)));
+
+    manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/qtPile/use.php")));
+    //manager->get(QNetworkRequest(QUrl("https://simcenter.designsafe-ci.org/pile-group-analytics/")));
 }
 
 MainWindow::~MainWindow()
@@ -1128,11 +1140,6 @@ void MainWindow::on_actionFEA_parameters_triggered()
     this->on_actionPreferences_triggered();
 }
 
-void MainWindow::on_actionLicense_Information_triggered()
-{
-    CopyrightDialog *dlg = new CopyrightDialog(this);
-    dlg->exec();
-}
 
 void MainWindow::on_action_About_triggered()
 {
@@ -1801,4 +1808,30 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
     }
 
     this->updateSystemPlot();
+}
+
+void MainWindow::on_actionLicense_Information_triggered()
+{
+    CopyrightDialog *dlg = new CopyrightDialog(this);
+    dlg->exec();
+}
+
+
+void MainWindow::on_actionLicense_triggered()
+{
+    CopyrightDialog *dlg = new CopyrightDialog(this);
+    dlg->exec();
+}
+
+void MainWindow::on_actionVersion_triggered()
+{
+    QMessageBox::about(this, tr("Version"),
+                       tr("Version 1.0 "));
+}
+
+void MainWindow::on_actionProvide_Feedback_triggered()
+{
+    // QDesktopServices::openUrl(QUrl("https://github.com/NHERI-SimCenter/QtPile/issues", QUrl::TolerantMode));
+  QDesktopServices::openUrl(QUrl("https://www.designsafe-ci.org/help/new-ticket/", QUrl::TolerantMode));
+
 }

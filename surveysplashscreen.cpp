@@ -9,12 +9,7 @@ surveySplashScreen::surveySplashScreen(QWidget *parent) :
 
     /* populate information and survey text info */
     QString HTMLtext = "\
-            Dear user,\
-            <p>\
-            You are about to explore an alpha release of the SimCenter Educational Pile Tool.\
-            This version of the software is to provide an initial impression of features and functionality, \
-            though several intended features are under development.\
-            Future versions will incorporate features such as pile groups and more complex layer structure.\
+            You are about to explore the SimCenter Educational Pile Tool.\
             <p>\
             Please be aware that this software is not intended to be used in any commercial\
             analysis and/or design. The software may not be redistributed other than through \

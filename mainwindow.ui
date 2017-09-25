@@ -932,8 +932,10 @@
      <string>Help</string>
     </property>
     <addaction name="action_About"/>
-    <addaction name="actionLicense_Information"/>
     <addaction name="actionPreferences"/>
+    <addaction name="actionProvide_Feedback"/>
+    <addaction name="actionVersion"/>
+    <addaction name="actionLicense"/>
    </widget>
    <addaction name="menuOpenSeesPile"/>
    <addaction name="menuAnalysis"/>
@@ -1008,6 +1010,21 @@
   <action name="action_About">
    <property name="text">
     <string>&amp;About</string>
+   </property>
+  </action>
+  <action name="actionProvide_Feedback">
+   <property name="text">
+    <string>Provide Feedback</string>
+   </property>
+  </action>
+  <action name="actionVersion">
+   <property name="text">
+    <string>Version</string>
+   </property>
+  </action>
+  <action name="actionLicense">
+   <property name="text">
+    <string>License</string>
    </property>
   </action>
  </widget>
