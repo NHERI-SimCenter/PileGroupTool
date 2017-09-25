@@ -1,6 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+
+class QNetworkAccessManager;
+
 #include <QMainWindow>
 #include <qcustomplot.h>
 
@@ -219,6 +222,8 @@ private:
     QVector<HEAD_NODE_TYPE> headNodeList = QVector<HEAD_NODE_TYPE>(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
     int activePileIdx;
     int activeLayerIdx;
+
+     QNetworkAccessManager *manager;
 
 };
 
