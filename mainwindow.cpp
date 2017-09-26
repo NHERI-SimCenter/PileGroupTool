@@ -73,12 +73,16 @@ MainWindow::MainWindow(QWidget *parent) :
     this->fetchSettings();
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
+    ui->appliedForce->setMaximum(MAX_FORCE);
+    ui->appliedForce->setMinimum(-MAX_FORCE);
+
     ui->textBrowser->clear();
 #ifdef Q_OS_WIN
     QFont font = ui->textBrowser->font();
     font.setPointSize(8);
     ui->textBrowser->setFont(font);
 #endif
+
     ui->textBrowser->setHtml("<b>Hints</b><p><ul><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
 
     // setup data
@@ -1287,7 +1291,7 @@ void MainWindow::on_appliedForce_valueChanged(double arg1)
     //P = ui->appliedForce->value();
     P = arg1;
 
-    int sliderPosition = nearbyint(100.*P/5000.0);
+    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
     ui->displacementSlider->setValue(sliderPosition);
@@ -1300,7 +1304,7 @@ void MainWindow::on_appliedForce_editingFinished()
 {
     P = ui->appliedForce->value();
 
-    int sliderPosition = nearbyint(100.*P/5000.0);
+    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -1315,7 +1319,7 @@ void MainWindow::on_displacementSlider_valueChanged(int value)
     // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
     displacementRatio = double(value)/100.0;
 
-    P = 5000.0 * displacementRatio;
+    P = MAX_FORCE * displacementRatio;
 
     //qDebug() << "Force value: " << P << ",  sliderPosition: " << value << endln;
     ui->appliedForce->setValue(P);
@@ -1727,7 +1731,7 @@ void MainWindow::updateSystemPlot() {
     // add force to the plot
 
     if (ABS(P) > 0.0) {
-        double force = 0.45*W*P/5000.0;
+        double force = 0.45*W*P/MAX_FORCE;
 
         // add the arrow:
         QCPItemLine *arrow = new QCPItemLine(ui->systemPlot);
