@@ -196,16 +196,6 @@ getPyParam(double pyDepth,
     //qDebug() << "pst psd: " << pst << " " << psd;
 
     // pult is the lesser of pst and psd. At surface, an arbitrary value is defined
-    /*
-     if (pst <= psd) {
-        if (pyDepth == 0)
-            pu = 0.01;
-        else
-            pu = A*pst;
-    } else {
-        pu = A*psd;
-    }
-    */
     pu = A*fmin(pst,psd);
 
     //-------Brinch Hansen method-------
@@ -227,11 +217,7 @@ getPyParam(double pyDepth,
     double  KqD = (Kqo + Kqinf*aq*zbRatio)/(1 + aq*zbRatio);
 
     // ultimate lateral resistance
-    if (pyDepth == 0) { 
-      pu = 0.01;
-    } else {
-      pu = sig*KqD*b;
-    }
+    pu = sig*KqD*b;
   }
 
   // PySimple1 material formulated with pult as a force, not force/length, multiply by trib. length
