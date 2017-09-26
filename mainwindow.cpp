@@ -482,7 +482,9 @@ void MainWindow::doAnalysis(void)
                 OPS_addUniaxialMaterial(theMat);
 
                 locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = pult;
+                // pult is a nodal value for the p-y spring.
+                // It needs to be scaled by element length ito represent a line load
+                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = pult/eleSize;
                 y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = y50;
 
                 // t-z spring material
