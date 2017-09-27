@@ -11,6 +11,9 @@ class QNetworkAccessManager;
 #define MAXPILES 3
 #define MAXLAYERS 3
 
+// #define MAX_FORCE 5000.0
+#define MAX_FORCE 10000.0
+
 // global constants
 #define GAMMA_WATER 9.81
 
