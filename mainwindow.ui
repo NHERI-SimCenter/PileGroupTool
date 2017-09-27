@@ -660,7 +660,17 @@
                  </widget>
                 </item>
                 <item row="6" column="1">
-                 <widget class="QDoubleSpinBox" name="layerShearModulus"/>
+                 <widget class="QDoubleSpinBox" name="layerShearModulus">
+                  <property name="decimals">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <double>1000.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>10.000000000000000</double>
+                  </property>
+                 </widget>
                 </item>
                 <item row="2" column="2">
                  <widget class="QLabel" name="label_15">
@@ -711,7 +721,14 @@
                  </widget>
                 </item>
                 <item row="5" column="1">
-                 <widget class="QDoubleSpinBox" name="layerFrictionAngle"/>
+                 <widget class="QDoubleSpinBox" name="layerFrictionAngle">
+                  <property name="decimals">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <double>60.000000000000000</double>
+                  </property>
+                 </widget>
                 </item>
                 <item row="6" column="2">
                  <widget class="QLabel" name="label_19">
@@ -1033,13 +1050,13 @@
   <customwidget>
    <class>HeaderWidget</class>
    <extends>QFrame</extends>
-   <header>../AgaveExplorer/SimCenterCommon/HeaderWidget.h</header>
+   <header>../widgets/Common/HeaderWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>FooterWidget</class>
    <extends>QFrame</extends>
-   <header>../AgaveExplorer/SimCenterCommon/FooterWidget.h</header>
+   <header>../widgets/Common/FooterWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

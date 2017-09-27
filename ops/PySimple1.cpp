@@ -59,6 +59,8 @@
 #include <Channel.h>
 #include <elementAPI.h>
 
+#include "qdebug.h"
+
 // Controls on internal iteration between spring components
 const int PYmaxIterations = 20;
 const double PYtolerance = 1.0e-12;
@@ -488,6 +490,8 @@ PySimple1::getStress(void)
 double 
 PySimple1::getTangent(void)
 {
+    //qDebug() << "tangent:" << this->Ttangent;
+
     return this->Ttangent;
 }
 /////////////////////////////////////////////////////////////////////
