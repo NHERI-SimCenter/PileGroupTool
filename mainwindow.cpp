@@ -1259,7 +1259,7 @@ void MainWindow::on_Emodulus_valueChanged(double arg1)
 {
     int pileIdx = ui->pileIndex->value() - 1;
 
-    E[pileIdx] = arg1*10.0e6;
+    E[pileIdx] = arg1*1.0e6;
     this->doAnalysis();
     this->updateSystemPlot();
 }
@@ -1331,7 +1331,7 @@ void MainWindow::setActiveLayer(int layerIdx)
     ui->layerDryWeight->setValue(mSoilLayers[layerIdx].getLayerUnitWeight());
     ui->layerSaturatedWeight->setValue(mSoilLayers[layerIdx].getLayerSatUnitWeight());
     ui->layerFrictionAngle->setValue(mSoilLayers[layerIdx].getLayerFrictionAng());
-    ui->layerShearModulus->setValue((mSoilLayers[layerIdx].getLayerStiffness()/10.e3));
+    ui->layerShearModulus->setValue((mSoilLayers[layerIdx].getLayerStiffness()/1.e3));
 
     inSetupState = false;
 
@@ -1455,11 +1455,11 @@ void MainWindow::on_layerShearModulus_valueChanged(double arg1)
     int layerIdx = findActiveLayer();
 
     if (arg1 < 1.0) {
-        val = 10.0e3;
+        val = 1.0e3;
         ui->layerShearModulus->setValue(1.0);
     }
     else {
-        val = arg1*10.0e3;
+        val = arg1*1.0e3;
     }
     if (layerIdx >= 0) {
         mSoilLayers[layerIdx].setLayerStiffness( (val) );
