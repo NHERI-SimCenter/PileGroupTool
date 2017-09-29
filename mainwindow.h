@@ -1,12 +1,18 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+
+class QNetworkAccessManager;
+
 #include <QMainWindow>
 #include <qcustomplot.h>
 
 // fixed parameters (limits for piles and soil layers)
 #define MAXPILES 3
 #define MAXLAYERS 3
+
+// #define MAX_FORCE 5000.0
+#define MAX_FORCE 10000.0
 
 // global constants
 #define GAMMA_WATER 9.81
@@ -83,7 +89,16 @@ private slots:
     void on_actionExport_to_OpenSees_triggered();
     void on_actionReset_triggered();
     void on_actionFEA_parameters_triggered();
+
     void on_actionLicense_Information_triggered();
+    void on_actionLicense_triggered();
+    void on_actionVersion_triggered();
+    void on_actionProvide_Feedback_triggered();
+
+  //  void on_actionLicense_triggered();
+  //  void on_actionVersion_triggered();
+  //  void on_actionProvide_Feedback_triggered();
+
     void on_action_About_triggered();
     void on_actionPreferences_triggered();
 
@@ -123,6 +138,8 @@ private slots:
     void on_layerShearModulus_valueChanged(double arg1);
 
     void on_properties_currentChanged(int index);
+
+
 
 private:
     Q_OBJECT
@@ -208,6 +225,8 @@ private:
     QVector<HEAD_NODE_TYPE> headNodeList = QVector<HEAD_NODE_TYPE>(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
     int activePileIdx;
     int activeLayerIdx;
+
+     QNetworkAccessManager *manager;
 
 };
 

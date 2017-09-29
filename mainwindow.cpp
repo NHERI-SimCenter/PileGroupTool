@@ -53,6 +53,10 @@ extern int getPyParam(double pyDepth,
 
 #include <soilmat.h>
 
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
+
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 Domain theDomain;
@@ -69,12 +73,16 @@ MainWindow::MainWindow(QWidget *parent) :
     this->fetchSettings();
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
+    ui->appliedForce->setMaximum(MAX_FORCE);
+    ui->appliedForce->setMinimum(-MAX_FORCE);
+
     ui->textBrowser->clear();
 #ifdef Q_OS_WIN
     QFont font = ui->textBrowser->font();
     font.setPointSize(8);
     ui->textBrowser->setFont(font);
 #endif
+
     ui->textBrowser->setHtml("<b>Hints</b><p><ul><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
 
     // setup data
@@ -163,6 +171,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->doAnalysis();
     this->updateSystemPlot();
+
+    manager = new QNetworkAccessManager(this);
+
+    connect(manager, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(replyFinished(QNetworkReply*)));
+
+    manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/qtPile/use.php")));
+    //manager->get(QNetworkRequest(QUrl("https://simcenter.designsafe-ci.org/pile-group-analytics/")));
 }
 
 MainWindow::~MainWindow()
@@ -470,7 +486,9 @@ void MainWindow::doAnalysis(void)
                 OPS_addUniaxialMaterial(theMat);
 
                 locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = pult;
+                // pult is a nodal value for the p-y spring.
+                // It needs to be scaled by element length ito represent a line load
+                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = pult/eleSize;
                 y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = y50;
 
                 // t-z spring material
@@ -1128,11 +1146,6 @@ void MainWindow::on_actionFEA_parameters_triggered()
     this->on_actionPreferences_triggered();
 }
 
-void MainWindow::on_actionLicense_Information_triggered()
-{
-    CopyrightDialog *dlg = new CopyrightDialog(this);
-    dlg->exec();
-}
 
 void MainWindow::on_action_About_triggered()
 {
@@ -1278,7 +1291,7 @@ void MainWindow::on_appliedForce_valueChanged(double arg1)
     //P = ui->appliedForce->value();
     P = arg1;
 
-    int sliderPosition = nearbyint(100.*P/5000.0);
+    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
     ui->displacementSlider->setValue(sliderPosition);
@@ -1291,7 +1304,7 @@ void MainWindow::on_appliedForce_editingFinished()
 {
     P = ui->appliedForce->value();
 
-    int sliderPosition = nearbyint(100.*P/5000.0);
+    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -1306,7 +1319,7 @@ void MainWindow::on_displacementSlider_valueChanged(int value)
     // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
     displacementRatio = double(value)/100.0;
 
-    P = 5000.0 * displacementRatio;
+    P = MAX_FORCE * displacementRatio;
 
     //qDebug() << "Force value: " << P << ",  sliderPosition: " << value << endln;
     ui->appliedForce->setValue(P);
@@ -1718,7 +1731,7 @@ void MainWindow::updateSystemPlot() {
     // add force to the plot
 
     if (ABS(P) > 0.0) {
-        double force = 0.45*W*P/5000.0;
+        double force = 0.45*W*P/MAX_FORCE;
 
         // add the arrow:
         QCPItemLine *arrow = new QCPItemLine(ui->systemPlot);
@@ -1761,7 +1774,7 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
             if (name.toLower() == QString("pile cap")) break;
 
             //qDebug() << "PILE: " << name;
-            ui->properties->setCurrentWidget(ui->pileProperties);
+            ui->properties->setCurrentWidget(ui->pilePropertiesWidget);
             pileIdx = name.mid(6,1).toInt() - 1;
 
             activePileIdx  = pileIdx;
@@ -1773,7 +1786,7 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
         case 'L':
         case 'l':
             //qDebug() << "LAYER: " << name;
-            ui->properties->setCurrentWidget(ui->soilProperties);
+            ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
             layerIdx = name.mid(7,1).toInt() - 1;
 
             activePileIdx  = -1;
@@ -1785,7 +1798,7 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
         case 'G':
         case 'g':
             //qDebug() << "LAYER: " << name;
-            ui->properties->setCurrentWidget(ui->soilProperties);
+            ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
 
             activePileIdx  = -1;
             activeLayerIdx = -1;
@@ -1801,4 +1814,30 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
     }
 
     this->updateSystemPlot();
+}
+
+void MainWindow::on_actionLicense_Information_triggered()
+{
+    CopyrightDialog *dlg = new CopyrightDialog(this);
+    dlg->exec();
+}
+
+
+void MainWindow::on_actionLicense_triggered()
+{
+    CopyrightDialog *dlg = new CopyrightDialog(this);
+    dlg->exec();
+}
+
+void MainWindow::on_actionVersion_triggered()
+{
+    QMessageBox::about(this, tr("Version"),
+                       tr("Version 1.0 "));
+}
+
+void MainWindow::on_actionProvide_Feedback_triggered()
+{
+    // QDesktopServices::openUrl(QUrl("https://github.com/NHERI-SimCenter/QtPile/issues", QUrl::TolerantMode));
+  QDesktopServices::openUrl(QUrl("https://www.designsafe-ci.org/help/new-ticket/", QUrl::TolerantMode));
+
 }
