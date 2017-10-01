@@ -131,7 +131,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->embeddedLength->setValue(L2[pileIdx]);
-    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
+    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
 
     ui->groundWaterTable->setValue(gwtDepth);
 
@@ -459,6 +459,7 @@ void MainWindow::doAnalysis(void)
 
                 // # p-y spring material
                 puSwitch  = 2;  // Hanson
+                //puSwitch  = 1;  // API // temporary switch
                 kSwitch   = 1;  // API
 
                 gwtSwitch = (gwtDepth > -zCoord)?1:2;
@@ -1124,7 +1125,7 @@ void MainWindow::on_actionReset_triggered()
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->embeddedLength->setValue(L2[pileIdx]);
-    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
+    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
 
     ui->groundWaterTable->setValue(gwtDepth);
 
@@ -1227,7 +1228,7 @@ void MainWindow::on_pileIndex_valueChanged(int arg1)
     int pileIdx = ui->pileIndex->value() - 1;
 
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
-    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
+    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
     ui->embeddedLength->setValue(L2[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->xOffset->setValue(xOffset[pileIdx]);
