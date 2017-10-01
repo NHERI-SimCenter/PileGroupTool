@@ -131,7 +131,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->embeddedLength->setValue(L2[pileIdx]);
-    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
+    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
 
     ui->groundWaterTable->setValue(gwtDepth);
 
@@ -459,6 +459,7 @@ void MainWindow::doAnalysis(void)
 
                 // # p-y spring material
                 puSwitch  = 2;  // Hanson
+                //puSwitch  = 1;  // API // temporary switch
                 kSwitch   = 1;  // API
 
                 gwtSwitch = (gwtDepth > -zCoord)?1:2;
@@ -1124,7 +1125,7 @@ void MainWindow::on_actionReset_triggered()
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->embeddedLength->setValue(L2[pileIdx]);
-    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
+    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
 
     ui->groundWaterTable->setValue(gwtDepth);
 
@@ -1227,7 +1228,7 @@ void MainWindow::on_pileIndex_valueChanged(int arg1)
     int pileIdx = ui->pileIndex->value() - 1;
 
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
-    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
+    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
     ui->embeddedLength->setValue(L2[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->xOffset->setValue(xOffset[pileIdx]);
@@ -1272,7 +1273,7 @@ void MainWindow::on_Emodulus_valueChanged(double arg1)
 {
     int pileIdx = ui->pileIndex->value() - 1;
 
-    E[pileIdx] = arg1*10.0e6;
+    E[pileIdx] = arg1*1.0e6;
     this->doAnalysis();
     this->updateSystemPlot();
 }
@@ -1344,7 +1345,7 @@ void MainWindow::setActiveLayer(int layerIdx)
     ui->layerDryWeight->setValue(mSoilLayers[layerIdx].getLayerUnitWeight());
     ui->layerSaturatedWeight->setValue(mSoilLayers[layerIdx].getLayerSatUnitWeight());
     ui->layerFrictionAngle->setValue(mSoilLayers[layerIdx].getLayerFrictionAng());
-    ui->layerShearModulus->setValue((mSoilLayers[layerIdx].getLayerStiffness()/10.e3));
+    ui->layerShearModulus->setValue((mSoilLayers[layerIdx].getLayerStiffness()/1.e3));
 
     inSetupState = false;
 
@@ -1468,11 +1469,11 @@ void MainWindow::on_layerShearModulus_valueChanged(double arg1)
     int layerIdx = findActiveLayer();
 
     if (arg1 < 1.0) {
-        val = 10.0e3;
+        val = 1.0e3;
         ui->layerShearModulus->setValue(1.0);
     }
     else {
-        val = arg1*10.0e3;
+        val = arg1*1.0e3;
     }
     if (layerIdx >= 0) {
         mSoilLayers[layerIdx].setLayerStiffness( (val) );
