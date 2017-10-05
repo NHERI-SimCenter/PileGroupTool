@@ -1060,6 +1060,8 @@ void MainWindow::on_action_Open_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
+    this->WriteFile("PileTool.json");
+
     DialogFutureFeature *dlg = new DialogFutureFeature();
     dlg->exec();
     delete dlg;
@@ -1842,3 +1844,70 @@ void MainWindow::on_actionProvide_Feedback_triggered()
   QDesktopServices::openUrl(QUrl("https://www.designsafe-ci.org/help/new-ticket/", QUrl::TolerantMode));
 
 }
+
+int MainWindow::ReadFile(QString s)
+{
+    return 0;
+}
+
+int MainWindow::WriteFile(QString s)
+{
+    int cnt = 0;
+
+    /* start a JSON object to represent the system */
+    QJsonObject *json = new QJsonObject();
+
+    /* write layer information */
+    QJsonArray *layerInfo = new QJsonArray();
+    for (int lid=0; lid<MAXLAYERS; lid++) {
+        layerInfo->append("a layer");
+    }
+
+    json->insert("layers", *layerInfo);
+
+    /* write pile information */
+    QJsonArray *pileInfo = new QJsonArray();
+    for (int pid=0; pid<numPiles; pid++) {
+        pileInfo->append("a pile");
+    }
+
+    json->insert("piles", *pileInfo);
+
+    /* write load information */
+    QJsonArray *loadInfo = new QJsonArray();
+
+    json->insert("piles", *loadInfo);
+
+    QJsonDocument *infoDoc = new QJsonDocument();
+    infoDoc->setObject(*json);
+
+    /* debug output JSON document */
+    qDebug() << "json:" << *json;
+    qDebug() << *layerInfo;
+    qDebug() << "json:" << *json;
+    qDebug() << *pileInfo;
+    qDebug() << "json:" << *json;
+    qDebug() << *loadInfo;
+    qDebug() << "json:" << *json;
+    qDebug() << infoDoc->toJson();
+
+    /* write JSON object to file */
+    // file.write(info);
+    delete infoDoc;
+    delete layerInfo;
+    delete pileInfo;
+    delete loadInfo;
+    delete json;
+
+    infoDoc = NULL;
+
+    return cnt;
+}
+
+
+void MainWindow::replyFinished(QNetworkReply *pReply)
+{
+    return;
+}
+
+

@@ -6,6 +6,8 @@ class QNetworkAccessManager;
 
 #include <QMainWindow>
 #include <qcustomplot.h>
+#include <QtNetwork/QNetworkReply>
+
 
 // fixed parameters (limits for piles and soil layers)
 #define MAXPILES 3
@@ -139,11 +141,17 @@ private slots:
 
     void on_properties_currentChanged(int index);
 
+    // Frank's network counter
+    void replyFinished(QNetworkReply*);
+
 
 
 private:
     Q_OBJECT
     Ui::MainWindow *ui;
+
+    int ReadFile(QString );
+    int WriteFile(QString );
 
     // get data
     double P;  // lateral force on pile
