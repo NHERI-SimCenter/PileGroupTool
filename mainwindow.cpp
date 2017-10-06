@@ -5,6 +5,7 @@
 #include "utilWindows/dialogpreferences.h"
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
+#include <QApplication>
 
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
@@ -57,6 +58,8 @@ extern int getPyParam(double pyDepth,
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
+#include <QDateTime>
+
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 Domain theDomain;
@@ -88,6 +91,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // setup data
     numPiles = 1;
     P        = 1000.0;
+    PV       =    0.0;
+    PMom     =    0.0;
 
     L1                       = 1.0;
     L2[numPiles-1]           = 20.0;
@@ -1046,9 +1051,7 @@ void MainWindow::updateUI()
 
 void MainWindow::on_actionNew_triggered()
 {
-    DialogFutureFeature *dlg = new DialogFutureFeature();
-    dlg->exec();
-    delete dlg;
+    this->on_actionReset_triggered();
 }
 
 void MainWindow::on_action_Open_triggered()
@@ -1084,6 +1087,8 @@ void MainWindow::on_actionReset_triggered()
     // setup data
     numPiles = 1;
     P        = 1000.0;
+    PV       =    0.0;
+    PMom     =    0.0;
 
     L1                       = 1.0;
     L2[numPiles-1]           = 20.0;
@@ -1857,49 +1862,92 @@ int MainWindow::WriteFile(QString s)
     /* start a JSON object to represent the system */
     QJsonObject *json = new QJsonObject();
 
+    json->insert("creator", QString("PileGroupTool"));
+    json->insert("version", QString(APP_VERSION));
+#ifdef Q_OS_WIN
+    QString username = qgetenv("USERNAME");
+#else
+    QString username = qgetenv("USER");
+#endif
+    json->insert("author", username);
+    json->insert("date", QDateTime::currentDateTime().toString());
+
     /* write layer information */
     QJsonArray *layerInfo = new QJsonArray();
     for (int lid=0; lid<MAXLAYERS; lid++) {
-        layerInfo->append("a layer");
+        QJsonObject aLayer;
+
+        aLayer.insert("depth", mSoilLayers[lid].getLayerDepth());
+        aLayer.insert("thickness", mSoilLayers[lid].getLayerThickness());
+        aLayer.insert("gamma", mSoilLayers[lid].getLayerUnitWeight());
+        aLayer.insert("gammaSaturated", mSoilLayers[lid].getLayerSatUnitWeight());
+        aLayer.insert("phi", mSoilLayers[lid].getLayerFrictionAng());
+        aLayer.insert("cohesion", 0.0);
+        aLayer.insert("Gmodulus", mSoilLayers[lid].getLayerStiffness());
+
+        layerInfo->append(aLayer);
     }
 
     json->insert("layers", *layerInfo);
 
+    json->insert("groundWaterTable", gwtDepth);
+
     /* write pile information */
     QJsonArray *pileInfo = new QJsonArray();
     for (int pid=0; pid<numPiles; pid++) {
-        pileInfo->append("a pile");
+        QJsonObject aPile;
+
+        aPile.insert("embeddedLength", L2[pid]);
+        aPile.insert("freeLength", L1);
+        aPile.insert("diameter", pileDiameter[pid]);
+        aPile.insert("YoungsModulus", E[pid]);
+        aPile.insert("xOffset", xOffset[pid]);
+
+        pileInfo->append(aPile);
     }
 
     json->insert("piles", *pileInfo);
 
+    json->insert("useToeResistance", useToeResistance);
+    json->insert("assumeRigidPileHeadConnection", assumeRigidPileHeadConnection);
+
     /* write load information */
-    QJsonArray *loadInfo = new QJsonArray();
+    QJsonObject *loadInfo = new QJsonObject();
 
-    json->insert("piles", *loadInfo);
+    loadInfo->insert("HForce", P);
+    loadInfo->insert("VForce", PV);
+    loadInfo->insert("Moment", PMom);
 
-    QJsonDocument *infoDoc = new QJsonDocument();
-    infoDoc->setObject(*json);
+    json->insert("loads", *loadInfo);
 
-    /* debug output JSON document */
-    qDebug() << "json:" << *json;
-    qDebug() << *layerInfo;
-    qDebug() << "json:" << *json;
-    qDebug() << *pileInfo;
-    qDebug() << "json:" << *json;
-    qDebug() << *loadInfo;
-    qDebug() << "json:" << *json;
-    qDebug() << infoDoc->toJson();
+    /* FEA parameters */
+    QJsonObject FEAparameters;
+
+    FEAparameters.insert("minElementsPerLayer",minElementsPerLayer);
+    FEAparameters.insert("maxElementsPerLayer",maxElementsPerLayer);
+    FEAparameters.insert("numElementsInAir", numElementsInAir);
+
+    json->insert("FEAparameters", FEAparameters);
+
+    QJsonDocument infoDoc = QJsonDocument(*json);
 
     /* write JSON object to file */
-    // file.write(info);
-    delete infoDoc;
+
+    QFile saveFile( QStringLiteral("save.json") );
+
+    if (!saveFile.open(QIODevice::WriteOnly)) {
+        qWarning("Couldn't open save file.");
+        return false;
+    }
+
+    saveFile.write( infoDoc.toJson() );
+    saveFile.close();
+
+    // clean up
     delete layerInfo;
     delete pileInfo;
     delete loadInfo;
     delete json;
-
-    infoDoc = NULL;
 
     return cnt;
 }

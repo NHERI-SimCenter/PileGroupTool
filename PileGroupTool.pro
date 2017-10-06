@@ -19,6 +19,7 @@ PRODUCT_NAME = 'PileGroupTool'
 
 #DEFINES += APPLICATION_NAME=\"\\\"$$PRODUCT_NAME\\\"\"
 #DEFINES += APPLICATION_VERSION=\"\\\"$$M_VERSION$$member(M_REV, 1)\\\"\"
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 #win32: INCLUDES += "./ops"
 #win32: LIBS += -llapack -lblas
