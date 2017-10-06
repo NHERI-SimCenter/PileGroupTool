@@ -145,7 +145,6 @@ private slots:
     void replyFinished(QNetworkReply*);
 
 
-
 private:
     Q_OBJECT
     Ui::MainWindow *ui;
@@ -154,7 +153,9 @@ private:
     int WriteFile(QString );
 
     // get data
-    double P;  // lateral force on pile
+    double P;     // lateral force on pile cap
+    double PV;    // vertical force on pile cap
+    double PMom;  // applied moment on pile cap
     double gwtDepth;  // depth of ground water table below the surface
     int    numPileElements;
     int    numPiles;
