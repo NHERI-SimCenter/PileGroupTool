@@ -1827,9 +1827,15 @@ void MainWindow::on_actionProvide_Feedback_triggered()
 
 bool MainWindow::ReadFile(QString s)
 {
+    /* identify filename and location for loading */
+
+    QString filename = "save.json";
+
+
+
     /* load JSON object from file */
     QFile loadFile;
-    loadFile.setFileName("save.json");
+    loadFile.setFileName(filename);
 
     if (!loadFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning("Couldn't open load file.");
@@ -1841,6 +1847,8 @@ bool MainWindow::ReadFile(QString s)
 
     //qWarning() << theFile;
 
+    bool fileTypeError = false;
+
     QJsonDocument infoDoc = QJsonDocument::fromJson(theFile.toUtf8());
 
     /* start a JSON object to represent the system */
@@ -1848,8 +1856,20 @@ bool MainWindow::ReadFile(QString s)
 
     QString creator;
     creator  = json["creator"].toString();
+
+    if (creator != "PileGroupTool") fileTypeError = true;
+
     QString version;
     version  = json["version"].toString();
+
+    if (version != "1.0") fileTypeError = true;
+
+    if (fileTypeError) {
+        QMessageBox msg(QMessageBox::Information, "Info", "Not a valid model file.");
+        msg.exec();
+        return false;
+    }
+
     QString username;
     username = json["username"].toString();
     QString author;
@@ -1942,6 +1962,13 @@ bool MainWindow::ReadFile(QString s)
 
 bool MainWindow::WriteFile(QString s)
 {
+    /* identify filename and location for saving */
+
+    QString filename = "save.json";
+
+
+
+
     /* start a JSON object to represent the system */
     QJsonObject *json = new QJsonObject();
 
@@ -2016,7 +2043,7 @@ bool MainWindow::WriteFile(QString s)
 
     /* write JSON object to file */
 
-    QFile saveFile( QStringLiteral("save.json") );
+    QFile saveFile( filename );
 
     if (!saveFile.open(QIODevice::WriteOnly)) {
         qWarning("Couldn't open save file.");
