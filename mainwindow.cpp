@@ -176,6 +176,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::refreshUI() {
 
+    inSetupState = true;
+
     ui->pileIndex->setValue(1);
     ui->pileIndex->setMinimum(1);
     ui->pileIndex->setMaximum(numPiles);
@@ -193,6 +195,10 @@ void MainWindow::refreshUI() {
 
     ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHeadConnection?Qt::Checked:Qt::Unchecked);
     ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
+
+    this->updateLayerState();
+
+    inSetupState = false;
 }
 
 void MainWindow::doAnalysis(void)
@@ -1639,8 +1645,6 @@ void MainWindow::updateSystemPlot() {
         water->setBrush(QBrush(GROUND_WATER_BLUE));
 
         water->setName(QString("groundwater"));
-
-        //ui->systemPlot->addPlottable(water);
     }
 
     // plot the pile cap
@@ -1706,6 +1710,18 @@ void MainWindow::updateSystemPlot() {
         arrow->setPen(QPen(Qt::red, 3));
         arrow->start->setCoords(xbar, L1);
         arrow->end->setCoords(xbar + force, L1);
+        arrow->setHead(QCPLineEnding::esSpikeArrow);
+    }
+
+    if (ABS(PV) > 0.0) {
+        double force = 0.45*W*PV/MAX_FORCE;
+
+        // add the arrow:
+        QCPItemLine *arrow = new QCPItemLine(ui->systemPlot);
+        //ui->systemPlot->addItem(arrow);
+        arrow->setPen(QPen(Qt::red, 3));
+        arrow->start->setCoords(xbar, L1 - force);
+        arrow->end->setCoords(xbar, L1);
         arrow->setHead(QCPLineEnding::esSpikeArrow);
     }
 
@@ -1812,18 +1828,20 @@ void MainWindow::on_actionProvide_Feedback_triggered()
 bool MainWindow::ReadFile(QString s)
 {
     /* load JSON object from file */
-    QFile loadFile( QStringLiteral("save.json") );
+    QFile loadFile;
+    loadFile.setFileName("save.json");
 
-    if (!loadFile.open(QIODevice::ReadOnly)) {
+    if (!loadFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning("Couldn't open load file.");
         return false;
     }
 
-    QByteArray theFile = loadFile.readAll();
-
-    QJsonDocument infoDoc = QJsonDocument();
-    infoDoc.fromJson(theFile);
+    QString theFile = loadFile.readAll();
     loadFile.close();
+
+    //qWarning() << theFile;
+
+    QJsonDocument infoDoc = QJsonDocument::fromJson(theFile.toUtf8());
 
     /* start a JSON object to represent the system */
     QJsonObject json = infoDoc.object();
@@ -1848,13 +1866,13 @@ bool MainWindow::ReadFile(QString s)
 
         QJsonObject aLayer = jval.toObject();
 
-        mSoilLayers[nLayer].setLayerDepth(json["depth"].toDouble());
-        mSoilLayers[nLayer].setLayerThickness(json["thickness"].toDouble());
-        mSoilLayers[nLayer].setLayerUnitWeight(json["gamma"].toDouble());
-        mSoilLayers[nLayer].setLayerSatUnitWeight(json["gammaSaturated"].toDouble());
-        mSoilLayers[nLayer].setLayerFrictionAng(json["phi"].toDouble());
-        mSoilLayers[nLayer].setLayerCohesion(json["cohesion"].toDouble());
-        mSoilLayers[nLayer].setLayerStiffness(json["Gmodulus"].toDouble());
+        mSoilLayers[nLayer].setLayerDepth(aLayer["depth"].toDouble());
+        mSoilLayers[nLayer].setLayerThickness(aLayer["thickness"].toDouble());
+        mSoilLayers[nLayer].setLayerUnitWeight(aLayer["gamma"].toDouble());
+        mSoilLayers[nLayer].setLayerSatUnitWeight(aLayer["gammaSaturated"].toDouble());
+        mSoilLayers[nLayer].setLayerFrictionAng(aLayer["phi"].toDouble());
+        mSoilLayers[nLayer].setLayerCohesion(aLayer["cohesion"].toDouble());
+        mSoilLayers[nLayer].setLayerStiffness(aLayer["Gmodulus"].toDouble());
 
         nLayer++;
         if (nLayer >= MAXLAYERS)  break;
@@ -1894,6 +1912,8 @@ bool MainWindow::ReadFile(QString s)
         nPile++;
         if (nPile >= MAXPILES) break;
     }
+
+    numPiles = nPile;
 
     useToeResistance              = json["useToeResistance"].toBool();
     assumeRigidPileHeadConnection = json["assumeRigidPileHeadConnection"].toBool();
