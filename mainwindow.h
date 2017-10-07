@@ -13,6 +13,11 @@ class QNetworkAccessManager;
 #define MAXPILES 3
 #define MAXLAYERS 3
 
+// Meshing parameters
+#define MIN_ELEMENTS_PER_LAYER   15
+#define MAX_ELEMENTS_PER_LAYER   40
+#define NUM_ELEMENTS_IN_AIR       4
+
 // #define MAX_FORCE 5000.0
 #define MAX_FORCE 10000.0
 
@@ -69,7 +74,6 @@ public:
     void doAnalysis(void);
     void fetchSettings();
     void updateUI();
-    void updateSystemPlot();
     void setActiveLayer(int);
     void updateLayerState();
     int  findActiveLayer();
@@ -124,7 +128,6 @@ private slots:
     // material table slots
     void on_appliedForce_valueChanged(double arg1);
     void on_appliedForce_editingFinished();
-    void on_updateInfo(QTableWidgetItem *);
 
     // layer selection slots
     void on_chkBox_layer1_clicked();
@@ -149,8 +152,10 @@ private:
     Q_OBJECT
     Ui::MainWindow *ui;
 
-    int ReadFile(QString );
-    int WriteFile(QString );
+    void updateSystemPlot();
+    void refreshUI();
+    bool ReadFile(QString );
+    bool WriteFile(QString );
 
     // get data
     double P;     // lateral force on pile cap
@@ -209,9 +214,9 @@ private:
     bool showY50;
 
     // meshing parameters
-    int minElementsPerLayer = 15;
-    int maxElementsPerLayer = 40;
-    int numElementsInAir    =  4;
+    int minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
+    int maxElementsPerLayer = MAX_ELEMENTS_PER_LAYER;
+    int numElementsInAir    = NUM_ELEMENTS_IN_AIR;
 
     double L1;                      // pile length above ground (all the same)
     double L2[MAXPILES];            // embedded length of pile

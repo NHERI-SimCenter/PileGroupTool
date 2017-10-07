@@ -7,12 +7,13 @@ const double pi = atan(1.0) * 4.0;
 
 soilLayer::soilLayer()
 {
-  layerName = QString("New Soil Layer");
-  layerH = 1.0;
-  layerG = 2.0e5;
-  layerPhi = 30;
-  layerGamma = 18.0;
-  layerGammaSat = 18.0;
+  layerName      = QString("New Soil Layer");
+  layerH         = 1.0;
+  layerG         = 2.0e5;
+  layerPhi       = 30;
+  layerCohesion  = 0.0;
+  layerGamma     = 18.0;
+  layerGammaSat  = 18.0;
   layerTopStress = 0.0;
   layerColor = QColor(100,100,100,100);
 
@@ -20,13 +21,15 @@ soilLayer::soilLayer()
   waterUnitWeight = GAMMA_WATER;
 }
 
-soilLayer::soilLayer(QString lName, double nThick, double lUnitWeight, double lSatUnitWeight, double lStiffness, double lFrictionAng, QColor color)
+soilLayer::soilLayer(QString lName, double nThick, double lUnitWeight, double lSatUnitWeight, double lStiffness,
+                     double lFrictionAng, double lCohesion, QColor color)
 {
   layerName      = lName;
   layerDepth     = 0.0;
   layerH         = nThick;
   layerG         = lStiffness;
   layerPhi       = lFrictionAng;
+  layerCohesion  = lCohesion;
   layerGamma     = lUnitWeight;
   layerGammaSat  = lSatUnitWeight;
   layerTopStress = 0.0;

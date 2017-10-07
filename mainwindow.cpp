@@ -124,24 +124,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setActiveLayer(0);
 
     // set up pile input
-
-    ui->pileIndex->setValue(1);
-    ui->pileIndex->setMinimum(1);
-    ui->pileIndex->setMaximum(numPiles);
-
-    int pileIdx = ui->pileIndex->value() - 1;
-
-    ui->appliedForce->setValue(P);
-    ui->xOffset->setValue(xOffset[pileIdx]);
-    ui->pileDiameter->setValue(pileDiameter[pileIdx]);
-    ui->freeLength->setValue(L1);
-    ui->embeddedLength->setValue(L2[pileIdx]);
-    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
-
-    ui->groundWaterTable->setValue(gwtDepth);
-
-    ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHeadConnection?Qt::Checked:Qt::Unchecked);
-    ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
+    this->refreshUI();
 
 
     // add legend
@@ -189,6 +172,27 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::refreshUI() {
+
+    ui->pileIndex->setValue(1);
+    ui->pileIndex->setMinimum(1);
+    ui->pileIndex->setMaximum(numPiles);
+
+    int pileIdx = ui->pileIndex->value() - 1;
+
+    ui->appliedForce->setValue(P);
+    ui->xOffset->setValue(xOffset[pileIdx]);
+    ui->pileDiameter->setValue(pileDiameter[pileIdx]);
+    ui->freeLength->setValue(L1);
+    ui->embeddedLength->setValue(L2[pileIdx]);
+    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
+
+    ui->groundWaterTable->setValue(gwtDepth);
+
+    ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHeadConnection?Qt::Checked:Qt::Unchecked);
+    ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
 }
 
 void MainWindow::doAnalysis(void)
@@ -923,9 +927,9 @@ void MainWindow::on_chkBox_include_toe_resistance_clicked(bool checked)
 void MainWindow::setupLayers()
 {
     mSoilLayers.clear();
-    mSoilLayers.push_back(soilLayer("Layer 1", 3.0, 15.0, 18.0, 2.0e5, 30, QColor(100,0,0,100)));
-    mSoilLayers.push_back(soilLayer("Layer 2", 3.0, 16.0, 19.0, 2.0e5, 35, QColor(0,100,0,100)));
-    mSoilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 25, QColor(0,0,100,100)));
+    mSoilLayers.push_back(soilLayer("Layer 1", 3.0, 15.0, 18.0, 2.0e5, 30, 0.0, QColor(100,0,0,100)));
+    mSoilLayers.push_back(soilLayer("Layer 2", 3.0, 16.0, 19.0, 2.0e5, 35, 0.0, QColor(0,100,0,100)));
+    mSoilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 25, 0.0, QColor(0,0,100,100)));
 
     updateLayerState();
 }
@@ -944,62 +948,6 @@ void MainWindow::updateLayerState()
         if (ii > 0)
             mSoilLayers[ii].setLayerTopStress(mSoilLayers[ii-1].getLayerBottomStress());
     }
-}
-
-void MainWindow::on_updateInfo(QTableWidgetItem * item)
-{
-    //if (item && item == ui->matTable->currentItem()) {
-    double value = item->text().toDouble();
-
-    if(item->row() == 0) {
-        if (value < 0.10) {
-            value = 0.10;
-            item->setText(QString("%1").arg(value));
-        }
-        mSoilLayers[item->column()].setLayerThickness(value);
-    }
-    else if (item->row() == 1) {
-        if (value < 0.50) {
-            value = 0.50;
-            item->setText(QString("%1").arg(value));
-        }
-        mSoilLayers[item->column()].setLayerUnitWeight(value);
-    }
-    else if (item->row() == 2) {
-        if (value < GAMMA_WATER) {
-            value = GAMMA_WATER;
-            item->setText(QString("%1").arg(value));
-        }
-        mSoilLayers[item->column()].setLayerSatUnitWeight(value);
-    }
-    else if (item->row() == 3) {
-        if (value < 5.) {
-            value = 5.;
-            item->setText(QString("%1").arg(value));
-        }
-        mSoilLayers[item->column()].setLayerFrictionAng(value);
-    }
-    else if (item->row() == 4) {
-        if (value < 1000.) {
-            value = 1000.;
-            item->setText(QString("%1").arg(value));
-        }
-        mSoilLayers[item->column()].setLayerStiffness(value);
-    }
-
-    // set depth and GWT depth for each layer
-    //int numLayers = mSoilLayers.size();
-    double layerDepthFromSurface = 0.0;
-    for (int ii = 0; ii < MAXLAYERS; ii++)
-    {
-        mSoilLayers[ii].setLayerDepth(layerDepthFromSurface);
-        mSoilLayers[ii].setGWTdepth(gwtDepth - layerDepthFromSurface);
-        layerDepthFromSurface += mSoilLayers[ii].getLayerThickness();
-        if (ii > 0)
-            mSoilLayers[ii].setLayerTopStress(mSoilLayers[ii-1].getLayerBottomStress());
-    }
-
-    this->doAnalysis();
 }
 
 void MainWindow::updateUI()
@@ -1056,6 +1004,12 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_action_Open_triggered()
 {
+    if ( this->ReadFile("PileTool.json") ) {
+        this->refreshUI();
+        this->updateSystemPlot();
+        this->doAnalysis();
+    }
+
     DialogFutureFeature *dlg = new DialogFutureFeature();
     dlg->exec();
     delete dlg;
@@ -1110,6 +1064,11 @@ void MainWindow::on_actionReset_triggered()
 
     // analysis parameters
     displacementRatio = 0.0;
+
+    // meshing parameters
+    minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
+    maxElementsPerLayer = MAX_ELEMENTS_PER_LAYER;
+    numElementsInAir    = NUM_ELEMENTS_IN_AIR;
 
     // set up initial values before activating live analysis (= connecting the slots)
     //    or the program will fail in the analysis due to missing information
@@ -1850,15 +1809,119 @@ void MainWindow::on_actionProvide_Feedback_triggered()
 
 }
 
-int MainWindow::ReadFile(QString s)
+bool MainWindow::ReadFile(QString s)
 {
-    return 0;
+    /* load JSON object from file */
+    QFile loadFile( QStringLiteral("save.json") );
+
+    if (!loadFile.open(QIODevice::ReadOnly)) {
+        qWarning("Couldn't open load file.");
+        return false;
+    }
+
+    QByteArray theFile = loadFile.readAll();
+
+    QJsonDocument infoDoc = QJsonDocument();
+    infoDoc.fromJson(theFile);
+    loadFile.close();
+
+    /* start a JSON object to represent the system */
+    QJsonObject json = infoDoc.object();
+
+    QString creator;
+    creator  = json["creator"].toString();
+    QString version;
+    version  = json["version"].toString();
+    QString username;
+    username = json["username"].toString();
+    QString author;
+    author   = json["author"].toString();
+    QString filedate;
+    filedate = json["date"].toString();
+
+    /* write layer information */
+    QJsonArray layerInfo = json["layers"].toArray();
+
+    int nLayer = 0;
+
+    foreach (QJsonValue jval, layerInfo) {
+
+        QJsonObject aLayer = jval.toObject();
+
+        mSoilLayers[nLayer].setLayerDepth(json["depth"].toDouble());
+        mSoilLayers[nLayer].setLayerThickness(json["thickness"].toDouble());
+        mSoilLayers[nLayer].setLayerUnitWeight(json["gamma"].toDouble());
+        mSoilLayers[nLayer].setLayerSatUnitWeight(json["gammaSaturated"].toDouble());
+        mSoilLayers[nLayer].setLayerFrictionAng(json["phi"].toDouble());
+        mSoilLayers[nLayer].setLayerCohesion(json["cohesion"].toDouble());
+        mSoilLayers[nLayer].setLayerStiffness(json["Gmodulus"].toDouble());
+
+        nLayer++;
+        if (nLayer >= MAXLAYERS)  break;
+    }
+
+    while (nLayer+1 < MAXLAYERS) {
+        /* fill layer array with identical layer properties */
+        mSoilLayers[nLayer+1].setLayerDepth(mSoilLayers[nLayer].getLayerDepth());
+        mSoilLayers[nLayer+1].setLayerThickness(mSoilLayers[nLayer].getLayerThickness());
+        mSoilLayers[nLayer+1].setLayerUnitWeight(mSoilLayers[nLayer].getLayerUnitWeight());
+        mSoilLayers[nLayer+1].setLayerSatUnitWeight(mSoilLayers[nLayer].getLayerSatUnitWeight());
+        mSoilLayers[nLayer+1].setLayerFrictionAng(mSoilLayers[nLayer].getLayerFrictionAng());
+        mSoilLayers[nLayer+1].setLayerCohesion(mSoilLayers[nLayer].getLayerCohesion());
+        mSoilLayers[nLayer+1].setLayerStiffness(mSoilLayers[nLayer].getLayerStiffness());
+
+        nLayer++;
+    }
+
+    double groundWaterTable = json["groundWaterTable"].toDouble();
+    if (groundWaterTable < 0.0) groundWaterTable = 0.0;
+    gwtDepth = groundWaterTable;
+
+    /* write pile information */
+    QJsonArray pileInfo = json["piles"].toArray();
+
+    int nPile = 0;
+
+    foreach (QJsonValue jval, pileInfo) {
+        QJsonObject aPile = jval.toObject();
+
+        L2[nPile]           = aPile["embeddedLength"].toDouble();
+        L1                  = aPile["freeLength"].toDouble();
+        pileDiameter[nPile] = aPile["diameter"].toDouble();
+        E[nPile]            = aPile["YoungsModulus"].toDouble();
+        xOffset[nPile]      = aPile["xOffset"].toDouble();
+
+        nPile++;
+        if (nPile >= MAXPILES) break;
+    }
+
+    useToeResistance              = json["useToeResistance"].toBool();
+    assumeRigidPileHeadConnection = json["assumeRigidPileHeadConnection"].toBool();
+
+    /* write load information */
+    QJsonObject loadInfo = json["loads"].toObject();
+
+    P    = loadInfo["HForce"].toDouble();
+    PV   = loadInfo["VForce"].toDouble();
+    PMom = loadInfo["Moment"].toDouble();
+
+    /* FEA parameters */
+    QJsonObject FEAparameters = json["FEAparameters"].toObject();
+
+    minElementsPerLayer = FEAparameters["minElementsPerLayer"].toInt();
+    maxElementsPerLayer = FEAparameters["maxElementsPerLayer"].toInt();
+    numElementsInAir    = FEAparameters["numElementsInAir"].toInt();
+
+    if (minElementsPerLayer < MIN_ELEMENTS_PER_LAYER)   minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
+    if (maxElementsPerLayer > 3*MAX_ELEMENTS_PER_LAYER) maxElementsPerLayer = 3*MAX_ELEMENTS_PER_LAYER;
+    if (numElementsInAir < NUM_ELEMENTS_IN_AIR)         numElementsInAir = NUM_ELEMENTS_IN_AIR;
+    if (numElementsInAir > MAX_ELEMENTS_PER_LAYER)      numElementsInAir = MAX_ELEMENTS_PER_LAYER;
+
+    return true;
 }
 
-int MainWindow::WriteFile(QString s)
+bool MainWindow::WriteFile(QString s)
 {
-    int cnt = 0;
-
     /* start a JSON object to represent the system */
     QJsonObject *json = new QJsonObject();
 
@@ -1882,7 +1945,7 @@ int MainWindow::WriteFile(QString s)
         aLayer.insert("gamma", mSoilLayers[lid].getLayerUnitWeight());
         aLayer.insert("gammaSaturated", mSoilLayers[lid].getLayerSatUnitWeight());
         aLayer.insert("phi", mSoilLayers[lid].getLayerFrictionAng());
-        aLayer.insert("cohesion", 0.0);
+        aLayer.insert("cohesion", mSoilLayers[lid].getLayerCohesion());
         aLayer.insert("Gmodulus", mSoilLayers[lid].getLayerStiffness());
 
         layerInfo->append(aLayer);
@@ -1949,7 +2012,7 @@ int MainWindow::WriteFile(QString s)
     delete loadInfo;
     delete json;
 
-    return cnt;
+    return true;
 }
 
 
