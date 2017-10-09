@@ -5,7 +5,14 @@
 #include "utilWindows/dialogpreferences.h"
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
+
 #include <QApplication>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
+#include <QDateTime>
+#include <QFileDialog>
+#include <QDir>
 
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
@@ -53,12 +60,6 @@ extern int getPyParam(double pyDepth,
 #include <AnalysisModel.h>
 
 #include <soilmat.h>
-
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkReply>
-#include <QtNetwork/QNetworkRequest>
-
-#include <QDateTime>
 
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
@@ -1015,19 +1016,11 @@ void MainWindow::on_action_Open_triggered()
         this->updateSystemPlot();
         this->doAnalysis();
     }
-
-    DialogFutureFeature *dlg = new DialogFutureFeature();
-    dlg->exec();
-    delete dlg;
 }
 
 void MainWindow::on_actionSave_triggered()
 {
     this->WriteFile("PileTool.json");
-
-    DialogFutureFeature *dlg = new DialogFutureFeature();
-    dlg->exec();
-    delete dlg;
 }
 
 void MainWindow::on_actionExport_to_OpenSees_triggered()
@@ -1829,9 +1822,15 @@ bool MainWindow::ReadFile(QString s)
 {
     /* identify filename and location for loading */
 
-    QString filename = "save.json";
+    //QString filename = "PileGroupTool.json";
 
+    QString theFolder = QDir::homePath();
+    QString theFilter = "Json file (*.json)";
+    QFileDialog dlg;
 
+    QString filename = dlg.getOpenFileName(this, "Load file", theFolder, theFilter);
+
+    qWarning() << filename;
 
     /* load JSON object from file */
     QFile loadFile;
@@ -1964,10 +1963,17 @@ bool MainWindow::WriteFile(QString s)
 {
     /* identify filename and location for saving */
 
-    QString filename = "save.json";
+    QString path = QDir::homePath();
+    QDir d;
+    d.setPath(path);
+    QString filename = d.filePath("PileGroupTool.json");
+    QString theFilter = "Json file (*.json)";
+    QFileDialog dlg;
 
+    filename = dlg.getSaveFileName(this, "Save file", filename, theFilter );
 
-
+    // check if cancelled
+    if (filename.isEmpty()) return false;
 
     /* start a JSON object to represent the system */
     QJsonObject *json = new QJsonObject();
