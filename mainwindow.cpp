@@ -5,6 +5,7 @@
 #include "utilWindows/dialogpreferences.h"
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
+#include <QApplication>
 
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
@@ -53,6 +54,12 @@ extern int getPyParam(double pyDepth,
 
 #include <soilmat.h>
 
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
+
+#include <QDateTime>
+
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 Domain theDomain;
@@ -69,17 +76,23 @@ MainWindow::MainWindow(QWidget *parent) :
     this->fetchSettings();
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
+    ui->appliedForce->setMaximum(MAX_FORCE);
+    ui->appliedForce->setMinimum(-MAX_FORCE);
+
     ui->textBrowser->clear();
 #ifdef Q_OS_WIN
     QFont font = ui->textBrowser->font();
     font.setPointSize(8);
     ui->textBrowser->setFont(font);
 #endif
+
     ui->textBrowser->setHtml("<b>Hints</b><p><ul><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
 
     // setup data
     numPiles = 1;
     P        = 1000.0;
+    PV       =    0.0;
+    PMom     =    0.0;
 
     L1                       = 1.0;
     L2[numPiles-1]           = 20.0;
@@ -123,7 +136,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->embeddedLength->setValue(L2[pileIdx]);
-    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
+    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
 
     ui->groundWaterTable->setValue(gwtDepth);
 
@@ -163,6 +176,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->doAnalysis();
     this->updateSystemPlot();
+
+    manager = new QNetworkAccessManager(this);
+
+    connect(manager, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(replyFinished(QNetworkReply*)));
+
+    manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/qtPile/use.php")));
+    //manager->get(QNetworkRequest(QUrl("https://simcenter.designsafe-ci.org/pile-group-analytics/")));
 }
 
 MainWindow::~MainWindow()
@@ -443,6 +464,7 @@ void MainWindow::doAnalysis(void)
 
                 // # p-y spring material
                 puSwitch  = 2;  // Hanson
+                //puSwitch  = 1;  // API // temporary switch
                 kSwitch   = 1;  // API
 
                 gwtSwitch = (gwtDepth > -zCoord)?1:2;
@@ -470,7 +492,9 @@ void MainWindow::doAnalysis(void)
                 OPS_addUniaxialMaterial(theMat);
 
                 locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = pult;
+                // pult is a nodal value for the p-y spring.
+                // It needs to be scaled by element length ito represent a line load
+                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = pult/eleSize;
                 y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = y50;
 
                 // t-z spring material
@@ -1027,9 +1051,7 @@ void MainWindow::updateUI()
 
 void MainWindow::on_actionNew_triggered()
 {
-    DialogFutureFeature *dlg = new DialogFutureFeature();
-    dlg->exec();
-    delete dlg;
+    this->on_actionReset_triggered();
 }
 
 void MainWindow::on_action_Open_triggered()
@@ -1041,6 +1063,8 @@ void MainWindow::on_action_Open_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
+    this->WriteFile("PileTool.json");
+
     DialogFutureFeature *dlg = new DialogFutureFeature();
     dlg->exec();
     delete dlg;
@@ -1063,6 +1087,8 @@ void MainWindow::on_actionReset_triggered()
     // setup data
     numPiles = 1;
     P        = 1000.0;
+    PV       =    0.0;
+    PMom     =    0.0;
 
     L1                       = 1.0;
     L2[numPiles-1]           = 20.0;
@@ -1106,7 +1132,7 @@ void MainWindow::on_actionReset_triggered()
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->embeddedLength->setValue(L2[pileIdx]);
-    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
+    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
 
     ui->groundWaterTable->setValue(gwtDepth);
 
@@ -1128,11 +1154,6 @@ void MainWindow::on_actionFEA_parameters_triggered()
     this->on_actionPreferences_triggered();
 }
 
-void MainWindow::on_actionLicense_Information_triggered()
-{
-    CopyrightDialog *dlg = new CopyrightDialog(this);
-    dlg->exec();
-}
 
 void MainWindow::on_action_About_triggered()
 {
@@ -1214,7 +1235,7 @@ void MainWindow::on_pileIndex_valueChanged(int arg1)
     int pileIdx = ui->pileIndex->value() - 1;
 
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
-    ui->Emodulus->setValue( (E[pileIdx]/10.0e+6) );
+    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
     ui->embeddedLength->setValue(L2[pileIdx]);
     ui->freeLength->setValue(L1);
     ui->xOffset->setValue(xOffset[pileIdx]);
@@ -1259,7 +1280,7 @@ void MainWindow::on_Emodulus_valueChanged(double arg1)
 {
     int pileIdx = ui->pileIndex->value() - 1;
 
-    E[pileIdx] = arg1*10.0e6;
+    E[pileIdx] = arg1*1.0e6;
     this->doAnalysis();
     this->updateSystemPlot();
 }
@@ -1278,7 +1299,7 @@ void MainWindow::on_appliedForce_valueChanged(double arg1)
     //P = ui->appliedForce->value();
     P = arg1;
 
-    int sliderPosition = nearbyint(100.*P/5000.0);
+    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
     ui->displacementSlider->setValue(sliderPosition);
@@ -1291,7 +1312,7 @@ void MainWindow::on_appliedForce_editingFinished()
 {
     P = ui->appliedForce->value();
 
-    int sliderPosition = nearbyint(100.*P/5000.0);
+    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -1306,7 +1327,7 @@ void MainWindow::on_displacementSlider_valueChanged(int value)
     // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
     displacementRatio = double(value)/100.0;
 
-    P = 5000.0 * displacementRatio;
+    P = MAX_FORCE * displacementRatio;
 
     //qDebug() << "Force value: " << P << ",  sliderPosition: " << value << endln;
     ui->appliedForce->setValue(P);
@@ -1331,7 +1352,7 @@ void MainWindow::setActiveLayer(int layerIdx)
     ui->layerDryWeight->setValue(mSoilLayers[layerIdx].getLayerUnitWeight());
     ui->layerSaturatedWeight->setValue(mSoilLayers[layerIdx].getLayerSatUnitWeight());
     ui->layerFrictionAngle->setValue(mSoilLayers[layerIdx].getLayerFrictionAng());
-    ui->layerShearModulus->setValue((mSoilLayers[layerIdx].getLayerStiffness()/10.e3));
+    ui->layerShearModulus->setValue((mSoilLayers[layerIdx].getLayerStiffness()/1.e3));
 
     inSetupState = false;
 
@@ -1455,11 +1476,11 @@ void MainWindow::on_layerShearModulus_valueChanged(double arg1)
     int layerIdx = findActiveLayer();
 
     if (arg1 < 1.0) {
-        val = 10.0e3;
+        val = 1.0e3;
         ui->layerShearModulus->setValue(1.0);
     }
     else {
-        val = arg1*10.0e3;
+        val = arg1*1.0e3;
     }
     if (layerIdx >= 0) {
         mSoilLayers[layerIdx].setLayerStiffness( (val) );
@@ -1718,7 +1739,7 @@ void MainWindow::updateSystemPlot() {
     // add force to the plot
 
     if (ABS(P) > 0.0) {
-        double force = 0.45*W*P/5000.0;
+        double force = 0.45*W*P/MAX_FORCE;
 
         // add the arrow:
         QCPItemLine *arrow = new QCPItemLine(ui->systemPlot);
@@ -1761,7 +1782,7 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
             if (name.toLower() == QString("pile cap")) break;
 
             //qDebug() << "PILE: " << name;
-            ui->properties->setCurrentWidget(ui->pileProperties);
+            ui->properties->setCurrentWidget(ui->pilePropertiesWidget);
             pileIdx = name.mid(6,1).toInt() - 1;
 
             activePileIdx  = pileIdx;
@@ -1773,7 +1794,7 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
         case 'L':
         case 'l':
             //qDebug() << "LAYER: " << name;
-            ui->properties->setCurrentWidget(ui->soilProperties);
+            ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
             layerIdx = name.mid(7,1).toInt() - 1;
 
             activePileIdx  = -1;
@@ -1785,7 +1806,7 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
         case 'G':
         case 'g':
             //qDebug() << "LAYER: " << name;
-            ui->properties->setCurrentWidget(ui->soilProperties);
+            ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
 
             activePileIdx  = -1;
             activeLayerIdx = -1;
@@ -1802,3 +1823,139 @@ void MainWindow::on_systemPlot_selectionChangedByUser()
 
     this->updateSystemPlot();
 }
+
+void MainWindow::on_actionLicense_Information_triggered()
+{
+    CopyrightDialog *dlg = new CopyrightDialog(this);
+    dlg->exec();
+}
+
+
+void MainWindow::on_actionLicense_triggered()
+{
+    CopyrightDialog *dlg = new CopyrightDialog(this);
+    dlg->exec();
+}
+
+void MainWindow::on_actionVersion_triggered()
+{
+    QMessageBox::about(this, tr("Version"),
+                       tr("Version 1.0 "));
+}
+
+void MainWindow::on_actionProvide_Feedback_triggered()
+{
+    // QDesktopServices::openUrl(QUrl("https://github.com/NHERI-SimCenter/QtPile/issues", QUrl::TolerantMode));
+  QDesktopServices::openUrl(QUrl("https://www.designsafe-ci.org/help/new-ticket/", QUrl::TolerantMode));
+
+}
+
+int MainWindow::ReadFile(QString s)
+{
+    return 0;
+}
+
+int MainWindow::WriteFile(QString s)
+{
+    int cnt = 0;
+
+    /* start a JSON object to represent the system */
+    QJsonObject *json = new QJsonObject();
+
+    json->insert("creator", QString("PileGroupTool"));
+    json->insert("version", QString(APP_VERSION));
+#ifdef Q_OS_WIN
+    QString username = qgetenv("USERNAME");
+#else
+    QString username = qgetenv("USER");
+#endif
+    json->insert("author", username);
+    json->insert("date", QDateTime::currentDateTime().toString());
+
+    /* write layer information */
+    QJsonArray *layerInfo = new QJsonArray();
+    for (int lid=0; lid<MAXLAYERS; lid++) {
+        QJsonObject aLayer;
+
+        aLayer.insert("depth", mSoilLayers[lid].getLayerDepth());
+        aLayer.insert("thickness", mSoilLayers[lid].getLayerThickness());
+        aLayer.insert("gamma", mSoilLayers[lid].getLayerUnitWeight());
+        aLayer.insert("gammaSaturated", mSoilLayers[lid].getLayerSatUnitWeight());
+        aLayer.insert("phi", mSoilLayers[lid].getLayerFrictionAng());
+        aLayer.insert("cohesion", 0.0);
+        aLayer.insert("Gmodulus", mSoilLayers[lid].getLayerStiffness());
+
+        layerInfo->append(aLayer);
+    }
+
+    json->insert("layers", *layerInfo);
+
+    json->insert("groundWaterTable", gwtDepth);
+
+    /* write pile information */
+    QJsonArray *pileInfo = new QJsonArray();
+    for (int pid=0; pid<numPiles; pid++) {
+        QJsonObject aPile;
+
+        aPile.insert("embeddedLength", L2[pid]);
+        aPile.insert("freeLength", L1);
+        aPile.insert("diameter", pileDiameter[pid]);
+        aPile.insert("YoungsModulus", E[pid]);
+        aPile.insert("xOffset", xOffset[pid]);
+
+        pileInfo->append(aPile);
+    }
+
+    json->insert("piles", *pileInfo);
+
+    json->insert("useToeResistance", useToeResistance);
+    json->insert("assumeRigidPileHeadConnection", assumeRigidPileHeadConnection);
+
+    /* write load information */
+    QJsonObject *loadInfo = new QJsonObject();
+
+    loadInfo->insert("HForce", P);
+    loadInfo->insert("VForce", PV);
+    loadInfo->insert("Moment", PMom);
+
+    json->insert("loads", *loadInfo);
+
+    /* FEA parameters */
+    QJsonObject FEAparameters;
+
+    FEAparameters.insert("minElementsPerLayer",minElementsPerLayer);
+    FEAparameters.insert("maxElementsPerLayer",maxElementsPerLayer);
+    FEAparameters.insert("numElementsInAir", numElementsInAir);
+
+    json->insert("FEAparameters", FEAparameters);
+
+    QJsonDocument infoDoc = QJsonDocument(*json);
+
+    /* write JSON object to file */
+
+    QFile saveFile( QStringLiteral("save.json") );
+
+    if (!saveFile.open(QIODevice::WriteOnly)) {
+        qWarning("Couldn't open save file.");
+        return false;
+    }
+
+    saveFile.write( infoDoc.toJson() );
+    saveFile.close();
+
+    // clean up
+    delete layerInfo;
+    delete pileInfo;
+    delete loadInfo;
+    delete json;
+
+    return cnt;
+}
+
+
+void MainWindow::replyFinished(QNetworkReply *pReply)
+{
+    return;
+}
+
+

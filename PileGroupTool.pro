@@ -6,18 +6,20 @@
 
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport network
 
-TARGET = QtPile
+TARGET = PileGroupTool
 TEMPLATE = app
+VERSION=1.0
 
 #M_VERSION = 1.0.
 #M_REV     = $Rev: $
 
-PRODUCT_NAME = 'QtPile'
+PRODUCT_NAME = 'PileGroupTool'
 
 #DEFINES += APPLICATION_NAME=\"\\\"$$PRODUCT_NAME\\\"\"
 #DEFINES += APPLICATION_VERSION=\"\\\"$$M_VERSION$$member(M_REV, 1)\\\"\"
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 #win32: INCLUDES += "./ops"
 #win32: LIBS += -llapack -lblas
