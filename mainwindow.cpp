@@ -77,8 +77,8 @@ MainWindow::MainWindow(QWidget *parent) :
     this->fetchSettings();
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
-    ui->appliedForce->setMaximum(MAX_FORCE);
-    ui->appliedForce->setMinimum(-MAX_FORCE);
+    ui->appliedHorizontalForce->setMaximum(MAX_FORCE);
+    ui->appliedHorizontalForce->setMinimum(-MAX_FORCE);
 
     ui->textBrowser->clear();
 #ifdef Q_OS_WIN
@@ -185,7 +185,7 @@ void MainWindow::refreshUI() {
 
     int pileIdx = ui->pileIndex->value() - 1;
 
-    ui->appliedForce->setValue(P);
+    ui->appliedHorizontalForce->setValue(P);
     ui->xOffset->setValue(xOffset[pileIdx]);
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
@@ -1085,7 +1085,7 @@ void MainWindow::on_actionReset_triggered()
 
     int pileIdx = ui->pileIndex->value() - 1;
 
-    ui->appliedForce->setValue(P);
+    ui->appliedHorizontalForce->setValue(P);
     ui->xOffset->setValue(xOffset[pileIdx]);
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
@@ -1260,7 +1260,7 @@ void MainWindow::on_appliedForce_valueChanged(double arg1)
     int sliderPosition = nearbyint(100.*P/MAX_FORCE);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
-    ui->displacementSlider->setValue(sliderPosition);
+    ui->horizontalForceSlider->setValue(sliderPosition);
     //qDebug() << "valueChanged:: Force value: " << P << ",  sliderPosition: " << sliderPosition << endln;
 
     this->doAnalysis();
@@ -1268,14 +1268,14 @@ void MainWindow::on_appliedForce_valueChanged(double arg1)
 
 void MainWindow::on_appliedForce_editingFinished()
 {
-    P = ui->appliedForce->value();
+    P = ui->appliedHorizontalForce->value();
 
     int sliderPosition = nearbyint(100.*P/MAX_FORCE);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
     //qDebug() << "editingFinished:: Force value: " << P << ",  sliderPosition: " << sliderPosition << endln;
-    ui->displacementSlider->setSliderPosition(sliderPosition);
+    ui->horizontalForceSlider->setSliderPosition(sliderPosition);
 
     this->doAnalysis();
 }
@@ -1288,7 +1288,7 @@ void MainWindow::on_displacementSlider_valueChanged(int value)
     P = MAX_FORCE * displacementRatio;
 
     //qDebug() << "Force value: " << P << ",  sliderPosition: " << value << endln;
-    ui->appliedForce->setValue(P);
+    ui->appliedHorizontalForce->setValue(P);
 
     this->doAnalysis();
     this->updateSystemPlot();
@@ -2075,3 +2075,8 @@ void MainWindow::replyFinished(QNetworkReply *pReply)
 }
 
 
+
+void MainWindow::on_forceTypeSelector_activated(int index)
+{
+    ui->loadTypesStack->setCurrentIndex(index);
+}

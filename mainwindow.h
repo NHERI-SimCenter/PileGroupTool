@@ -148,6 +148,8 @@ private slots:
     void replyFinished(QNetworkReply*);
 
 
+    void on_forceTypeSelector_activated(int index);
+
 private:
     Q_OBJECT
     Ui::MainWindow *ui;
