@@ -14,6 +14,11 @@
 #include <QFileDialog>
 #include <QDir>
 
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
+
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
 extern int getPyParam(double pyDepth,
@@ -94,6 +99,14 @@ MainWindow::MainWindow(QWidget *parent) :
     P        = 1000.0;
     PV       =    0.0;
     PMom     =    0.0;
+
+    HDisp = 0.0; // prescribed horizontal displacement
+    VDisp = 0.0; // prescriber vertical displacement
+
+    surfaceDisp = 0.0;    // prescribed soil surface displacement
+    percentage12 = 1.0;   // percentage of surface displacement at 1st layer interface
+    percentage23 = 0.0;   // percentage of surface displacement at 2nd layer interface
+    percentageBase = 0.0; // percentage of surface displacement at base of soil column
 
     L1                       = 1.0;
     L2[numPiles-1]           = 20.0;
@@ -183,9 +196,17 @@ void MainWindow::refreshUI() {
     ui->pileIndex->setMinimum(1);
     ui->pileIndex->setMaximum(numPiles);
 
-    int pileIdx = ui->pileIndex->value() - 1;
+    if (loadControlType == "forceControl") { ui->forceTypeSelector->setCurrentIndex(0); }
+    else if (loadControlType == "pushOver") { ui->forceTypeSelector->setCurrentIndex(1); }
+    else if (loadControlType == "soilMotion") { ui->forceTypeSelector->setCurrentIndex(2); }
+    else { ui->forceTypeSelector->setCurrentIndex(0); }
 
     ui->appliedHorizontalForce->setValue(P);
+    ui->appliedVerticalForce->setValue(PV);
+    ui->appliedMoment->setValue(PMom);
+
+    int pileIdx = ui->pileIndex->value() - 1;
+
     ui->xOffset->setValue(xOffset[pileIdx]);
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
@@ -1043,6 +1064,14 @@ void MainWindow::on_actionReset_triggered()
     PV       =    0.0;
     PMom     =    0.0;
 
+    HDisp = 0.0; // prescribed horizontal displacement
+    VDisp = 0.0; // prescriber vertical displacement
+
+    surfaceDisp = 0.0;    // prescribed soil surface displacement
+    percentage12 = 1.0;   // percentage of surface displacement at 1st layer interface
+    percentage23 = 0.0;   // percentage of surface displacement at 2nd layer interface
+    percentageBase = 0.0; // percentage of surface displacement at base of soil column
+
     L1                       = 1.0;
     L2[numPiles-1]           = 20.0;
     pileDiameter[numPiles-1] = 1.0;
@@ -1250,49 +1279,6 @@ void MainWindow::on_groundWaterTable_valueChanged(double arg1)
     this->updateSystemPlot();
 }
 
-/* ***** loading parameter changes ***** */
-
-void MainWindow::on_appliedForce_valueChanged(double arg1)
-{
-    //P = ui->appliedForce->value();
-    P = arg1;
-
-    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-    ui->horizontalForceSlider->setValue(sliderPosition);
-    //qDebug() << "valueChanged:: Force value: " << P << ",  sliderPosition: " << sliderPosition << endln;
-
-    this->doAnalysis();
-}
-
-void MainWindow::on_appliedForce_editingFinished()
-{
-    P = ui->appliedHorizontalForce->value();
-
-    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-
-    //qDebug() << "editingFinished:: Force value: " << P << ",  sliderPosition: " << sliderPosition << endln;
-    ui->horizontalForceSlider->setSliderPosition(sliderPosition);
-
-    this->doAnalysis();
-}
-
-void MainWindow::on_displacementSlider_valueChanged(int value)
-{
-    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
-    displacementRatio = double(value)/100.0;
-
-    P = MAX_FORCE * displacementRatio;
-
-    //qDebug() << "Force value: " << P << ",  sliderPosition: " << value << endln;
-    ui->appliedHorizontalForce->setValue(P);
-
-    this->doAnalysis();
-    this->updateSystemPlot();
-}
 
 //
 // layer properties and setup methods
@@ -1861,7 +1847,10 @@ bool MainWindow::ReadFile(QString s)
     QString version;
     version  = json["version"].toString();
 
-    if (version != "1.0") fileTypeError = true;
+    fileTypeError = true;
+    if (version == "1.0")   fileTypeError = false;
+    if (version == "1.99")  fileTypeError = false;
+    if (version == "2.0")   fileTypeError = false;
 
     if (fileTypeError) {
         QMessageBox msg(QMessageBox::Information, "Info", "Not a valid model file.");
@@ -1937,12 +1926,47 @@ bool MainWindow::ReadFile(QString s)
     useToeResistance              = json["useToeResistance"].toBool();
     assumeRigidPileHeadConnection = json["assumeRigidPileHeadConnection"].toBool();
 
-    /* write load information */
-    QJsonObject loadInfo = json["loads"].toObject();
 
-    P    = loadInfo["HForce"].toDouble();
-    PV   = loadInfo["VForce"].toDouble();
-    PMom = loadInfo["Moment"].toDouble();
+    /* read load information */
+    if (version == "1.0")
+    {
+        QJsonObject loadInfo = json["loads"].toObject();
+
+        P    = loadInfo["HForce"].toDouble();
+        PV   = loadInfo["VForce"].toDouble();
+        PMom = loadInfo["Moment"].toDouble();
+
+        HDisp = 0.0;
+        VDisp = 0.0;
+
+        surfaceDisp  = 0.0;
+        percentage12 = 100.;
+        percentage23 = 0.0;
+        percentageBase = 0.0;
+
+        loadControlType = "forceControl";
+    }
+    else if (version == "1.99" || version == "2.0")
+    {
+        QJsonObject loadInfo = json["loads"].toObject();
+        QJsonObject forceControlObj = loadInfo["forceControl"].toObject();
+        QJsonObject pushOverObj     = loadInfo["pushOver"].toObject();
+        QJsonObject soilMotionObj   = loadInfo["soilMotion"].toObject();
+
+        loadControlType = loadInfo["loadControlType"].toString();
+
+        P    = forceControlObj["HForce"].toDouble();
+        PV   = forceControlObj["VForce"].toDouble();
+        PMom = forceControlObj["Moment"].toDouble();
+
+        HDisp = pushOverObj["HDisp"].toDouble();
+        VDisp = pushOverObj["VDisp"].toDouble();
+
+        surfaceDisp    = soilMotionObj["surfaceDisp"].toDouble();
+        percentage12   = soilMotionObj["percentage12"].toDouble();
+        percentage23   = soilMotionObj["percentage23"].toDouble();
+        percentageBase = soilMotionObj["percentageBase"].toDouble();
+    }
 
     /* FEA parameters */
     QJsonObject FEAparameters = json["FEAparameters"].toObject();
@@ -2027,12 +2051,49 @@ bool MainWindow::WriteFile(QString s)
     json->insert("useToeResistance", useToeResistance);
     json->insert("assumeRigidPileHeadConnection", assumeRigidPileHeadConnection);
 
+
+
+
     /* write load information */
     QJsonObject *loadInfo = new QJsonObject();
 
-    loadInfo->insert("HForce", P);
-    loadInfo->insert("VForce", PV);
-    loadInfo->insert("Moment", PMom);
+    int selection = ui->forceTypeSelector->currentIndex();
+    QString loadType;
+
+    switch (selection)
+    {
+    case 0:
+        loadType = "forceControl";
+        break;
+    case 1:
+        loadType = "pushOver";
+        break;
+    case 2:
+        loadType = "soilMotion";
+        break;
+    default:
+        qWarning() << "cannot identify the loadControlType";
+    }
+
+    loadInfo->insert("loadControlType", loadType);
+
+    QJsonObject *forceControlObj = new QJsonObject();
+    forceControlObj->insert("HForce", P);
+    forceControlObj->insert("VForce", PV);
+    forceControlObj->insert("Moment", PMom);
+    loadInfo->insert("forceControl", *forceControlObj);
+
+    QJsonObject *pushOverObj     = new QJsonObject();
+    pushOverObj->insert("HDisp", HDisp);
+    pushOverObj->insert("VDisp", VDisp);
+    loadInfo->insert("pushOver", *pushOverObj);
+
+    QJsonObject *soilMotionObj   = new QJsonObject();
+    soilMotionObj->insert("surfaceDisp", surfaceDisp);
+    soilMotionObj->insert("percentage12", percentage12);
+    soilMotionObj->insert("percentage23", percentage23);
+    soilMotionObj->insert("percentageBase", percentageBase);
+    loadInfo->insert("soilMotion", *soilMotionObj);
 
     json->insert("loads", *loadInfo);
 
@@ -2063,6 +2124,9 @@ bool MainWindow::WriteFile(QString s)
     delete layerInfo;
     delete pileInfo;
     delete loadInfo;
+    delete forceControlObj;
+    delete pushOverObj;
+    delete soilMotionObj;
     delete json;
 
     return true;
@@ -2079,4 +2143,250 @@ void MainWindow::replyFinished(QNetworkReply *pReply)
 void MainWindow::on_forceTypeSelector_activated(int index)
 {
     ui->loadTypesStack->setCurrentIndex(index);
+}
+
+
+/* ***** loading parameter changes ***** */
+
+void MainWindow::on_appliedHorizontalForce_editingFinished()
+{
+    P = ui->appliedHorizontalForce->value();
+
+    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->horizontalForceSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_horizontalForceSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    P = MAX_FORCE * sliderRatio;
+
+    ui->appliedHorizontalForce->setValue(P);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_appliedVerticalForce_editingFinished()
+{
+    PV = ui->appliedHorizontalForce->value();
+
+    int sliderPosition = nearbyint(100.*PV/MAX_FORCE);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->verticalForceSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_verticalForceSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    PV = MAX_FORCE * sliderRatio;
+
+    ui->appliedVerticalForce->setValue(PV);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_appliedMoment_editingFinished()
+{
+    PMom = ui->appliedMoment->value();
+
+    int sliderPosition = nearbyint(100.*PMom/MAX_MOMENT);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->momentSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_momentSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    PMom = MAX_MOMENT * sliderRatio;
+
+    ui->appliedMoment->setValue(PMom);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+
+
+
+
+void MainWindow::on_pushoverDisplacement_editingFinished()
+{
+    HDisp = ui->pushoverDisplacement->value();
+
+    int sliderPosition = nearbyint(100.*HDisp/MAX_DISP);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->pushoverDisplacementSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_pushoverDisplacementSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    HDisp = MAX_DISP * sliderRatio;
+
+    ui->pushoverDisplacement->setValue(HDisp);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_pulloutDisplacement_editingFinished()
+{
+    VDisp = ui->pulloutDisplacement->value();
+
+    int sliderPosition = nearbyint(100.*VDisp/MAX_DISP);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->pulloutDisplacementSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_pulloutDisplacementSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    VDisp = MAX_DISP * sliderRatio;
+
+    ui->pulloutDisplacement->setValue(VDisp);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+
+
+
+
+
+void MainWindow::on_surfaceDisplacement_editingFinished()
+{
+    surfaceDisp = ui->surfaceDisplacement->value();
+
+    int sliderPosition = nearbyint(100.*surfaceDisp/MAX_DISP);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->surfaceDisplacementSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_surfaceDisplacementSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    surfaceDisp = MAX_DISP * sliderRatio;
+
+    ui->surfaceDisplacement->setValue(surfaceDisp);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_Interface12_editingFinished()
+{
+    percentage12 = ui->Interface12->value();
+
+    int sliderPosition = nearbyint(percentage12);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->Interface12Slider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_Interface12Slider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    percentage12 = sliderRatio;
+
+    ui->Interface12->setValue(percentage12);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_Interface23_editingFinished()
+{
+    percentage23 = ui->Interface23->value();
+
+    int sliderPosition = nearbyint(percentage23);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->Interface23Slider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_Interface23Slider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    percentage23 = sliderRatio;
+
+    ui->Interface23->setValue(percentage23);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_BaseDisplacement_editingFinished()
+{
+    percentageBase = ui->BaseDisplacement->value();
+
+    int sliderPosition = nearbyint(percentageBase);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->BaseDisplacementSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_BaseDisplacementSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    percentageBase = sliderRatio;
+
+    ui->BaseDisplacement->setValue(percentageBase);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
 }
