@@ -51,3 +51,43 @@ PileFEAmodeler::PileFEAmodeler()
 {
     // set default parameters
 }
+
+void PileFEAmodeler::updatePiles(QMap<QString, double> &pileInfo)
+{
+
+}
+
+void PileFEAmodeler::updateLoad(double Px, double Py, double M)
+{
+
+}
+
+void PileFEAmodeler::updateSoil(QVector<soilLayer> &layers)
+{
+
+}
+
+void PileFEAmodeler::updateDisplacement(double)
+{
+
+}
+
+void PileFEAmodeler::updateDispProfile(QVector<double> &)
+{
+
+}
+
+void PileFEAmodeler::setAnalysisType(QString)
+{
+
+}
+
+void PileFEAmodeler::doAnalysis()
+{
+
+}
+
+int  PileFEAmodeler::getExitStatus()
+{
+
+}

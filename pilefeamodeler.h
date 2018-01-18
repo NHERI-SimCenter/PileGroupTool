@@ -2,6 +2,8 @@
 #define PILEFEAMODELER_H
 
 #include <QVector>
+#include <QMap>
+
 #include "pilegrouptool_parameters.h"
 #include "soilmat.h"
 
@@ -9,6 +11,16 @@ class PileFEAmodeler
 {
 public:
     PileFEAmodeler();
+
+    void updatePiles(QMap<QString, double> &);
+    void updateLoad(double, double, double);
+    void updateSoil(QVector<soilLayer> &);
+    void updateDisplacement(double);
+    void updateDispProfile(QVector<double> &);
+    void setAnalysisType(QString);
+    void doAnalysis();
+
+    int  getExitStatus();
 
 protected:
 
