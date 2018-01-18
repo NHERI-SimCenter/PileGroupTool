@@ -1182,7 +1182,7 @@ Layers 1 &amp; 2:</string>
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="displacement">
        <attribute name="title">
@@ -1276,27 +1276,23 @@ Layers 1 &amp; 2:</string>
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="systemTab">
        <attribute name="title">
         <string>System Plot</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0">
-         <widget class="QCustomPlot" name="systemPlot" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-            <horstretch>3</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>200</width>
-            <height>0</height>
-           </size>
-          </property>
-         </widget>
-        </item>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
        </layout>
       </widget>
      </widget>
@@ -1433,6 +1429,12 @@ Layers 1 &amp; 2:</string>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>HeaderWidget</class>
    <extends>QFrame</extends>
    <header>../widgets/Common/HeaderWidget.h</header>
@@ -1442,12 +1444,6 @@ Layers 1 &amp; 2:</string>
    <class>FooterWidget</class>
    <extends>QFrame</extends>
    <header>../widgets/Common/FooterWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QCustomPlot</class>
-   <extends>QWidget</extends>
-   <header>qcustomplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

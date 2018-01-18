@@ -170,6 +170,7 @@ private slots:
 private:
     Q_OBJECT
     Ui::MainWindow *ui;
+    QCustomPlot *systemPlot = NULL;
 
     void updateSystemPlot();
     void refreshUI();
