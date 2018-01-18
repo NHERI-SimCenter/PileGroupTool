@@ -70,6 +70,7 @@ extern int getPyParam(double pyDepth,
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 Domain theDomain;
+
 //SimulationInformation simulationInfo;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -799,34 +800,12 @@ void MainWindow::doAnalysis(void)
     theAnalysis.analyze(20);
     theDomain.calculateNodalReactions(0);
 
-#if 1
     QVector<QVector<double>> loc(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> disp(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> moment(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> shear(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> stress(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<double> zero(numNodePiles,0.0);
-#else
-    QVector<QVector<double> *> loc(MAXPILES, 0);
-    QVector<QVector<double> *> disp(MAXPILES, 0);
-    QVector<QVector<double> *> moment(MAXPILES, 0);
-    QVector<QVector<double> *> shear(MAXPILES, 0);
-    QVector<QVector<double> *> stress(MAXPILES, 0);
-    QVector<double> zero(numNodePiles,0.0);
-
-    for (int k=0; k<numPiles; k++) {
-        if (loc[k] != NULL)    delete loc[k];
-        if (disp[k] != NULL)   delete disp[k];
-        if (moment[k] != NULL) delete moment[k];
-        if (shear[k] != NULL)  delete shear[k];
-        if (stress[k] != NULL) delete stress[k];
-        loc[k]    = new QVector<double>(numNodePile[k],0.0);
-        disp[k]   = new QVector<double>(numNodePile[k],0.0);
-        moment[k] = new QVector<double>(numNodePile[k],0.0);
-        shear[k]  = new QVector<double>(numNodePile[k],0.0);
-        stress[k] = new QVector<double>(numNodePile[k],0.0);
-    }
-#endif
 
     double maxDisp   = 0.0;
     double minDisp   = 0.0;

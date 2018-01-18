@@ -7,6 +7,9 @@
 #include "pilegrouptool_parameters.h"
 #include "soilmat.h"
 
+class Domain;
+class StaticAnalysis;
+
 class PileFEAmodeler
 {
 public:
@@ -19,8 +22,13 @@ public:
     void updateDispProfile(QVector<double> &);
     void setAnalysisType(QString);
     void doAnalysis();
+    void extractPlotData();
 
     int  getExitStatus();
+
+    void buildMesh();
+    void buildLoad();
+    void buildAnalysis();
 
     QList<QVector<double> > *getDisplacements(int pile=0, int dir=0);
     QList<QVector<double> > *getMoment(int pile=0);
@@ -33,6 +41,8 @@ protected:
 
     // load control
     QString loadControlType;
+
+    QMap<QString, bool> modelState;
 
     double P;     // lateral force on pile cap
     double PV;    // vertical force on pile cap
@@ -120,6 +130,12 @@ protected:
 
     // others
     QVector<HEAD_NODE_TYPE> headNodeList = QVector<HEAD_NODE_TYPE>(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
+
+    Domain *theDomain;
+    StaticAnalysis *theAnalysis = NULL;
+
+    int numLoadedNode;
+    QVector<double> depthOfLayer = QVector<double>(4, 0.0);
 };
 
 #endif // PILEFEAMODELER_H
