@@ -5,6 +5,7 @@
 #include "utilWindows/dialogpreferences.h"
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
+#include "pilefeamodeler.h"
 
 #include <QApplication>
 #include <QtNetwork/QNetworkAccessManager>
@@ -69,6 +70,7 @@ extern int getPyParam(double pyDepth,
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 Domain theDomain;
+
 //SimulationInformation simulationInfo;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -76,6 +78,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    systemPlot = new QCustomPlot(ui->systemTab);
+    QLayout *lyt = ui->systemTab->layout();
+    lyt->addWidget(systemPlot);
 
     inSetupState = true;
 
@@ -146,23 +151,23 @@ MainWindow::MainWindow(QWidget *parent) :
     // We create a sub layout so we can generate a small gap between the plot layout cell border
     // and the legend border:
     QCPLayoutGrid *subLayout = new QCPLayoutGrid;
-    ui->systemPlot->plotLayout()->addElement(1, 0, subLayout);
+    systemPlot->plotLayout()->addElement(1, 0, subLayout);
     subLayout->setMargins(QMargins(5, 0, 5, 5));
-    subLayout->addElement(0, 0, ui->systemPlot->legend);
+    subLayout->addElement(0, 0, systemPlot->legend);
     // change the fill order of the legend, so it's filled left to right in columns:
-    //ui->systemPlot->legend->setFillOrder(QCPLegend::foColumnsFirst);
-    ui->systemPlot->legend->setRowSpacing(1);
-    ui->systemPlot->legend->setColumnSpacing(2);
-    //ui->systemPlot->legend->setFillOrder(QCPLayoutGrid::foColumnsFirst,true);
+    //systemPlot->legend->setFillOrder(QCPLegend::foColumnsFirst);
+    systemPlot->legend->setRowSpacing(1);
+    systemPlot->legend->setColumnSpacing(2);
+    //systemPlot->legend->setFillOrder(QCPLayoutGrid::foColumnsFirst,true);
 
     // set legend's row stretch factor very small so it ends up with minimum height:
-    ui->systemPlot->plotLayout()->setRowStretchFactor(1, 0.001);
+    systemPlot->plotLayout()->setRowStretchFactor(1, 0.001);
 
     // plotsetting
     activePileIdx = 0;
     activeLayerIdx = -1;
 
-    connect(ui->systemPlot, SIGNAL(selectionChangedByUser()), this, SLOT(on_systemPlot_selectionChangedByUser()));
+    connect(systemPlot, SIGNAL(selectionChangedByUser()), this, SLOT(on_systemPlot_selectionChangedByUser()));
 
     inSetupState = false;
 
@@ -795,34 +800,12 @@ void MainWindow::doAnalysis(void)
     theAnalysis.analyze(20);
     theDomain.calculateNodalReactions(0);
 
-#if 1
     QVector<QVector<double>> loc(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> disp(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> moment(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> shear(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> stress(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<double> zero(numNodePiles,0.0);
-#else
-    QVector<QVector<double> *> loc(MAXPILES, 0);
-    QVector<QVector<double> *> disp(MAXPILES, 0);
-    QVector<QVector<double> *> moment(MAXPILES, 0);
-    QVector<QVector<double> *> shear(MAXPILES, 0);
-    QVector<QVector<double> *> stress(MAXPILES, 0);
-    QVector<double> zero(numNodePiles,0.0);
-
-    for (int k=0; k<numPiles; k++) {
-        if (loc[k] != NULL)    delete loc[k];
-        if (disp[k] != NULL)   delete disp[k];
-        if (moment[k] != NULL) delete moment[k];
-        if (shear[k] != NULL)  delete shear[k];
-        if (stress[k] != NULL) delete stress[k];
-        loc[k]    = new QVector<double>(numNodePile[k],0.0);
-        disp[k]   = new QVector<double>(numNodePile[k],0.0);
-        moment[k] = new QVector<double>(numNodePile[k],0.0);
-        shear[k]  = new QVector<double>(numNodePile[k],0.0);
-        stress[k] = new QVector<double>(numNodePile[k],0.0);
-    }
-#endif
 
     double maxDisp   = 0.0;
     double minDisp   = 0.0;
@@ -1541,38 +1524,38 @@ void MainWindow::updateSystemPlot() {
     if (maxH > L1/2.) maxH = L1/2.;
 
     // setup system plot
-    ui->systemPlot->clearPlottables();
-    ui->systemPlot->clearGraphs();
-    ui->systemPlot->clearItems();
+    systemPlot->clearPlottables();
+    systemPlot->clearGraphs();
+    systemPlot->clearItems();
 
-    if (!ui->systemPlot->layer("groundwater"))
-        { ui->systemPlot->addLayer("groundwater", ui->systemPlot->layer("grid"), QCustomPlot::limAbove); }
-    if (!ui->systemPlot->layer("soil"))
-        { ui->systemPlot->addLayer("soil", ui->systemPlot->layer("groundwater"), QCustomPlot::limAbove); }
-    if (!ui->systemPlot->layer("piles"))
-        { ui->systemPlot->addLayer("piles", ui->systemPlot->layer("soil"), QCustomPlot::limAbove); }
+    if (!systemPlot->layer("groundwater"))
+        { systemPlot->addLayer("groundwater", systemPlot->layer("grid"), QCustomPlot::limAbove); }
+    if (!systemPlot->layer("soil"))
+        { systemPlot->addLayer("soil", systemPlot->layer("groundwater"), QCustomPlot::limAbove); }
+    if (!systemPlot->layer("piles"))
+        { systemPlot->addLayer("piles", systemPlot->layer("soil"), QCustomPlot::limAbove); }
 
-    ui->systemPlot->autoAddPlottableToLegend();
-    ui->systemPlot->legend->setVisible(true);
+    systemPlot->autoAddPlottableToLegend();
+    systemPlot->legend->setVisible(true);
 
     QVector<double> zero(2,xbar-0.5*W);
     QVector<double> loc(2,0.0);
     loc[0] = -(H-L1); loc[1] = L1;
 
-    ui->systemPlot->addGraph();
-    ui->systemPlot->graph(0)->setData(zero,loc);
-    ui->systemPlot->graph(0)->setPen(QPen(Qt::black,1));
-    ui->systemPlot->graph(0)->removeFromLegend();
+    systemPlot->addGraph();
+    systemPlot->graph(0)->setData(zero,loc);
+    systemPlot->graph(0)->setPen(QPen(Qt::black,1));
+    systemPlot->graph(0)->removeFromLegend();
 
     // create layers
 
-    ui->systemPlot->setCurrentLayer("soil");
+    systemPlot->setCurrentLayer("soil");
 
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
 /* set the following to #if 1 once we can select a rectangle */
 #if 0
-        QCPItemRect* layerII = new QCPItemRect(ui->systemPlot);
+        QCPItemRect* layerII = new QCPItemRect(systemPlot);
         layerII->topLeft->setCoords(xbar - W/2., -mSoilLayers[iLayer].getLayerDepth());
         layerII->bottomRight->setCoords(xbar + W/2.,-mSoilLayers[iLayer].getLayerDepth() - mSoilLayers[iLayer].getLayerThickness());
 
@@ -1587,7 +1570,7 @@ void MainWindow::updateSystemPlot() {
         x[3] = x[2];        y[3] = y[0];
         x[4] = x[0];        y[4] = y[0];
 
-        QCPCurve *layerII = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
+        QCPCurve *layerII = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
         layerII->setData(x,y);
         layerII->setName(QString("Layer #%1").arg(iLayer+1));
 #endif
@@ -1600,12 +1583,12 @@ void MainWindow::updateSystemPlot() {
             layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
         }
 
-        //ui->systemPlot->addPlottable(layerII);
+        //systemPlot->addPlottable(layerII);
     }
 
     // ground water table
 
-    ui->systemPlot->setCurrentLayer("groundwater");
+    systemPlot->setCurrentLayer("groundwater");
 
     if (gwtDepth < (H-L1)) {
         QVector<double> x(5,0.0);
@@ -1617,7 +1600,7 @@ void MainWindow::updateSystemPlot() {
         x[3] = x[2];        y[3] = y[0];
         x[4] = x[0];        y[4] = y[0];
 
-        QCPCurve *water = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
+        QCPCurve *water = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
         water->setData(x,y);
 
         water->setPen(QPen(Qt::blue, 2));
@@ -1628,7 +1611,7 @@ void MainWindow::updateSystemPlot() {
 
     // plot the pile cap
 
-    ui->systemPlot->setCurrentLayer("piles");
+    systemPlot->setCurrentLayer("piles");
 
     QVector<double> x(5,0.0);
     QVector<double> y(5,0.0);
@@ -1639,7 +1622,7 @@ void MainWindow::updateSystemPlot() {
     x[3] = x[2];            y[3] = y[0];
     x[4] = x[0];            y[4] = y[0];
 
-    QCPCurve *pileCap = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
+    QCPCurve *pileCap = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
     pileCap->setData(x,y);
     pileCap->setPen(QPen(Qt::black, 1));
     pileCap->setBrush(QBrush(Qt::gray));
@@ -1662,7 +1645,7 @@ void MainWindow::updateSystemPlot() {
         x[3] = x[2];                    y[3] = y[0];
         x[4] = x[0];                    y[4] = y[0];
 
-        QCPCurve *pileII = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
+        QCPCurve *pileII = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
         pileII->setData(x,y);
         if (pileIdx == activePileIdx) {
             pileII->setPen(QPen(Qt::red, 2));
@@ -1675,7 +1658,7 @@ void MainWindow::updateSystemPlot() {
         //pileII->setBrush(QBrush(Qt::black));
         pileII->setName(QString("Pile #%1").arg(pileIdx+1));
 
-        //ui->systemPlot->addPlottable(pileII);
+        //systemPlot->addPlottable(pileII);
     }
 
     // add force to the plot
@@ -1684,8 +1667,8 @@ void MainWindow::updateSystemPlot() {
         double force = 0.45*W*P/MAX_FORCE;
 
         // add the arrow:
-        QCPItemLine *arrow = new QCPItemLine(ui->systemPlot);
-        //ui->systemPlot->addItem(arrow);
+        QCPItemLine *arrow = new QCPItemLine(systemPlot);
+        //systemPlot->addItem(arrow);
         arrow->setPen(QPen(Qt::red, 3));
         arrow->start->setCoords(xbar, L1);
         arrow->end->setCoords(xbar + force, L1);
@@ -1696,8 +1679,8 @@ void MainWindow::updateSystemPlot() {
         double force = 0.45*W*PV/MAX_FORCE;
 
         // add the arrow:
-        QCPItemLine *arrow = new QCPItemLine(ui->systemPlot);
-        //ui->systemPlot->addItem(arrow);
+        QCPItemLine *arrow = new QCPItemLine(systemPlot);
+        //systemPlot->addItem(arrow);
         arrow->setPen(QPen(Qt::red, 3));
         arrow->start->setCoords(xbar, L1 - force);
         arrow->end->setCoords(xbar, L1);
@@ -1706,13 +1689,13 @@ void MainWindow::updateSystemPlot() {
 
     // plot scaling options
 
-    ui->systemPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    systemPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 
     //ui->systemPlot->axisRect()->autoMargins();
     //setupFullAxesBox();
-    ui->systemPlot->xAxis->setScaleRatio(ui->systemPlot->yAxis);
-    ui->systemPlot->rescaleAxes();
-    ui->systemPlot->replot();
+    systemPlot->xAxis->setScaleRatio(systemPlot->yAxis);
+    systemPlot->rescaleAxes();
+    systemPlot->replot();
 }
 
 void MainWindow::on_layerSelectedInSystemPlot(bool selected)
@@ -1722,7 +1705,7 @@ void MainWindow::on_layerSelectedInSystemPlot(bool selected)
 
 void MainWindow::on_systemPlot_selectionChangedByUser()
 {
-    foreach (QCPAbstractPlottable * item, ui->systemPlot->selectedPlottables()) {
+    foreach (QCPAbstractPlottable * item, systemPlot->selectedPlottables()) {
 
         QString name = item->name();
         if (name.length()<1) name = "X";
