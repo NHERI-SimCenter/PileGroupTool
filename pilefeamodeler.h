@@ -22,6 +22,13 @@ public:
 
     int  getExitStatus();
 
+    QList<QVector<double> > *getDisplacements(int pile=0, int dir=0);
+    QList<QVector<double> > *getMoment(int pile=0);
+    QList<QVector<double> > *getShear(int pile=0);
+    QList<QVector<double> > *getForce(int pile=0);
+    QList<QVector<double> > *getPult(int pile=0);
+    QList<QVector<double> > *getY50(int pile=0);
+
 protected:
 
     // load control

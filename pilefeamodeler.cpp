@@ -91,3 +91,47 @@ int  PileFEAmodeler::getExitStatus()
 {
 
 }
+
+/* **** return data for plotting or post analysis output **** */
+
+QList<QVector<double> > *getDisplacements(int pile, int dir)
+{
+    QList<QVector<double> > *list = new QList<QVector<double> >;
+
+    return list;
+}
+
+QList<QVector<double> > *getMoment(int pile)
+{
+    QList<QVector<double> > *list = new QList<QVector<double> >;
+
+    return list;
+}
+
+QList<QVector<double> > *getShear(int pile)
+{
+    QList<QVector<double> > *list = new QList<QVector<double> >;
+
+    return list;
+}
+
+QList<QVector<double> > *getForce(int pile)
+{
+    QList<QVector<double> > *list = new QList<QVector<double> >;
+
+    return list;
+}
+
+QList<QVector<double> > *getPult(int pile)
+{
+    QList<QVector<double> > *list = new QList<QVector<double> >;
+
+    return list;
+}
+
+QList<QVector<double> > *getY50(int pile)
+{
+    QList<QVector<double> > *list = new QList<QVector<double> >;
+
+    return list;
+}
