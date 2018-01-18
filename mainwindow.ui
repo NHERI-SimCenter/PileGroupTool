@@ -1182,7 +1182,7 @@ Layers 1 &amp; 2:</string>
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>5</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="displacement">
        <attribute name="title">

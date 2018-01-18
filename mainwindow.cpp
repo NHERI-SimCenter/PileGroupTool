@@ -5,6 +5,7 @@
 #include "utilWindows/dialogpreferences.h"
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
+#include "pilefeamodeler.h"
 
 #include <QApplication>
 #include <QtNetwork/QNetworkAccessManager>

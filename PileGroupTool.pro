@@ -45,7 +45,8 @@ SOURCES += main.cpp\
         utilWindows/dialogfuturefeature.cpp \
     ../widgets/Common/FooterWidget.cpp \
     ../widgets/Common/HeaderWidget.cpp \
-    systemplot.cpp
+    systemplot.cpp \
+    pilefeamodeler.cpp
         
 HEADERS  += mainwindow.h \
         qcustomplot.h \
@@ -58,7 +59,9 @@ HEADERS  += mainwindow.h \
         utilWindows/dialogfuturefeature.h \
     ../widgets/Common/FooterWidget.h \
     ../widgets/Common/HeaderWidget.h \
-    systemplot.h
+    systemplot.h \
+    pilefeamodeler.h \
+    pilegrouptool_parameters.h
 
 FORMS    += mainwindow.ui \
         materialdbinterface.ui \
