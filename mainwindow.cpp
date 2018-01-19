@@ -27,9 +27,9 @@ extern int getPyParam(double pyDepth,
                       double phiDegree,
                       double b,
                       double pEleLength,
-                      double puSwitch,
-                      double kSwitch,
-                      double gwtSwitch,
+                      int puSwitch,
+                      int kSwitch,
+                      int gwtSwitch,
                       double *pult,
                       double *y50);
 
@@ -70,6 +70,7 @@ extern int getPyParam(double pyDepth,
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 Domain theDomain;
+
 //SimulationInformation simulationInfo;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -119,19 +120,14 @@ MainWindow::MainWindow(QWidget *parent) :
     xOffset[numPiles-1]      = 0.0;
 
     gwtDepth = 4.00;
-    gamma    = 17.0;
-    phi      = 36.0;
     gSoil    = 150000;
-    puSwitch = 1;
+    puSwitch = 2;
     kSwitch  = 1;
     gwtSwitch= 1;
 
      // set initial state of check boxes
     useToeResistance    = false;
     assumeRigidPileHeadConnection = false;
-
-    // analysis parameters
-    displacementRatio = 0.0;
 
     // set up initial values before activating live analysis (= connecting the slots)
     //    or the program will fail in the analysis due to missing information
@@ -200,9 +196,9 @@ void MainWindow::refreshUI() {
     ui->pileIndex->setMinimum(1);
     ui->pileIndex->setMaximum(numPiles);
 
-    if (loadControlType == "forceControl") { ui->forceTypeSelector->setCurrentIndex(0); }
-    else if (loadControlType == "pushOver") { ui->forceTypeSelector->setCurrentIndex(1); }
-    else if (loadControlType == "soilMotion") { ui->forceTypeSelector->setCurrentIndex(2); }
+    if (loadControlType == LoadControlType::ForceControl) { ui->forceTypeSelector->setCurrentIndex(0); }
+    else if (loadControlType == LoadControlType::PushOver) { ui->forceTypeSelector->setCurrentIndex(1); }
+    else if (loadControlType == LoadControlType::SoilMotion) { ui->forceTypeSelector->setCurrentIndex(2); }
     else { ui->forceTypeSelector->setCurrentIndex(0); }
 
     ui->appliedHorizontalForce->setValue(P);
@@ -229,6 +225,8 @@ void MainWindow::refreshUI() {
 
 void MainWindow::doAnalysis(void)
 {
+    double overburdonStress;
+
     //QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
 
     for (int k=0; k<MAXPILES; k++) {
@@ -309,7 +307,7 @@ void MainWindow::doAnalysis(void)
             }
             mSoilLayers[iLayer].setLayerOverburdenStress(overburdonStress);
 
-            groundWaterHead = gwtDepth - depthOfLayer[iLayer];
+            double groundWaterHead = gwtDepth - depthOfLayer[iLayer];
             mSoilLayers[iLayer].setLayerGWHead(groundWaterHead);
         }
 
@@ -509,7 +507,7 @@ void MainWindow::doAnalysis(void)
 
                 double depthInLayer = -zCoord - depthOfLayer[iLayer];
                 sigV = mSoilLayers[iLayer].getEffectiveStress(depthInLayer);
-                phi  = mSoilLayers[iLayer].getLayerFrictionAng();
+                double phi  = mSoilLayers[iLayer].getLayerFrictionAng();
 
                 UniaxialMaterial *theMat;
                 getPyParam(-zCoord, sigV, phi, pileDiameter[pileIdx], eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
@@ -645,6 +643,7 @@ void MainWindow::doAnalysis(void)
             // # q-z spring material
             // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
             double sigVq  = mSoilLayers[maxLayers[pileIdx]-1].getLayerBottomStress();
+            double phi  = mSoilLayers[maxLayers[pileIdx]-1].getLayerFrictionAng();
 
             getQzParam(phi, pileDiameter[pileIdx],  sigVq,  gSoil, &qult, &z50q);
             UniaxialMaterial *theMat = new QzSimple1(1+ioffset, 2, qult, z50q, 0.0, 0.0);
@@ -799,34 +798,12 @@ void MainWindow::doAnalysis(void)
     theAnalysis.analyze(20);
     theDomain.calculateNodalReactions(0);
 
-#if 1
     QVector<QVector<double>> loc(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> disp(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> moment(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> shear(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> stress(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<double> zero(numNodePiles,0.0);
-#else
-    QVector<QVector<double> *> loc(MAXPILES, 0);
-    QVector<QVector<double> *> disp(MAXPILES, 0);
-    QVector<QVector<double> *> moment(MAXPILES, 0);
-    QVector<QVector<double> *> shear(MAXPILES, 0);
-    QVector<QVector<double> *> stress(MAXPILES, 0);
-    QVector<double> zero(numNodePiles,0.0);
-
-    for (int k=0; k<numPiles; k++) {
-        if (loc[k] != NULL)    delete loc[k];
-        if (disp[k] != NULL)   delete disp[k];
-        if (moment[k] != NULL) delete moment[k];
-        if (shear[k] != NULL)  delete shear[k];
-        if (stress[k] != NULL) delete stress[k];
-        loc[k]    = new QVector<double>(numNodePile[k],0.0);
-        disp[k]   = new QVector<double>(numNodePile[k],0.0);
-        moment[k] = new QVector<double>(numNodePile[k],0.0);
-        shear[k]  = new QVector<double>(numNodePile[k],0.0);
-        stress[k] = new QVector<double>(numNodePile[k],0.0);
-    }
-#endif
 
     double maxDisp   = 0.0;
     double minDisp   = 0.0;
@@ -1071,9 +1048,9 @@ void MainWindow::on_actionReset_triggered()
     HDisp = 0.0; // prescribed horizontal displacement
     VDisp = 0.0; // prescriber vertical displacement
 
-    surfaceDisp = 0.0;    // prescribed soil surface displacement
-    percentage12 = 1.0;   // percentage of surface displacement at 1st layer interface
-    percentage23 = 0.0;   // percentage of surface displacement at 2nd layer interface
+    surfaceDisp    = 0.0; // prescribed soil surface displacement
+    percentage12   = 1.0; // percentage of surface displacement at 1st layer interface
+    percentage23   = 0.0; // percentage of surface displacement at 2nd layer interface
     percentageBase = 0.0; // percentage of surface displacement at base of soil column
 
     L1                       = 1.0;
@@ -1083,19 +1060,14 @@ void MainWindow::on_actionReset_triggered()
     xOffset[numPiles-1]      = 0.0;
 
     gwtDepth = 4.00;
-    gamma    = 17.0;
-    phi      = 36.0;
     gSoil    = 150000;
-    puSwitch = 1;
+    puSwitch = 2;
     kSwitch  = 1;
     gwtSwitch= 1;
 
      // set initial state of check boxes
-    useToeResistance    = false;
+    useToeResistance              = false;
     assumeRigidPileHeadConnection = false;
-
-    // analysis parameters
-    displacementRatio = 0.0;
 
     // meshing parameters
     minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
@@ -1948,7 +1920,7 @@ bool MainWindow::ReadFile(QString s)
         percentage23 = 0.0;
         percentageBase = 0.0;
 
-        loadControlType = "forceControl";
+        loadControlType = LoadControlType::ForceControl;
     }
     else if (version == "1.99" || version == "2.0")
     {
@@ -1957,7 +1929,16 @@ bool MainWindow::ReadFile(QString s)
         QJsonObject pushOverObj     = loadInfo["pushOver"].toObject();
         QJsonObject soilMotionObj   = loadInfo["soilMotion"].toObject();
 
-        loadControlType = loadInfo["loadControlType"].toString();
+        QString loadType = loadInfo["loadControlType"].toString();
+
+        if (loadType.toLower() == "forcecontrol")
+            { loadControlType = LoadControlType::ForceControl; }
+        else if (loadType.toLower() == "pushover")
+            { loadControlType = LoadControlType::PushOver; }
+        else if (loadType.toLower() == "soilmotion")
+            { loadControlType = LoadControlType::SoilMotion; }
+        else
+            { loadControlType = LoadControlType::ForceControl; }
 
         P    = forceControlObj["HForce"].toDouble();
         PV   = forceControlObj["VForce"].toDouble();
@@ -2054,8 +2035,6 @@ bool MainWindow::WriteFile(QString s)
 
     json->insert("useToeResistance", useToeResistance);
     json->insert("assumeRigidPileHeadConnection", assumeRigidPileHeadConnection);
-
-
 
 
     /* write load information */

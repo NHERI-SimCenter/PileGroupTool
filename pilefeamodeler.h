@@ -2,18 +2,48 @@
 #define PILEFEAMODELER_H
 
 #include <QVector>
+#include <QMap>
+
 #include "pilegrouptool_parameters.h"
 #include "soilmat.h"
+
+class Domain;
+class StaticAnalysis;
 
 class PileFEAmodeler
 {
 public:
     PileFEAmodeler();
 
+    void updatePiles(QMap<QString, double> &);
+    void updateLoad(double, double, double);
+    void updateSoil(QVector<soilLayer> &);
+    void updateDisplacement(double ux=0.0, double uy=0.0);
+    void updateDispProfile(QVector<double> &);
+    void setAnalysisType(QString);
+    void setDefaultParameters(void);
+    void doAnalysis();
+    void extractPlotData();
+
+    int  getExitStatus();
+
+    void buildMesh();
+    void buildLoad();
+    void buildAnalysis();
+
+    QList<QVector<double> > *getDisplacements(int pile=0, int dir=0);
+    QList<QVector<double> > *getMoment(int pile=0);
+    QList<QVector<double> > *getShear(int pile=0);
+    QList<QVector<double> > *getForce(int pile=0);
+    QList<QVector<double> > *getPult(int pile=0);
+    QList<QVector<double> > *getY50(int pile=0);
+
 protected:
 
     // load control
-    QString loadControlType;
+    LoadControlType loadControlType;
+
+    QMap<QString, bool> modelState;
 
     double P;     // lateral force on pile cap
     double PV;    // vertical force on pile cap
@@ -39,25 +69,13 @@ protected:
     int  kSwitch;
     int  gwtSwitch;
 
-    // load parameter
-    double displacementRatio;
-
     // soil layers and related methods
     QVector<soilLayer> mSoilLayers;
 
     void setupLayers();
 
     // temporary variables
-    double gamma;
-    double gammaWet;
-    double gammaSaturated;
-    double phi;
     double gSoil;
-    double totalStress;
-    double effectiveStress;
-    double porePressure;
-    double overburdonStress;
-    double groundWaterHead;
 
     double zCoord = 0.0;  // z-coordinate of point.  Negative if below the surface
     double eleSize;       // effective element length for p-y and t-z springs
@@ -101,6 +119,12 @@ protected:
 
     // others
     QVector<HEAD_NODE_TYPE> headNodeList = QVector<HEAD_NODE_TYPE>(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
+
+    Domain *theDomain;
+    StaticAnalysis *theAnalysis = NULL;
+
+    int numLoadedNode;
+    QVector<double> depthOfLayer = QVector<double>(4, 0.0);
 };
 
 #endif // PILEFEAMODELER_H

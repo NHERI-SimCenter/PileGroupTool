@@ -133,7 +133,7 @@ private:
     bool WriteFile(QString );
 
     // load control
-    QString loadControlType;
+    LoadControlType loadControlType;
 
     double P;     // lateral force on pile cap
     double PV;    // vertical force on pile cap
@@ -159,25 +159,13 @@ private:
     int  kSwitch;
     int  gwtSwitch;
 
-    // load parameter
-    double displacementRatio;
-
     // soil layers and related methods
     QVector<soilLayer> mSoilLayers;
 
     void setupLayers();
 
     // temporary variables
-    double gamma;
-    double gammaWet;
-    double gammaSaturated;
-    double phi;
     double gSoil;
-    double totalStress;
-    double effectiveStress;
-    double porePressure;
-    double overburdonStress;
-    double groundWaterHead;
 
     double zCoord = 0.0;  // z-coordinate of point.  Negative if below the surface
     double eleSize;       // effective element length for p-y and t-z springs
