@@ -18,7 +18,7 @@ public:
     void updatePiles(QMap<QString, double> &);
     void updateLoad(double, double, double);
     void updateSoil(QVector<soilLayer> &);
-    void updateDisplacement(double);
+    void updateDisplacement(double ux=0.0, double uy=0.0);
     void updateDispProfile(QVector<double> &);
     void setAnalysisType(QString);
     void setDefaultParameters(void);
@@ -75,7 +75,6 @@ protected:
     void setupLayers();
 
     // temporary variables
-    double phi;
     double gSoil;
 
     double zCoord = 0.0;  // z-coordinate of point.  Negative if below the surface
@@ -126,7 +125,6 @@ protected:
 
     int numLoadedNode;
     QVector<double> depthOfLayer = QVector<double>(4, 0.0);
-    QVector<double> displacementProfile;
 };
 
 #endif // PILEFEAMODELER_H

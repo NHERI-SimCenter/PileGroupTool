@@ -107,10 +107,6 @@ void PileFEAmodeler::setDefaultParameters(void)
     void setupLayers();
 
     // temporary variables
-    //gamma;
-    //gammaWet;
-    //gammaSaturated;
-    phi              = 35.00;
     gSoil            = 150000.;
 
     zCoord  =  0.0;    // z-coordinate of point.  Negative if below the surface
@@ -178,9 +174,14 @@ void PileFEAmodeler::updatePiles(QMap<QString, double> &pileInfo)
     DISABLE_STATE("meshValid");
 }
 
-void PileFEAmodeler::updateLoad(double Px, double Py, double M)
+void PileFEAmodeler::updateLoad(double Px, double Py, double Moment)
 {
     loadControlType = LoadControlType::ForceControl;
+
+    P    = Px;     // lateral force on pile cap
+    PV   = Py;     // vertical force on pile cap
+    PMom = Moment; // applied moment on pile cap
+
     DISABLE_STATE("loadValid");
 }
 
@@ -189,16 +190,31 @@ void PileFEAmodeler::updateSoil(QVector<soilLayer> &layers)
     DISABLE_STATE("meshValid");
 }
 
-void PileFEAmodeler::updateDisplacement(double)
+void PileFEAmodeler::updateDisplacement(double ux, double uy)
 {
     loadControlType = LoadControlType::PushOver;
+
+    HDisp = ux; // prescribed horizontal displacement
+    VDisp = uy; // prescriber vertical displacement
+
+
     DISABLE_STATE("loadValid");
 }
 
 void PileFEAmodeler::updateDispProfile(QVector<double> &profile)
 {
     loadControlType = LoadControlType::SoilMotion;
-    displacementProfile = profile;
+
+    surfaceDisp    = 0.00;   // prescribed soil surface displacement
+    percentage12   = 1.00;   // percentage of surface displacement at 1st layer interface
+    percentage23   = 0.00;   // percentage of surface displacement at 2nd layer interface
+    percentageBase = 0.00;   // percentage of surface displacement at base of soil column
+
+    if (profile.size() > 0) surfaceDisp    = profile[0];   // prescribed soil surface displacement
+    if (profile.size() > 1) percentage12   = profile[1];   // percentage of surface displacement at 1st layer interface
+    if (profile.size() > 2) percentage23   = profile[2];   // percentage of surface displacement at 2nd layer interface
+    if (profile.size() > 3) percentageBase = profile[3];   // percentage of surface displacement at base of soil column
+
     DISABLE_STATE("loadValid");
 }
 
@@ -509,7 +525,7 @@ void PileFEAmodeler::buildMesh()
 
                 double depthInLayer = -zCoord - depthOfLayer[iLayer];
                 sigV = mSoilLayers[iLayer].getEffectiveStress(depthInLayer);
-                phi  = mSoilLayers[iLayer].getLayerFrictionAng();
+                double phi  = mSoilLayers[iLayer].getLayerFrictionAng();
 
                 UniaxialMaterial *theMat;
                 getPyParam(-zCoord, sigV, phi, pileDiameter[pileIdx], eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
@@ -645,6 +661,7 @@ void PileFEAmodeler::buildMesh()
             // # q-z spring material
             // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
             double sigVq  = mSoilLayers[maxLayers[pileIdx]-1].getLayerBottomStress();
+            double phi  = mSoilLayers[maxLayers[pileIdx]-1].getLayerFrictionAng();
 
             getQzParam(phi, pileDiameter[pileIdx],  sigVq,  gSoil, &qult, &z50q);
             UniaxialMaterial *theMat = new QzSimple1(1+ioffset, 2, qult, z50q, 0.0, 0.0);

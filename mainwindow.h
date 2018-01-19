@@ -165,7 +165,6 @@ private:
     void setupLayers();
 
     // temporary variables
-    double phi;
     double gSoil;
 
     double zCoord = 0.0;  // z-coordinate of point.  Negative if below the surface
