@@ -6,6 +6,8 @@
 //                                                         //
 //   Created by:  Chris McGann                             //
 //                University of Washington                 //
+//   Updated by:  Peter Mackenzie-Helnwein                 //
+//                University of Washington                 //
 //                                                         //
 /////////////////////////////////////////////////////////////
 
