@@ -143,7 +143,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // set up pile input
     this->refreshUI();
 
-
+#if 0
     // add legend
     // now we move the legend from the inset layout of the axis rect into the main grid layout.
     // We create a sub layout so we can generate a small gap between the plot layout cell border
@@ -160,6 +160,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // set legend's row stretch factor very small so it ends up with minimum height:
     systemPlot->plotLayout()->setRowStretchFactor(1, 0.001);
+#endif
 
     // plotsetting
     activePileIdx = 0;
@@ -169,14 +170,23 @@ MainWindow::MainWindow(QWidget *parent) :
 
     inSetupState = false;
 
+    //
+    // adjust size of application window to the available display
+    //
     QRect rec = QApplication::desktop()->screenGeometry();
     int height = this->height()<0.85*rec.height()?this->height():0.85*rec.height();
     int width  = this->width()<0.85*rec.width()?this->width():0.85*rec.width();
     this->resize(width, height);
 
+    //
+    // create the initial set of plots
+    //
     this->doAnalysis();
     this->updateSystemPlot();
 
+    //
+    // connect to the application usage counter
+    //
     manager = new QNetworkAccessManager(this);
 
     connect(manager, SIGNAL(finished(QNetworkReply*)),
