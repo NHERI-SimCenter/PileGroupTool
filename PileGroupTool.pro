@@ -44,7 +44,9 @@ SOURCES += main.cpp\
         utilWindows/dialogpreferences.cpp \
         utilWindows/dialogfuturefeature.cpp \
     ../widgets/Common/FooterWidget.cpp \
-    ../widgets/Common/HeaderWidget.cpp
+    ../widgets/Common/HeaderWidget.cpp \
+    systemplot.cpp \
+    pilefeamodeler.cpp
         
 HEADERS  += mainwindow.h \
         qcustomplot.h \
@@ -56,7 +58,10 @@ HEADERS  += mainwindow.h \
         utilWindows/dialogpreferences.h \
         utilWindows/dialogfuturefeature.h \
     ../widgets/Common/FooterWidget.h \
-    ../widgets/Common/HeaderWidget.h
+    ../widgets/Common/HeaderWidget.h \
+    systemplot.h \
+    pilefeamodeler.h \
+    pilegrouptool_parameters.h
 
 FORMS    += mainwindow.ui \
         materialdbinterface.ui \
@@ -64,7 +69,8 @@ FORMS    += mainwindow.ui \
         utilWindows/copyrightdialog.ui \
         utilWindows/dialogabout.ui \
         utilWindows/dialogpreferences.ui \
-        utilWindows/dialogfuturefeature.ui
+        utilWindows/dialogfuturefeature.ui \
+    systemplot.ui
 
 RESOURCES += \
     qtpileresources.qrc
