@@ -51,4 +51,10 @@ static QVector<QColor> BRUSH_COLOR({
                                     });
 #define GROUND_WATER_BLUE QColor(127,127,255,192)
 
+enum class LoadControlType {
+                                ForceControl,
+                                PushOver,
+                                SoilMotion
+                            };
+
 #endif // PILEGROUPTOOL_PARAMETERS_H

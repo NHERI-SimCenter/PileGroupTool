@@ -7,9 +7,9 @@ extern int getPyParam(double pyDepth,
                       double phiDegree,
                       double b,
                       double pEleLength,
-                      double puSwitch,
-                      double kSwitch,
-                      double gwtSwitch,
+                      int puSwitch,
+                      int kSwitch,
+                      int gwtSwitch,
                       double *pult,
                       double *y50);
 
@@ -67,6 +67,106 @@ PileFEAmodeler::PileFEAmodeler()
     theDomain = new Domain();
 
     numLoadedNode = -1;
+
+    /* set default parameters */
+    this->setDefaultParameters();
+}
+
+void PileFEAmodeler::setDefaultParameters(void)
+{
+    loadControlType = LoadControlType::ForceControl;
+
+    P    = 50.0;   // lateral force on pile cap
+    PV   =  0.00;  // vertical force on pile cap
+    PMom =  0.00;  // applied moment on pile cap
+
+    HDisp = 0.0; // prescribed horizontal displacement
+    VDisp = 0.0; // prescriber vertical displacement
+
+    surfaceDisp    = 0.00;   // prescribed soil surface displacement
+    percentage12   = 1.00;   // percentage of surface displacement at 1st layer interface
+    percentage23   = 0.00;   // percentage of surface displacement at 2nd layer interface
+    percentageBase = 0.00;   // percentage of surface displacement at base of soil column
+
+    // get parameters
+    gwtDepth        = 999.0;  // depth of ground water table below the surface
+    numPileElements = -1;
+    numPiles        = -1;
+
+    // states
+    assumeRigidPileHeadConnection = false;
+    useToeResistance    = false;
+    puSwitch  = 2;  // Hansen
+    kSwitch   = 1;  // API
+    gwtSwitch = 1;
+
+    // soil layers and related methods
+    QVector<soilLayer> mSoilLayers;
+
+    void setupLayers();
+
+    // temporary variables
+    //gamma;
+    //gammaWet;
+    //gammaSaturated;
+    phi              = 35.00;
+    gSoil            = 18.00;
+    totalStress      =  0.00;
+    effectiveStress  =  0.00;
+    porePressure     =  0.00;
+    overburdonStress =  0.00;
+    groundWaterHead  =  0.00;
+
+    zCoord  =  0.0;    // z-coordinate of point.  Negative if below the surface
+    eleSize = 1.00;    // effective element length for p-y and t-z springs
+    sigV    = 1000.0;  // effective stress at p-y and t-z springs
+
+    // lateral resistance
+    pult = 999.;
+    y50 = 1.00;
+    // shaft friction
+    tult = 999.;
+    z50 = 1.0;
+    // toe resistance
+    qult = 9999.;
+    z50q = 1.0;
+
+    // setup switch
+    inSetupState = true;
+
+    // viewer settings
+    showDisplacements = true;
+    showMoments       = true;
+    showShear         = true;
+    showStress        = true;
+    showPultimate     = true;
+    showY50           = true;
+
+    // meshing parameters
+    minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
+    maxElementsPerLayer = MAX_ELEMENTS_PER_LAYER;
+    numElementsInAir    = NUM_ELEMENTS_IN_AIR;
+
+    L1 = 0.00;               // pile length above ground (all the same)
+    numNodePiles = 0
+            ;
+    for (int k=0; k<MAXPILES;k++)
+    {
+        numNodePile[k]  = 0;
+        maxLayers[k]    = 0;
+        nodeIDoffset[k] = 0;
+        elemIDoffset[k] = 0;
+
+        L2[k]           = 10.0;      // embedded length of pile
+        pileDiameter[k] = 1.00;      // pile diameter
+        E[k]            = 1.00;      // pile modulus of elasticity
+        xOffset[k]      = double(k); // x-offset of pile
+    }
+
+    // pile head parameters
+    EI = 1.;
+    EA = 1.;
+    GJ = 1.0e12;
 }
 
 void PileFEAmodeler::updatePiles(QMap<QString, double> &pileInfo)
@@ -76,6 +176,7 @@ void PileFEAmodeler::updatePiles(QMap<QString, double> &pileInfo)
 
 void PileFEAmodeler::updateLoad(double Px, double Py, double M)
 {
+    loadControlType = LoadControlType::ForceControl;
     DISABLE_STATE("loadValid");
 }
 
@@ -86,11 +187,14 @@ void PileFEAmodeler::updateSoil(QVector<soilLayer> &layers)
 
 void PileFEAmodeler::updateDisplacement(double)
 {
+    loadControlType = LoadControlType::PushOver;
     DISABLE_STATE("loadValid");
 }
 
-void PileFEAmodeler::updateDispProfile(QVector<double> &)
+void PileFEAmodeler::updateDispProfile(QVector<double> &profile)
 {
+    loadControlType = LoadControlType::SoilMotion;
+    displacementProfile = profile;
     DISABLE_STATE("loadValid");
 }
 
@@ -792,7 +896,7 @@ void PileFEAmodeler::extractPlotData()
 
 int  PileFEAmodeler::getExitStatus()
 {
-
+    return 0;
 }
 
 /* **** return data for plotting or post analysis output **** */
