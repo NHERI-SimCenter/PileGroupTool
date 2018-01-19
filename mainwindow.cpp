@@ -99,6 +99,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->textBrowser->setHtml("<b>Hints</b><p><ul><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
 
+    /* connect a FEA modeler */
+    pileFEAmodel = new PileFEAmodeler();
+
     // setup data
     numPiles = 1;
     P        = 1000.0;
@@ -186,6 +189,8 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+
+    if (pileFEAmodel != NULL) delete pileFEAmodel;
 }
 
 void MainWindow::refreshUI() {
@@ -225,6 +230,9 @@ void MainWindow::refreshUI() {
 
 void MainWindow::doAnalysis(void)
 {
+    //pileFEAmodel->doAnalysis();
+
+
     double overburdonStress;
 
     //QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
