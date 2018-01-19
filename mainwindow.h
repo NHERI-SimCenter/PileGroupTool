@@ -165,16 +165,7 @@ private:
     void setupLayers();
 
     // temporary variables
-    //double gamma;
-    //double gammaWet;
-    //double gammaSaturated;
-    double phi;
     double gSoil;
-    //double totalStress;
-    //double effectiveStress;
-    //double porePressure;
-    //double overburdonStress;
-    //double groundWaterHead;
 
     double zCoord = 0.0;  // z-coordinate of point.  Negative if below the surface
     double eleSize;       // effective element length for p-y and t-z springs

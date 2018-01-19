@@ -120,10 +120,8 @@ MainWindow::MainWindow(QWidget *parent) :
     xOffset[numPiles-1]      = 0.0;
 
     gwtDepth = 4.00;
-    //gamma    = 17.0;
-    //phi      = 36.0;
     gSoil    = 150000;
-    puSwitch = 1;
+    puSwitch = 2;
     kSwitch  = 1;
     gwtSwitch= 1;
 
@@ -645,6 +643,7 @@ void MainWindow::doAnalysis(void)
             // # q-z spring material
             // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
             double sigVq  = mSoilLayers[maxLayers[pileIdx]-1].getLayerBottomStress();
+            double phi  = mSoilLayers[maxLayers[pileIdx]-1].getLayerFrictionAng();
 
             getQzParam(phi, pileDiameter[pileIdx],  sigVq,  gSoil, &qult, &z50q);
             UniaxialMaterial *theMat = new QzSimple1(1+ioffset, 2, qult, z50q, 0.0, 0.0);
@@ -1061,8 +1060,6 @@ void MainWindow::on_actionReset_triggered()
     xOffset[numPiles-1]      = 0.0;
 
     gwtDepth = 4.00;
-    //gamma    = 17.0;
-    //phi      = 36.0;
     gSoil    = 150000;
     puSwitch = 2;
     kSwitch  = 1;
