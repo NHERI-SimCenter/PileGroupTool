@@ -44,9 +44,9 @@ getPyParam(double pyDepth,
 	    double phiDegree, 
 	    double b, 
 	    double pEleLength, 
-	    double puSwitch, 
-	    double kSwitch, 
-	    double gwtSwitch, 
+        int puSwitch,
+        int kSwitch,
+        int gwtSwitch,
 	    double *pult, 
 	    double *y50) {
 

@@ -39,7 +39,7 @@ int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, 
   double  phi = phiDegree*pi/180;
   
   // rigidity index
-  double  Ir =G/(sigV*tan(phi));
+  double  Ir = G/(sigV*tan(phi));
 
   //qDebug() << Ir << " " << Ko;
   // bearing capacity factor

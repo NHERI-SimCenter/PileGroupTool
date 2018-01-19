@@ -21,6 +21,7 @@ public:
     void updateDisplacement(double);
     void updateDispProfile(QVector<double> &);
     void setAnalysisType(QString);
+    void setDefaultParameters(void);
     void doAnalysis();
     void extractPlotData();
 
@@ -40,7 +41,7 @@ public:
 protected:
 
     // load control
-    QString loadControlType;
+    LoadControlType loadControlType;
 
     QMap<QString, bool> modelState;
 
@@ -68,18 +69,15 @@ protected:
     int  kSwitch;
     int  gwtSwitch;
 
-    // load parameter
-    double displacementRatio;
-
     // soil layers and related methods
     QVector<soilLayer> mSoilLayers;
 
     void setupLayers();
 
     // temporary variables
-    double gamma;
-    double gammaWet;
-    double gammaSaturated;
+    //double gamma;
+    //double gammaWet;
+    //double gammaSaturated;
     double phi;
     double gSoil;
     double totalStress;
@@ -136,6 +134,7 @@ protected:
 
     int numLoadedNode;
     QVector<double> depthOfLayer = QVector<double>(4, 0.0);
+    QVector<double> displacementProfile;
 };
 
 #endif // PILEFEAMODELER_H
