@@ -48,6 +48,7 @@ extern int getPyParam(double pyDepth,
 #include <soilmat.h>
 #include <QDebug>
 
+
 #define CHECK_STATE(X)   modelState.value(X)
 #define ENABLE_STATE(X)  modelState[X]=true
 #define DISABLE_STATE(X) modelState[X]=false
@@ -110,12 +111,7 @@ void PileFEAmodeler::setDefaultParameters(void)
     //gammaWet;
     //gammaSaturated;
     phi              = 35.00;
-    gSoil            = 18.00;
-    totalStress      =  0.00;
-    effectiveStress  =  0.00;
-    porePressure     =  0.00;
-    overburdonStress =  0.00;
-    groundWaterHead  =  0.00;
+    gSoil            = 150000.;
 
     zCoord  =  0.0;    // z-coordinate of point.  Negative if below the surface
     eleSize = 1.00;    // effective element length for p-y and t-z springs
@@ -167,6 +163,14 @@ void PileFEAmodeler::setDefaultParameters(void)
     EI = 1.;
     EA = 1.;
     GJ = 1.0e12;
+
+    /* reset states */
+    DISABLE_STATE("meshValid");
+    DISABLE_STATE("loadValid");
+    DISABLE_STATE("analysisValid");
+    DISABLE_STATE("dataExtracted");
+    DISABLE_STATE("solutionValid");
+    DISABLE_STATE("solutionAvailable");
 }
 
 void PileFEAmodeler::updatePiles(QMap<QString, double> &pileInfo)
@@ -296,6 +300,7 @@ void PileFEAmodeler::buildMesh()
             numNodePile[pileIdx] += numElemThisLayer;
 
             // update layer information on overburdon stress and water table
+            double overburdonStress;
             if (iLayer > 0) {
                 overburdonStress = mSoilLayers[iLayer-1].getLayerBottomStress();
             }
@@ -304,7 +309,7 @@ void PileFEAmodeler::buildMesh()
             }
             mSoilLayers[iLayer].setLayerOverburdenStress(overburdonStress);
 
-            groundWaterHead = gwtDepth - depthOfLayer[iLayer];
+            double groundWaterHead = gwtDepth - depthOfLayer[iLayer];
             mSoilLayers[iLayer].setLayerGWHead(groundWaterHead);
         }
 
