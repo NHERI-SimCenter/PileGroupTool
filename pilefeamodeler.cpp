@@ -128,8 +128,10 @@ void PileFEAmodeler::setDefaultParameters(void)
 
     // viewer settings
     showDisplacements = true;
+    showPullOut       = true;
     showMoments       = true;
     showShear         = true;
+    showAxial         = true;
     showStress        = true;
     showPultimate     = true;
     showY50           = true;
@@ -169,9 +171,18 @@ void PileFEAmodeler::setDefaultParameters(void)
     DISABLE_STATE("solutionAvailable");
 }
 
-void PileFEAmodeler::updatePiles(QMap<QString, double> &pileInfo)
+void PileFEAmodeler::updatePiles(QVector<PILE_INFO> &pileInfo)
 {
     DISABLE_STATE("meshValid");
+}
+
+void PileFEAmodeler::setLoadType(LoadControlType type)
+{
+    if (loadControlType != type)
+    {
+        loadControlType = type;
+        DISABLE_STATE("loadValid");
+    }
 }
 
 void PileFEAmodeler::updateLoad(double Px, double Py, double Moment)
@@ -187,6 +198,14 @@ void PileFEAmodeler::updateLoad(double Px, double Py, double Moment)
 
 void PileFEAmodeler::updateSoil(QVector<soilLayer> &layers)
 {
+    DISABLE_STATE("meshValid");
+}
+
+void PileFEAmodeler::updateGWtable(double depth)
+{
+    if (gwtDepth == depth) return;
+
+    gwtDepth = depth;
     DISABLE_STATE("meshValid");
 }
 
