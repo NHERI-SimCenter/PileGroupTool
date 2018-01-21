@@ -58,6 +58,11 @@ void SystemPlot::updatePiles(QMap<QString, double> &)
     this->refresh();
 }
 
+void SystemPlot::updateSoil(QVector<double> &)
+{
+    this->refresh();
+}
+
 void SystemPlot::updateLoad(double Px, double Py, double Moment)
 {
     bool upToDate = true;
@@ -78,11 +83,6 @@ void SystemPlot::updateLoad(double Px, double Py, double Moment)
         upToDate = false;
     }
     if (!upToDate)  this->refresh();
-}
-
-void SystemPlot::updateSoil(QVector<double> &)
-{
-    this->refresh();
 }
 
 void SystemPlot::updateDisplacement(double ux, double uy)

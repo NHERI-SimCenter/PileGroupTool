@@ -2,6 +2,7 @@
 #define SYSTEMPLOTQWT_H
 
 #include <QWidget>
+#include "pilegrouptool_parameters.h"
 
 namespace Ui {
 class SystemPlotQwt;
@@ -30,7 +31,7 @@ public:
     int  getActiveLayerIndex() {return activeLayerIdx;}
 
 private:
-    Ui::SystemPlot *ui;
+    Ui::SystemPlotQwt *ui;
 
 protected:
     LoadControlType loadControlType;
