@@ -6,7 +6,7 @@
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
 #include "pilefeamodeler.h"
-#include "systemplot.h"
+#include "systemplotqcp.h"
 
 #include <QApplication>
 #include <QtNetwork/QNetworkAccessManager>
@@ -79,8 +79,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //systemPlot = new QCustomPlot(ui->systemTab);
-    systemPlot = new SystemPlot(ui->systemTab);
+
+#ifdef USE_QWT
+    systemPlot = new SystemPlotQwt(ui->systemTab);
+#else
+    systemPlot = new SystemPlotQCP(ui->systemTab);
+#endif
+
+
     QLayout *lyt = ui->systemTab->layout();
     lyt->addWidget(systemPlot);
 

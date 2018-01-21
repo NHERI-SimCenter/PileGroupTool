@@ -1,3 +1,14 @@
+/* ********************************************************************** *
+ *
+ * SystemPlotSuper is a virtual class used to setup and operate
+ *    alternative implementations of SystemPlot.  At this point,
+ *    the following derived classes provide the desired functionality:
+ *
+ *    1) SystemPlotQCP : QCustomPlot
+ *    2) SystemPlotQwt : Qwt
+ *
+ * ********************************************************************** */
+
 #include "systemplotsuper.h"
 
 SystemPlotSuper::SystemPlotSuper(QWidget *parent) :
@@ -31,58 +42,46 @@ void SystemPlotSuper::updateSoil(QVector<double> &layerDepth)
 
     bool upToDate = true;
 
-    if (cnt > 0)
-    {
+    if (cnt > 0) {
         if (depthOfLayer[0] != layerDepth[0] )
         {
             depthOfLayer[0] = layerDepth[0];
             upToDate = false;
         }
-    }
-    else
-    {
+    } else {
         depthOfLayer[1] = 0.00;
         upToDate = false;
     }
 
-    if (cnt > 1)
-    {
+    if (cnt > 1) {
         if (depthOfLayer[1] != layerDepth[1] )
         {
             depthOfLayer[1] = layerDepth[1];
             upToDate = false;
         }
-    }
-    else
-    {
+    } else {
         depthOfLayer[1] = depthOfLayer[0];
         upToDate = false;
     }
 
-    if (cnt > 2 )
-    {
+    if (cnt > 2 ) {
         if (depthOfLayer[2] != layerDepth[2] )
         {
             depthOfLayer[2] = layerDepth[2];
             upToDate = false;
         }
-    }
-    else
-    {
+    } else  {
         depthOfLayer[2] = depthOfLayer[1];
         upToDate = false;
     }
 
-    if (cnt > 3)
-    {
+    if (cnt > 3) {
         if (depthOfLayer[3] != layerDepth[3] )
         {
             depthOfLayer[3] = layerDepth[3];
             upToDate = false;
         }
-    }
-    else
-    {
+    } else {
         depthOfLayer[3] = depthOfLayer[2];
         upToDate = false;
     }

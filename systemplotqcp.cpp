@@ -1,7 +1,7 @@
-#include "systemplot.h"
+#include "systemplotqcp.h"
 #include "systemplotsuper.h"
 
-SystemPlot::SystemPlot(QWidget *parent) :
+SystemPlotQCP::SystemPlotQCP(QWidget *parent) :
     SystemPlotSuper(parent)
 {
     //
@@ -39,12 +39,12 @@ SystemPlot::SystemPlot(QWidget *parent) :
     activeLayerIdx = -1;
 }
 
-SystemPlot::~SystemPlot()
+SystemPlotQCP::~SystemPlotQCP()
 {
     delete plot;
 }
 
-void SystemPlot::refresh()
+void SystemPlotQCP::refresh()
 {
     for (int k=0; k<MAXPILES; k++) {
         headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
