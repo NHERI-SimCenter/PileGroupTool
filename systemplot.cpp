@@ -26,10 +26,8 @@ SystemPlot::SystemPlot(QWidget *parent) :
     subLayout->addElement(0, 0, plot->legend);
     //
     // change the fill order of the legend, so it's filled left to right in columns:
-    //plot->legend->setFillOrder(QCPLegend::foColumnsFirst);
     plot->legend->setRowSpacing(1);
     plot->legend->setColumnSpacing(2);
-    //plot->legend->setFillOrder(QCPLayoutGrid::foColumnsFirst,true);
 
     // set legend's row stretch factor very small so it ends up with minimum height:
     plot->plotLayout()->setRowStretchFactor(1, 0.001);
@@ -126,14 +124,6 @@ void SystemPlot::refresh()
 
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
-/* set the following to #if 1 once we can select a rectangle */
-#if 0
-        QCPItemRect* layerII = new QCPItemRect(plot);
-        layerII->topLeft->setCoords(xbar - W/2., -mSoilLayers[iLayer].getLayerDepth());
-        layerII->bottomRight->setCoords(xbar + W/2.,-mSoilLayers[iLayer].getLayerDepth() - mSoilLayers[iLayer].getLayerThickness());
-
-        connect(layerII, SIGNAL(selectionChanged(bool) ), this, SLOT(on_layerSelectedInSystemPlot(bool)));
-#else
         QVector<double> x(5,0.0);
         QVector<double> y(5,0.0);
 
@@ -146,7 +136,7 @@ void SystemPlot::refresh()
         QCPCurve *layerII = new QCPCurve(plot->xAxis, plot->yAxis);
         layerII->setData(x,y);
         layerII->setName(QString("Layer #%1").arg(iLayer+1));
-#endif
+
         if (iLayer == activeLayerIdx) {
             layerII->setPen(QPen(Qt::red, 2));
             layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
@@ -155,8 +145,6 @@ void SystemPlot::refresh()
             layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
             layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
         }
-
-        //plot->addPlottable(layerII);
     }
 
     // ground water table
@@ -199,10 +187,7 @@ void SystemPlot::refresh()
     pileCap->setData(x,y);
     pileCap->setPen(QPen(Qt::black, 1));
     pileCap->setBrush(QBrush(Qt::gray));
-    //pileCap->setName(QString("pile cap"));
     pileCap->removeFromLegend();
-
-    //plot->addPlottable(pileCap);
 
     // plot the piles
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
@@ -228,10 +213,7 @@ void SystemPlot::refresh()
             pileII->setPen(QPen(Qt::black, 1));
             pileII->setBrush(QBrush(BRUSH_COLOR[6+pileIdx]));
         }
-        //pileII->setBrush(QBrush(Qt::black));
         pileII->setName(QString("Pile #%1").arg(pileIdx+1));
-
-        //plot->addPlottable(pileII);
     }
 
     // add force to the plot
@@ -264,8 +246,6 @@ void SystemPlot::refresh()
 
     plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 
-    //plot->axisRect()->autoMargins();
-    //setupFullAxesBox();
     plot->xAxis->setScaleRatio(plot->yAxis);
     plot->rescaleAxes();
     plot->replot();
