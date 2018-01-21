@@ -155,7 +155,6 @@ MainWindow::MainWindow(QWidget *parent) :
     activePileIdx = 0;
     activeLayerIdx = -1;
 
-
     //
     // this connect statement needs to be updated to reflect changes to the SystemPlotSuper class
     //
