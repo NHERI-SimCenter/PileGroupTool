@@ -145,29 +145,14 @@ MainWindow::MainWindow(QWidget *parent) :
     // set up pile input
     this->refreshUI();
 
-#if 0
-    // add legend
-    // now we move the legend from the inset layout of the axis rect into the main grid layout.
-    // We create a sub layout so we can generate a small gap between the plot layout cell border
-    // and the legend border:
-    QCPLayoutGrid *subLayout = new QCPLayoutGrid;
-    systemPlot->plotLayout()->addElement(1, 0, subLayout);
-    subLayout->setMargins(QMargins(5, 0, 5, 5));
-    subLayout->addElement(0, 0, systemPlot->legend);
-    // change the fill order of the legend, so it's filled left to right in columns:
-    //systemPlot->legend->setFillOrder(QCPLegend::foColumnsFirst);
-    systemPlot->legend->setRowSpacing(1);
-    systemPlot->legend->setColumnSpacing(2);
-    //systemPlot->legend->setFillOrder(QCPLayoutGrid::foColumnsFirst,true);
-
-    // set legend's row stretch factor very small so it ends up with minimum height:
-    systemPlot->plotLayout()->setRowStretchFactor(1, 0.001);
-#endif
-
-    // plotsetting
+    // plot setting
     activePileIdx = 0;
     activeLayerIdx = -1;
 
+
+    //
+    // this connect statement needs to be updated to reflect changes to the SystemPlotSuper class
+    //
     connect(systemPlot, SIGNAL(selectionChangedByUser()), this, SLOT(on_systemPlot_selectionChangedByUser()));
 
     inSetupState = false;
@@ -958,7 +943,7 @@ void MainWindow::setupLayers()
     mSoilLayers.clear();
     mSoilLayers.push_back(soilLayer("Layer 1", 3.0, 15.0, 18.0, 2.0e5, 30, 0.0, QColor(100,0,0,100)));
     mSoilLayers.push_back(soilLayer("Layer 2", 3.0, 16.0, 19.0, 2.0e5, 35, 0.0, QColor(0,100,0,100)));
-    mSoilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 25, 0.0, QColor(0,0,100,100)));
+    mSoilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 28, 0.0, QColor(0,0,100,100)));
 
     updateLayerState();
 }
