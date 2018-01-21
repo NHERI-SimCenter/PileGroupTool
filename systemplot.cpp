@@ -58,9 +58,26 @@ void SystemPlot::updatePiles(QMap<QString, double> &)
     this->refresh();
 }
 
-void SystemPlot::updateLoad(double, double, double)
+void SystemPlot::updateLoad(double Px, double Py, double Moment)
 {
-    this->refresh();
+    bool upToDate = true;
+
+    if (P != Px)
+    {
+        P  = Px;
+        upToDate = false;
+    }
+    if (PV != Py)
+    {
+        PV = Py;
+        upToDate = false;
+    }
+    if (PMom != Moment)
+    {
+        PMom = Moment;
+        upToDate = false;
+    }
+    if (!upToDate)  this->refresh();
 }
 
 void SystemPlot::updateSoil(QVector<double> &)
@@ -70,12 +87,46 @@ void SystemPlot::updateSoil(QVector<double> &)
 
 void SystemPlot::updateDisplacement(double ux, double uy)
 {
-    this->refresh();
+    bool upToDate = true;
+
+    if (HDisp != ux)
+    {
+        HDisp = ux;
+        upToDate = false;
+    }
+    if (VDisp != uy)
+    {
+        VDisp = uy;
+        upToDate = false;
+    }
+    if (!upToDate)  this->refresh();
 }
 
-void SystemPlot::updateDispProfile(QVector<double> &)
+void SystemPlot::updateDispProfile(QVector<double> &profile)
 {
-    this->refresh();
+    bool upToDate = true;
+
+    if (surfaceDisp != profile[0])
+    {
+        surfaceDisp = profile[0];
+        upToDate = false;
+    }
+    if (percentage12 != profile[1])
+    {
+        percentage12 = profile[1];
+        upToDate = false;
+    }
+    if (percentage23 != profile[2])
+    {
+        percentage23 = profile[2];
+        upToDate = false;
+    }
+    if (percentageBase != profile[3])
+    {
+        percentageBase = profile[3];
+        upToDate = false;
+    }
+    if (!upToDate)  this->refresh();
 }
 
 void SystemPlot::updatePileDeformation(QVector<double>, QVector<QVector<double> > &)
