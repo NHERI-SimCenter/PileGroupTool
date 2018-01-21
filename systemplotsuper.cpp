@@ -31,17 +31,18 @@ void SystemPlotSuper::setLoadType(LoadControlType type)
     }
 }
 
-void SystemPlotSuper::updatePiles(QVector<PILE_INFO> &)
+void SystemPlotSuper::updatePiles(QVector<PILE_INFO> &pileInfo)
 {
-
-
-
-    XXXXXXX
-
-
-
-
-
+    //
+    // receive pile information
+    //
+    for (int i=0; i<pileInfo.size(); i++)
+    {
+        L1              = pileInfo[i].L1;            // pile length above ground (all the same)
+        L2[i]           = pileInfo[i].L2;            // embedded length of pile
+        pileDiameter[i] = pileInfo[i].pileDiameter;  // pile diameter
+        xOffset[i]      = pileInfo[i].xOffset;       // x-offset of pile
+    }
     this->refresh();
 }
 
