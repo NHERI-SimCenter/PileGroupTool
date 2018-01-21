@@ -7,6 +7,7 @@
 #include "utilWindows/dialogfuturefeature.h"
 #include "pilefeamodeler.h"
 #include "systemplotqcp.h"
+#include "systemplotqwt.h"
 
 #include <QApplication>
 #include <QtNetwork/QNetworkAccessManager>
@@ -78,21 +79,20 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    inSetupState = true;
+
     ui->setupUi(this);
 
-#ifdef USE_QWT
-    systemPlot = new SystemPlotQwt(ui->systemTab);
-#else
-    systemPlot = new SystemPlotQCP(ui->systemTab);
-#endif
+    this->fetchSettings();
 
+    if (useGraphicsLib == "Qwt")
+        { systemPlot = new SystemPlotQwt(ui->systemTab); }
+    else
+        { systemPlot = new SystemPlotQCP(ui->systemTab); }
 
     QLayout *lyt = ui->systemTab->layout();
     lyt->addWidget(systemPlot);
 
-    inSetupState = true;
-
-    this->fetchSettings();
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
     ui->appliedHorizontalForce->setMaximum(MAX_FORCE);
@@ -897,11 +897,19 @@ void MainWindow::fetchSettings()
     if (settings != NULL) { delete settings; }
     settings = new QSettings("NHERI SimCenter","Pile Group Tool");
 
+    // general settings
+    settings->beginGroup("general");
+        useGraphicsLib    = settings->value("graphicsLib", QString("QCP")).toString();
+        useFEAnalyzer     = settings->value("femAnalyzer", QString("OpenSeesInt")).toString();
+    settings->endGroup();
+
     // viewer settings
     settings->beginGroup("viewer");
         showDisplacements = settings->value("displacements",1).toBool();
+        showPullOut       = settings->value("pullout",1).toBool();
         showMoments       = settings->value("moments",1).toBool();
         showShear         = settings->value("shear",1).toBool();
+        showAxial         = settings->value("axial",1).toBool();
         showStress        = settings->value("stress",1).toBool();
         showPultimate     = settings->value("pult",1).toBool();
         showY50           = settings->value("compliance",1).toBool();

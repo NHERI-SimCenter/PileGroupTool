@@ -182,10 +182,16 @@ private:
     // system conforming settings and parameters
     QSettings *settings = NULL;
 
+    // general settings
+    QString useGraphicsLib;
+    QString useFEAnalyzer;
+
     // viewer settings
     bool showDisplacements;
+    bool showPullOut;
     bool showMoments;
     bool showShear;
+    bool showAxial;
     bool showStress;
     bool showPultimate;
     bool showY50;
