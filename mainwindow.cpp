@@ -6,6 +6,7 @@
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
 #include "pilefeamodeler.h"
+#include "systemplot.h"
 
 #include <QApplication>
 #include <QtNetwork/QNetworkAccessManager>
@@ -78,7 +79,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    systemPlot = new QCustomPlot(ui->systemTab);
+    //systemPlot = new QCustomPlot(ui->systemTab);
+    systemPlot = new SystemPlot(ui->systemTab);
     QLayout *lyt = ui->systemTab->layout();
     lyt->addWidget(systemPlot);
 
@@ -1484,229 +1486,16 @@ void MainWindow::on_properties_currentChanged(int index)
     this->updateSystemPlot();
 }
 
-void MainWindow::updateSystemPlot() {
-
-    for (int k=0; k<MAXPILES; k++) {
-        headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
-    }
-
-    //if (inSetupState) return;
+void MainWindow::updateSystemPlot()
+{
+    //
+    // update parameters
+    //
 
     //
-    // find dimensions for plotting
+    // refresh the plot
     //
-    QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
-
-    /* ******** sizing and adjustments ******** */
-
-    double minX0 =  999999.;
-    double maxX0 = -999999.;
-    double xbar  = 0.0;
-    double H     = 0.0;
-    double W, WP;
-    double depthSoil = 0.0;
-    double nPiles = 0.;
-    double maxD = 0.0;
-    double maxH = 0.0;
-
-    //
-    // find depth of defined soil layers
-    //
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) { depthSoil += mSoilLayers[iLayer].getLayerThickness(); }
-
-    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
-        if ( xOffset[pileIdx] < minX0) { minX0 = xOffset[pileIdx]; }
-        if ( xOffset[pileIdx] > maxX0) { maxX0 = xOffset[pileIdx]; }
-        if (L2[pileIdx] > H) { H = L2[pileIdx]; }
-        double D = pileDiameter[pileIdx];
-        if (D>maxD) maxD = D;
-
-        xbar += xOffset[pileIdx]; nPiles++;
-    }
-    xbar /= nPiles;
-    if (depthSoil > H) H = depthSoil;
-    if ( L1 > 0.0 ) H += L1;
-
-    WP = maxX0 - minX0;
-    W  = (1.10*WP + 0.50*H);
-    if ( (WP + 0.35*H) > W ) { W = WP + 0.35*H; }
-
-    maxH = maxD;
-    if (maxH > L1/2.) maxH = L1/2.;
-
-    // setup system plot
-    systemPlot->clearPlottables();
-    systemPlot->clearGraphs();
-    systemPlot->clearItems();
-
-    if (!systemPlot->layer("groundwater"))
-        { systemPlot->addLayer("groundwater", systemPlot->layer("grid"), QCustomPlot::limAbove); }
-    if (!systemPlot->layer("soil"))
-        { systemPlot->addLayer("soil", systemPlot->layer("groundwater"), QCustomPlot::limAbove); }
-    if (!systemPlot->layer("piles"))
-        { systemPlot->addLayer("piles", systemPlot->layer("soil"), QCustomPlot::limAbove); }
-
-    systemPlot->autoAddPlottableToLegend();
-    systemPlot->legend->setVisible(true);
-
-    QVector<double> zero(2,xbar-0.5*W);
-    QVector<double> loc(2,0.0);
-    loc[0] = -(H-L1); loc[1] = L1;
-
-    systemPlot->addGraph();
-    systemPlot->graph(0)->setData(zero,loc);
-    systemPlot->graph(0)->setPen(QPen(Qt::black,1));
-    systemPlot->graph(0)->removeFromLegend();
-
-    // create layers
-
-    systemPlot->setCurrentLayer("soil");
-
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
-
-/* set the following to #if 1 once we can select a rectangle */
-#if 0
-        QCPItemRect* layerII = new QCPItemRect(systemPlot);
-        layerII->topLeft->setCoords(xbar - W/2., -mSoilLayers[iLayer].getLayerDepth());
-        layerII->bottomRight->setCoords(xbar + W/2.,-mSoilLayers[iLayer].getLayerDepth() - mSoilLayers[iLayer].getLayerThickness());
-
-        connect(layerII, SIGNAL(selectionChanged(bool) ), this, SLOT(on_layerSelectedInSystemPlot(bool)));
-#else
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        x[0] = xbar - W/2.; y[0] = -mSoilLayers[iLayer].getLayerDepth();
-        x[1] = x[0];        y[1] = y[0] - mSoilLayers[iLayer].getLayerThickness();
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
-
-        QCPCurve *layerII = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
-        layerII->setData(x,y);
-        layerII->setName(QString("Layer #%1").arg(iLayer+1));
-#endif
-        if (iLayer == activeLayerIdx) {
-            layerII->setPen(QPen(Qt::red, 2));
-            layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
-        }
-        else {
-            layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
-            layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
-        }
-
-        //systemPlot->addPlottable(layerII);
-    }
-
-    // ground water table
-
-    systemPlot->setCurrentLayer("groundwater");
-
-    if (gwtDepth < (H-L1)) {
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        x[0] = xbar - W/2.; y[0] = -gwtDepth;
-        x[1] = x[0];        y[1] = -(H - L1);
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
-
-        QCPCurve *water = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
-        water->setData(x,y);
-
-        water->setPen(QPen(Qt::blue, 2));
-        water->setBrush(QBrush(GROUND_WATER_BLUE));
-
-        water->setName(QString("groundwater"));
-    }
-
-    // plot the pile cap
-
-    systemPlot->setCurrentLayer("piles");
-
-    QVector<double> x(5,0.0);
-    QVector<double> y(5,0.0);
-
-    x[0] = minX0 - maxD/2.; y[0] = L1 + maxH;
-    x[1] = x[0];            y[1] = L1 - maxH;
-    x[2] = maxX0 + maxD/2.; y[2] = y[1];
-    x[3] = x[2];            y[3] = y[0];
-    x[4] = x[0];            y[4] = y[0];
-
-    QCPCurve *pileCap = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
-    pileCap->setData(x,y);
-    pileCap->setPen(QPen(Qt::black, 1));
-    pileCap->setBrush(QBrush(Qt::gray));
-    //pileCap->setName(QString("pile cap"));
-    pileCap->removeFromLegend();
-
-    //ui->systemPlot->addPlottable(pileCap);
-
-    // plot the piles
-    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
-
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        double D = pileDiameter[pileIdx];
-
-        x[0] = xOffset[pileIdx] - D/2.; y[0] = L1;
-        x[1] = x[0];                    y[1] = -L2[pileIdx];
-        x[2] = xOffset[pileIdx] + D/2.; y[2] = y[1];
-        x[3] = x[2];                    y[3] = y[0];
-        x[4] = x[0];                    y[4] = y[0];
-
-        QCPCurve *pileII = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
-        pileII->setData(x,y);
-        if (pileIdx == activePileIdx) {
-            pileII->setPen(QPen(Qt::red, 2));
-            pileII->setBrush(QBrush(BRUSH_COLOR[9+pileIdx]));
-        }
-        else {
-            pileII->setPen(QPen(Qt::black, 1));
-            pileII->setBrush(QBrush(BRUSH_COLOR[6+pileIdx]));
-        }
-        //pileII->setBrush(QBrush(Qt::black));
-        pileII->setName(QString("Pile #%1").arg(pileIdx+1));
-
-        //systemPlot->addPlottable(pileII);
-    }
-
-    // add force to the plot
-
-    if (ABS(P) > 0.0) {
-        double force = 0.45*W*P/MAX_FORCE;
-
-        // add the arrow:
-        QCPItemLine *arrow = new QCPItemLine(systemPlot);
-        //systemPlot->addItem(arrow);
-        arrow->setPen(QPen(Qt::red, 3));
-        arrow->start->setCoords(xbar, L1);
-        arrow->end->setCoords(xbar + force, L1);
-        arrow->setHead(QCPLineEnding::esSpikeArrow);
-    }
-
-    if (ABS(PV) > 0.0) {
-        double force = 0.45*W*PV/MAX_FORCE;
-
-        // add the arrow:
-        QCPItemLine *arrow = new QCPItemLine(systemPlot);
-        //systemPlot->addItem(arrow);
-        arrow->setPen(QPen(Qt::red, 3));
-        arrow->start->setCoords(xbar, L1 - force);
-        arrow->end->setCoords(xbar, L1);
-        arrow->setHead(QCPLineEnding::esSpikeArrow);
-    }
-
-    // plot scaling options
-
-    systemPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
-    //ui->systemPlot->axisRect()->autoMargins();
-    //setupFullAxesBox();
-    systemPlot->xAxis->setScaleRatio(systemPlot->yAxis);
-    systemPlot->rescaleAxes();
-    systemPlot->replot();
+    systemPlot->refresh();
 }
 
 void MainWindow::on_layerSelectedInSystemPlot(bool selected)

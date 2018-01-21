@@ -14,6 +14,7 @@ class soilLayer;
 class QTableWidgetItem;
 class QSettings;
 class PileFEAmodeler;
+class SystemPlotSuper;
 
 namespace Ui {
 class MainWindow;
@@ -124,7 +125,8 @@ private:
     Q_OBJECT
     Ui::MainWindow *ui;
 
-    QCustomPlot *systemPlot = NULL;
+    //QCustomPlot *systemPlot = NULL;
+    SystemPlotSuper *systemPlot = NULL;
     PileFEAmodeler *pileFEAmodel = NULL;
 
     void updateSystemPlot();
