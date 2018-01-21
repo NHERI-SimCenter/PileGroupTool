@@ -1490,6 +1490,31 @@ void MainWindow::updateSystemPlot()
     // update parameters
     //
 
+    //virtual void updatePiles(QMap<QString, double> &);
+    //virtual void updateSoil(QVector<double> &);
+
+    systemPlot->updatePiles();
+    systemPlot->updateSoil();
+
+    systemPlot->setLoadType(loadControlType);
+
+    switch (loadControlType) {
+    case LoadControlType::ForceControl:
+        systemPlot->updateLoad(P, PV, PMom);
+        break;
+    case LoadControlType::PushOver:
+        systemPlot->updateDisplacement(HDisp, VDisp);
+        break;
+    case LoadControlType::SoilMotion:
+        QVector<double> profile;
+        profile.append(surfaceDisp);
+        profile.append(percentage12);
+        profile.append(percentage23);
+        profile.append(percentageBase);
+        systemPlot->updateDispProfile(profile);
+        break;
+    }
+
     //
     // refresh the plot
     //

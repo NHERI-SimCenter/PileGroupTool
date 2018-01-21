@@ -155,7 +155,7 @@ void SystemPlotSuper::updateDispProfile(QVector<double> &profile)
     if (!upToDate)  this->refresh();
 }
 
-void SystemPlotSuper::updatePileDeformation(QVector<double>, QVector<QVector<double> > &)
+void SystemPlotSuper::updatePileDeformation(QVector<double> &, QVector<QVector<double> > &)
 {
     this->refresh();
 }
