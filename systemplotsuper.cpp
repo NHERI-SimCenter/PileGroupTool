@@ -101,6 +101,14 @@ void SystemPlotSuper::updateSoil(QVector<double> &layerDepth)
     if (!upToDate)  this->refresh();
 }
 
+void SystemPlotSuper::updateGWtable(double depth)
+{
+    if (gwtDepth == depth) return;
+
+    gwtDepth = depth;
+    this->refresh();
+}
+
 void SystemPlotSuper::updateLoad(double Px, double Py, double Moment)
 {
     bool upToDate = true;

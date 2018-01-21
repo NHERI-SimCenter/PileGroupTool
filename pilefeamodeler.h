@@ -19,6 +19,7 @@ public:
     void setLoadType(LoadControlType);
     void updateLoad(double, double, double);
     void updateSoil(QVector<soilLayer> &);
+    void updateGWtable(double );
     void updateDisplacement(double ux=0.0, double uy=0.0);
     void updateDispProfile(QVector<double> &);
     void setAnalysisType(QString);

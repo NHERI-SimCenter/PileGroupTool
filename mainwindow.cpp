@@ -257,6 +257,11 @@ void MainWindow::doAnalysis(void)
     pileFEAmodel->updateSoil(mSoilLayers);
 
     //
+    // update ground water table
+    //
+    pileFEAmodel->updateGWtable(gwtDepth);
+
+    //
     // set the load control type
     //
     pileFEAmodel->setLoadType(loadControlType);
@@ -1575,15 +1580,22 @@ void MainWindow::updateSystemPlot()
     //
     // create list of layer interface positions
     //
+    this->updateLayerState();
+
     QVector<double> layerDepth(MAXLAYERS+1, 0.00);
     for (int i=1; i<=MAXLAYERS; i++)
     {
-        if (mSoilLayers.size() > i)
-            { layerDepth[i] = mSoilLayers[i-1].getLayerDepth(); }
+        if (mSoilLayers.size() >= i)
+            { layerDepth[i] = mSoilLayers[i-1].getLayerDepth() + mSoilLayers[i-1].getLayerThickness(); }
         else
             { layerDepth[i] = layerDepth[i-1]; }
     }
     systemPlot->updateSoil(layerDepth);
+
+    //
+    // update ground water table
+    //
+    systemPlot->updateGWtable(gwtDepth);
 
     //
     // set the load control type

@@ -201,6 +201,14 @@ void PileFEAmodeler::updateSoil(QVector<soilLayer> &layers)
     DISABLE_STATE("meshValid");
 }
 
+void PileFEAmodeler::updateGWtable(double depth)
+{
+    if (gwtDepth == depth) return;
+
+    gwtDepth = depth;
+    DISABLE_STATE("meshValid");
+}
+
 void PileFEAmodeler::updateDisplacement(double ux, double uy)
 {
     loadControlType = LoadControlType::PushOver;

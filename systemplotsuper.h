@@ -19,6 +19,7 @@ public:
     virtual void updatePiles(QVector<PILE_INFO> &);
     virtual void updateLoad(double, double, double);
     virtual void updateSoil(QVector<double> &);
+    virtual void updateGWtable(double);
     virtual void updateDisplacement(double ux=0.0, double uy=0.0);
     virtual void updateDispProfile(QVector<double> &);
     virtual void updatePileDeformation(QVector<double> &, QVector<QVector<double> > &);
