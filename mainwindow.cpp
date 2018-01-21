@@ -232,8 +232,61 @@ void MainWindow::refreshUI() {
 
 void MainWindow::doAnalysis(void)
 {
+    //
+    // create pile information for plotting
+    //
+    QVector<PILE_INFO> pileInfo;
+
+    pileInfo.clear();
+
+    for (int i=0; i<numPiles; i++)
+    {
+        PILE_INFO thisPile;
+        thisPile.L1           = L1;
+        thisPile.L2           = L2[i];
+        thisPile.pileDiameter = pileDiameter[i];
+        thisPile.xOffset      = xOffset[i];
+        thisPile.E            = E[i];
+        pileInfo.append(thisPile);
+    }
+    pileFEAmodel->updatePiles(pileInfo);
+
+    //
+    // set the soil layer information
+    //
+    pileFEAmodel->updateSoil(mSoilLayers);
+
+    //
+    // set the load control type
+    //
+    pileFEAmodel->setLoadType(loadControlType);
+
+    //
+    // update the load control data
+    //
+    switch (loadControlType) {
+    case LoadControlType::ForceControl:
+        pileFEAmodel->updateLoad(P, PV, PMom);
+        break;
+    case LoadControlType::PushOver:
+        pileFEAmodel->updateDisplacement(HDisp, VDisp);
+        break;
+    case LoadControlType::SoilMotion:
+        QVector<double> profile;
+        profile.append(surfaceDisp);
+        profile.append(percentage12);
+        profile.append(percentage23);
+        profile.append(percentageBase);
+        pileFEAmodel->updateDispProfile(profile);
+        break;
+    }
+
+    //
+    // run the analysis
+    //
     //pileFEAmodel->doAnalysis();
 
+    /* ******************* everything below will become obsolete once the PileFEAmodeler is functional **** */
 
     double overburdonStress;
 
@@ -1499,17 +1552,45 @@ void MainWindow::on_properties_currentChanged(int index)
 void MainWindow::updateSystemPlot()
 {
     //
-    // update parameters
+    // create pile information for plotting
     //
+    QVector<PILE_INFO> pileInfo;
 
-    //virtual void updatePiles(QMap<QString, double> &);
-    //virtual void updateSoil(QVector<double> &);
+    pileInfo.clear();
 
-    systemPlot->updatePiles();
-    systemPlot->updateSoil();
+    for (int i=0; i<numPiles; i++)
+    {
+        PILE_INFO thisPile;
+        thisPile.L1           = L1;
+        thisPile.L2           = L2[i];
+        thisPile.pileDiameter = pileDiameter[i];
+        thisPile.xOffset      = xOffset[i];
+        thisPile.E            = E[i];
+        pileInfo.append(thisPile);
+    }
+    systemPlot->updatePiles(pileInfo);
 
+    //
+    // create list of layer interface positions
+    //
+    QVector<double> layerDepth(MAXLAYERS+1, 0.00);
+    for (int i=1; i<=MAXLAYERS; i++)
+    {
+        if (mSoilLayers.size() > i)
+            { layerDepth[i] = mSoilLayers[i-1].getLayerDepth(); }
+        else
+            { layerDepth[i] = layerDepth[i-1]; }
+    }
+    systemPlot->updateSoil(layerDepth);
+
+    //
+    // set the load control type
+    //
     systemPlot->setLoadType(loadControlType);
 
+    //
+    // update the load control data
+    //
     switch (loadControlType) {
     case LoadControlType::ForceControl:
         systemPlot->updateLoad(P, PV, PMom);

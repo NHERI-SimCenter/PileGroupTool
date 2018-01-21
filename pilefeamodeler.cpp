@@ -171,9 +171,18 @@ void PileFEAmodeler::setDefaultParameters(void)
     DISABLE_STATE("solutionAvailable");
 }
 
-void PileFEAmodeler::updatePiles(QMap<QString, double> &pileInfo)
+void PileFEAmodeler::updatePiles(QVector<PILE_INFO> &pileInfo)
 {
     DISABLE_STATE("meshValid");
+}
+
+void PileFEAmodeler::setLoadType(LoadControlType type)
+{
+    if (loadControlType != type)
+    {
+        loadControlType = type;
+        DISABLE_STATE("loadValid");
+    }
 }
 
 void PileFEAmodeler::updateLoad(double Px, double Py, double Moment)

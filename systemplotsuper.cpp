@@ -31,8 +31,17 @@ void SystemPlotSuper::setLoadType(LoadControlType type)
     }
 }
 
-void SystemPlotSuper::updatePiles(QMap<QString, double> &)
+void SystemPlotSuper::updatePiles(QVector<PILE_INFO> &)
 {
+
+
+
+    XXXXXXX
+
+
+
+
+
     this->refresh();
 }
 

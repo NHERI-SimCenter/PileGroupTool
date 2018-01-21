@@ -25,12 +25,33 @@
 
 // data types
 typedef struct {
-    int pileIdx;
-    int nodeIdx;
+    int    pileIdx;
+    int    nodeIdx;
     double x;
     double reductionFactorLeftMovement;
     double reductionFactorRightMovement;
 } HEAD_NODE_TYPE;
+
+typedef struct {
+    double L1;            // pile length above ground (all the same)
+    double L2;            // embedded length of pile
+    double pileDiameter;  // pile diameter
+    double E;             // pile modulus of elasticity
+    double xOffset;       // x-offset of pile
+} PILE_INFO;
+
+typedef struct {
+    double L1;            // pile length above ground (all the same)
+    double L2;            // embedded length of pile
+    double pileDiameter;  // pile diameter
+    double E;             // pile modulus of elasticity
+    double xOffset;       // x-offset of pile
+
+    int numNodePile;
+    int maxLayers;
+    int nodeIDoffset;
+    int elemIDoffset;
+} PILE_FEA_INFO;
 
 #define SWAP(X,Y) {HEAD_NODE_TYPE tmp=Y; Y=X, Y=tmp; }
 

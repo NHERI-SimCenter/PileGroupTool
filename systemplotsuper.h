@@ -16,7 +16,7 @@ public:
     ~SystemPlotSuper();
     virtual void refresh() = 0;
     virtual void setLoadType(LoadControlType);
-    virtual void updatePiles(QMap<QString, double> &);
+    virtual void updatePiles(QVector<PILE_INFO> &);
     virtual void updateLoad(double, double, double);
     virtual void updateSoil(QVector<double> &);
     virtual void updateDisplacement(double ux=0.0, double uy=0.0);
