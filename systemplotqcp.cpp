@@ -50,12 +50,10 @@ void SystemPlotQCP::refresh()
         headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
     }
 
-    //if (inSetupState) return;
-
     //
     // find dimensions for plotting
     //
-    QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
+    //QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
 
     /* ******** sizing and adjustments ******** */
 

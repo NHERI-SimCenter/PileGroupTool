@@ -1551,6 +1551,8 @@ void MainWindow::on_properties_currentChanged(int index)
 
 void MainWindow::updateSystemPlot()
 {
+    if (inSetupState) return;
+
     //
     // create pile information for plotting
     //

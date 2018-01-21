@@ -36,7 +36,10 @@ void SystemPlotSuper::updatePiles(QVector<PILE_INFO> &pileInfo)
     //
     // receive pile information
     //
-    for (int i=0; i<pileInfo.size(); i++)
+    numPiles = pileInfo.size();
+    if (numPiles > MAXPILES) { numPiles = MAXPILES; }
+
+    for (int i=0; i<numPiles; i++)
     {
         L1              = pileInfo[i].L1;            // pile length above ground (all the same)
         L2[i]           = pileInfo[i].L2;            // embedded length of pile
@@ -95,7 +98,6 @@ void SystemPlotSuper::updateSoil(QVector<double> &layerDepth)
         depthOfLayer[3] = depthOfLayer[2];
         upToDate = false;
     }
-
     if (!upToDate)  this->refresh();
 }
 
