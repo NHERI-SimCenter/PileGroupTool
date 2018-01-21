@@ -128,8 +128,10 @@ void PileFEAmodeler::setDefaultParameters(void)
 
     // viewer settings
     showDisplacements = true;
+    showPullOut       = true;
     showMoments       = true;
     showShear         = true;
+    showAxial         = true;
     showStress        = true;
     showPultimate     = true;
     showY50           = true;

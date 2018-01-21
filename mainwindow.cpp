@@ -982,11 +982,17 @@ void MainWindow::updateUI()
     if (!showDisplacements && ui->tabWidget->indexOf(ui->displacement)>=0 ) {
         ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->displacement));
     }
+    if (!showPullOut && ui->tabWidget->indexOf(ui->pullout)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pullout));
+    }
     if (!showMoments && ui->tabWidget->indexOf(ui->moment)>=0 ) {
         ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->moment));
     }
     if (!showShear && ui->tabWidget->indexOf(ui->shear)>=0 ) {
         ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->shear));
+    }
+    if (!showAxial && ui->tabWidget->indexOf(ui->axial)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->axial));
     }
     if (!showStress && ui->tabWidget->indexOf(ui->stress)>=0 ) {
         ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->stress));
@@ -1001,13 +1007,19 @@ void MainWindow::updateUI()
     int numTabs = ui->tabWidget->count();
 
     if (showDisplacements && ui->tabWidget->indexOf(ui->displacement) < 0 ) {
-        ui->tabWidget->addTab(ui->displacement,"Displacement");
+        ui->tabWidget->addTab(ui->displacement,"Lateral Disp");
+    }
+    if (showPullOut && ui->tabWidget->indexOf(ui->pullout) < 0 ) {
+        ui->tabWidget->addTab(ui->pullout,"Axial Disp");
     }
     if (showMoments && ui->tabWidget->indexOf(ui->moment) < 0 ) {
         ui->tabWidget->addTab(ui->moment,"Moment");
     }
     if (showShear && ui->tabWidget->indexOf(ui->shear) < 0 ) {
         ui->tabWidget->addTab(ui->shear,"Shear");
+    }
+    if (showAxial && ui->tabWidget->indexOf(ui->axial) < 0 ) {
+        ui->tabWidget->addTab(ui->axial,"Axial");
     }
     if (showStress && ui->tabWidget->indexOf(ui->stress) < 0 ) {
         ui->tabWidget->addTab(ui->stress,"Stress");

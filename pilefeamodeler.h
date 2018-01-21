@@ -89,8 +89,10 @@ protected:
 
     // viewer settings
     bool showDisplacements;
+    bool showPullOut;
     bool showMoments;
     bool showShear;
+    bool showAxial;
     bool showStress;
     bool showPultimate;
     bool showY50;
