@@ -74,7 +74,7 @@ void SystemPlot::refresh()
     //
     // find depth of defined soil layers
     //
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) { depthSoil += mSoilLayers[iLayer].getLayerThickness(); }
+    depthSoil = depthOfLayer[3];
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
         if ( xOffset[pileIdx] < minX0) { minX0 = xOffset[pileIdx]; }
@@ -137,8 +137,8 @@ void SystemPlot::refresh()
         QVector<double> x(5,0.0);
         QVector<double> y(5,0.0);
 
-        x[0] = xbar - W/2.; y[0] = -mSoilLayers[iLayer].getLayerDepth();
-        x[1] = x[0];        y[1] = y[0] - mSoilLayers[iLayer].getLayerThickness();
+        x[0] = xbar - W/2.; y[0] = -depthOfLayer[iLayer];
+        x[1] = x[0];        y[1] = -depthOfLayer[iLayer+1];
         x[2] = xbar + W/2.; y[2] = y[1];
         x[3] = x[2];        y[3] = y[0];
         x[4] = x[0];        y[4] = y[0];

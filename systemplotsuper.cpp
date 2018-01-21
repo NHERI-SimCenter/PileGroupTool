@@ -25,9 +25,69 @@ void SystemPlotSuper::updatePiles(QMap<QString, double> &)
     this->refresh();
 }
 
-void SystemPlotSuper::updateSoil(QVector<double> &)
+void SystemPlotSuper::updateSoil(QVector<double> &layerDepth)
 {
-    this->refresh();
+    int cnt = layerDepth.size();
+
+    bool upToDate = true;
+
+    if (cnt > 0)
+    {
+        if (depthOfLayer[0] != layerDepth[0] )
+        {
+            depthOfLayer[0] = layerDepth[0];
+            upToDate = false;
+        }
+    }
+    else
+    {
+        depthOfLayer[1] = 0.00;
+        upToDate = false;
+    }
+
+    if (cnt > 1)
+    {
+        if (depthOfLayer[1] != layerDepth[1] )
+        {
+            depthOfLayer[1] = layerDepth[1];
+            upToDate = false;
+        }
+    }
+    else
+    {
+        depthOfLayer[1] = depthOfLayer[0];
+        upToDate = false;
+    }
+
+    if (cnt > 2 )
+    {
+        if (depthOfLayer[2] != layerDepth[2] )
+        {
+            depthOfLayer[2] = layerDepth[2];
+            upToDate = false;
+        }
+    }
+    else
+    {
+        depthOfLayer[2] = depthOfLayer[1];
+        upToDate = false;
+    }
+
+    if (cnt > 3)
+    {
+        if (depthOfLayer[3] != layerDepth[3] )
+        {
+            depthOfLayer[3] = layerDepth[3];
+            upToDate = false;
+        }
+    }
+    else
+    {
+        depthOfLayer[3] = depthOfLayer[2];
+        upToDate = false;
+    }
+
+    if (!upToDate)  this->refresh();
 }
 
 void SystemPlotSuper::updateLoad(double Px, double Py, double Moment)
