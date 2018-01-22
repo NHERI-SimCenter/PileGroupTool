@@ -6,6 +6,7 @@
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
 #include "pilefeamodeler.h"
+#include "systemplotsuper.h"
 #include "systemplotqcp.h"
 #include "systemplotqwt.h"
 
@@ -158,9 +159,9 @@ MainWindow::MainWindow(QWidget *parent) :
     //
     // this connect statement needs to be updated to reflect changes to the SystemPlotSuper class
     //
-    QObject::connect(systemPlot, SIGNAL(on_pileSelected(int)), this, SLOT(on_systemPlot_pileSelected(int)));
-    QObject::connect(systemPlot, SIGNAL(on_soilLayerSelected(int)), this, SLOT(on_systemPlot_soilLayerSelected(int)));
-    QObject::connect(systemPlot, SIGNAL(on_groundWaterSelected()), this, SLOT(on_systemPlot_groundWaterSelected()));
+    QObject::connect(systemPlot, SIGNAL(on_pileSelected(int)), this, SLOT(onSystemPlot_pileSelected(int)));
+    QObject::connect(systemPlot, SIGNAL(on_soilLayerSelected(int)), this, SLOT(onSystemPlot_soilLayerSelected(int)));
+    QObject::connect(systemPlot, SIGNAL(on_groundWaterSelected()), this, SLOT(onSystemPlot_groundWaterSelected()));
 
     inSetupState = false;
 
@@ -1261,6 +1262,8 @@ void MainWindow::on_btn_newPile_clicked()
         E[numPiles]            = E[numPiles-1];
         xOffset[numPiles]      = xOffset[numPiles-1] + 2.0*pileDiameter[numPiles-1];
         numPiles++;
+
+        systemPlot->setActivePile(numPiles);
     }
     else
     {
@@ -1271,6 +1274,7 @@ void MainWindow::on_btn_newPile_clicked()
     ui->pileIndex->setMaximum(numPiles);
     ui->pileIndex->setValue(numPiles);
 
+    //this->updateSystemPlot();
     this->doAnalysis();
 }
 
@@ -1299,7 +1303,6 @@ void MainWindow::on_pileIndex_valueChanged(int arg1)
     activeLayerIdx = -1;
 
     this->updateSystemPlot();
-
 }
 
 /* ***** pile parameter changes ***** */
@@ -1636,18 +1639,17 @@ void MainWindow::on_layerSelectedInSystemPlot(bool selected)
 }
 
 
-void MainWindow::on_systemPlot_pileSelected(int index)
+void MainWindow::onSystemPlot_pileSelected(int index)
 {
     activePileIdx  = index;
     activeLayerIdx = -1;
 
     // make pile controls visible
     ui->properties->setCurrentWidget(ui->pilePropertiesWidget);
-    ui->pileIndex->setValue(activePileIdx+1);
-
+    ui->pileIndex->setValue(index+1);
 }
 
-void MainWindow::on_systemPlot_soilLayerSelected(int index)
+void MainWindow::onSystemPlot_soilLayerSelected(int index)
 {
     activePileIdx  = -1;
     activeLayerIdx = index;
@@ -1655,10 +1657,9 @@ void MainWindow::on_systemPlot_soilLayerSelected(int index)
     // make soil layer controls visible
     ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
     setActiveLayer(index);
-
 }
 
-void MainWindow::on_systemPlot_groundWaterSelected()
+void MainWindow::onSystemPlot_groundWaterSelected()
 {
     // make groundwater settings visible:
     ui->properties->setCurrentWidget(ui->soilPropertiesWidget);

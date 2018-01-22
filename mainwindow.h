@@ -117,9 +117,9 @@ private slots:
     void on_BaseDisplacementSlider_valueChanged(int value);
 
     // response to signals from systemPlot
-    void on_systemPlot_pileSelected(int );
-    void on_systemPlot_soilLayerSelected(int );
-    void on_systemPlot_groundWaterSelected();
+    void onSystemPlot_pileSelected(int );
+    void onSystemPlot_soilLayerSelected(int );
+    void onSystemPlot_groundWaterSelected();
 
 private:
     Q_OBJECT
