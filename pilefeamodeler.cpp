@@ -216,7 +216,6 @@ void PileFEAmodeler::updateDisplacement(double ux, double uy)
     HDisp = ux; // prescribed horizontal displacement
     VDisp = uy; // prescriber vertical displacement
 
-
     DISABLE_STATE("loadValid");
 }
 

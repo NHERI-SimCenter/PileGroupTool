@@ -20,6 +20,16 @@ public:
 
 private:
 
+/*
+signals:
+    void on_pileSelected(int );
+    void on_soilLayerSelected(int );
+    void on_groundWaterSelected(void);
+*/
+
+private slots:
+    void on_plot_selectionChangedByUser(void);
+
 protected:
     QCustomPlot *plot;
 };
