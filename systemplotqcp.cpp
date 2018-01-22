@@ -26,6 +26,7 @@ SystemPlotQCP::SystemPlotQCP(QWidget *parent) :
     subLayout->addElement(0, 0, plot->legend);
     //
     // change the fill order of the legend, so it's filled left to right in columns:
+    plot->legend->setWrap(4);
     plot->legend->setRowSpacing(1);
     plot->legend->setColumnSpacing(2);
 

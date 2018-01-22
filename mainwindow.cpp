@@ -1262,6 +1262,8 @@ void MainWindow::on_btn_newPile_clicked()
         E[numPiles]            = E[numPiles-1];
         xOffset[numPiles]      = xOffset[numPiles-1] + 2.0*pileDiameter[numPiles-1];
         numPiles++;
+
+        systemPlot->setActivePile(numPiles);
     }
     else
     {
@@ -1272,6 +1274,7 @@ void MainWindow::on_btn_newPile_clicked()
     ui->pileIndex->setMaximum(numPiles);
     ui->pileIndex->setValue(numPiles);
 
+    //this->updateSystemPlot();
     this->doAnalysis();
 }
 
@@ -1300,7 +1303,6 @@ void MainWindow::on_pileIndex_valueChanged(int arg1)
     activeLayerIdx = -1;
 
     this->updateSystemPlot();
-
 }
 
 /* ***** pile parameter changes ***** */
@@ -1644,8 +1646,7 @@ void MainWindow::onSystemPlot_pileSelected(int index)
 
     // make pile controls visible
     ui->properties->setCurrentWidget(ui->pilePropertiesWidget);
-    ui->pileIndex->setValue(activePileIdx+1);
-
+    ui->pileIndex->setValue(index+1);
 }
 
 void MainWindow::onSystemPlot_soilLayerSelected(int index)
@@ -1656,7 +1657,6 @@ void MainWindow::onSystemPlot_soilLayerSelected(int index)
     // make soil layer controls visible
     ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
     setActiveLayer(index);
-
 }
 
 void MainWindow::onSystemPlot_groundWaterSelected()
