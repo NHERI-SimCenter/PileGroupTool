@@ -14,6 +14,7 @@ class soilLayer;
 class QTableWidgetItem;
 class QSettings;
 class PileFEAmodeler;
+class SystemPlotSuper;
 
 namespace Ui {
 class MainWindow;
@@ -124,7 +125,8 @@ private:
     Q_OBJECT
     Ui::MainWindow *ui;
 
-    QCustomPlot *systemPlot = NULL;
+    //QCustomPlot *systemPlot = NULL;
+    SystemPlotSuper *systemPlot = NULL;
     PileFEAmodeler *pileFEAmodel = NULL;
 
     void updateSystemPlot();
@@ -135,20 +137,25 @@ private:
     // load control
     LoadControlType loadControlType;
 
+    // prescribed loads at the pile head
     double P;     // lateral force on pile cap
     double PV;    // vertical force on pile cap
     double PMom;  // applied moment on pile cap
 
+    // pile head displacement (push-over analysis)
     double HDisp; // prescribed horizontal displacement
     double VDisp; // prescriber vertical displacement
 
+    // soil motion profile
     double surfaceDisp;    // prescribed soil surface displacement
     double percentage12;   // percentage of surface displacement at 1st layer interface
     double percentage23;   // percentage of surface displacement at 2nd layer interface
     double percentageBase; // percentage of surface displacement at base of soil column
 
-    // get parameters
+    // ground water table
     double gwtDepth;  // depth of ground water table below the surface
+
+    // general parameters
     int    numPileElements;
     int    numPiles;
 
@@ -180,10 +187,16 @@ private:
     // system conforming settings and parameters
     QSettings *settings = NULL;
 
+    // general settings
+    QString useGraphicsLib;  // "QCP" or "Qwt"
+    QString useFEAnalyzer;   // "OpenSeesInt" is currently the only implemented option
+
     // viewer settings
     bool showDisplacements;
+    bool showPullOut;
     bool showMoments;
     bool showShear;
+    bool showAxial;
     bool showStress;
     bool showPultimate;
     bool showY50;

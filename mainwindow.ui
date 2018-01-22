@@ -1186,9 +1186,21 @@ Layers 1 &amp; 2:</string>
       </property>
       <widget class="QWidget" name="displacement">
        <attribute name="title">
-        <string>Displacement</string>
+        <string>Lateral Disp</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
         <item row="0" column="0">
          <widget class="QCustomPlot" name="displPlot" native="true">
           <property name="sizePolicy">
@@ -1207,11 +1219,45 @@ Layers 1 &amp; 2:</string>
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pullout">
+       <attribute name="title">
+        <string>Axial Disp</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_15">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QCustomPlot" name="pullOutPlot" native="true"/>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="moment">
        <attribute name="title">
         <string>Moment</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_5">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
         <item row="0" column="0">
          <widget class="QCustomPlot" name="momentPlot" native="true"/>
         </item>
@@ -1222,8 +1268,42 @@ Layers 1 &amp; 2:</string>
         <string>Shear</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
         <item row="0" column="0">
          <widget class="QCustomPlot" name="shearPlot" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="axial">
+       <attribute name="title">
+        <string>Axial</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_13">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QCustomPlot" name="axialPlot" native="true"/>
         </item>
        </layout>
       </widget>
@@ -1232,6 +1312,18 @@ Layers 1 &amp; 2:</string>
         <string>effective Stress</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_6">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
         <item row="0" column="0">
          <widget class="QCustomPlot" name="stressPlot" native="true"/>
         </item>
@@ -1242,6 +1334,18 @@ Layers 1 &amp; 2:</string>
         <string>p_ult</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_7">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
         <item row="0" column="0">
          <widget class="QCustomPlot" name="pultPlot" native="true"/>
         </item>
@@ -1252,6 +1356,18 @@ Layers 1 &amp; 2:</string>
         <string>y50</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_8">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
         <item row="0" column="0">
          <widget class="QCustomPlot" name="y50Plot" native="true"/>
         </item>

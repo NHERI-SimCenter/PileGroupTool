@@ -6,6 +6,8 @@
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
 #include "pilefeamodeler.h"
+#include "systemplotqcp.h"
+#include "systemplotqwt.h"
 
 #include <QApplication>
 #include <QtNetwork/QNetworkAccessManager>
@@ -77,14 +79,20 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    inSetupState = true;
+
     ui->setupUi(this);
-    systemPlot = new QCustomPlot(ui->systemTab);
+
+    this->fetchSettings();
+
+    if (useGraphicsLib == "Qwt")
+        { systemPlot = new SystemPlotQwt(ui->systemTab); }
+    else
+        { systemPlot = new SystemPlotQCP(ui->systemTab); }
+
     QLayout *lyt = ui->systemTab->layout();
     lyt->addWidget(systemPlot);
 
-    inSetupState = true;
-
-    this->fetchSettings();
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
     ui->appliedHorizontalForce->setMaximum(MAX_FORCE);
@@ -98,6 +106,9 @@ MainWindow::MainWindow(QWidget *parent) :
 #endif
 
     ui->textBrowser->setHtml("<b>Hints</b><p><ul><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
+
+    /* connect a FEA modeler */
+    pileFEAmodel = new PileFEAmodeler();
 
     // setup data
     numPiles = 1;
@@ -140,40 +151,34 @@ MainWindow::MainWindow(QWidget *parent) :
     // set up pile input
     this->refreshUI();
 
-
-    // add legend
-    // now we move the legend from the inset layout of the axis rect into the main grid layout.
-    // We create a sub layout so we can generate a small gap between the plot layout cell border
-    // and the legend border:
-    QCPLayoutGrid *subLayout = new QCPLayoutGrid;
-    systemPlot->plotLayout()->addElement(1, 0, subLayout);
-    subLayout->setMargins(QMargins(5, 0, 5, 5));
-    subLayout->addElement(0, 0, systemPlot->legend);
-    // change the fill order of the legend, so it's filled left to right in columns:
-    //systemPlot->legend->setFillOrder(QCPLegend::foColumnsFirst);
-    systemPlot->legend->setRowSpacing(1);
-    systemPlot->legend->setColumnSpacing(2);
-    //systemPlot->legend->setFillOrder(QCPLayoutGrid::foColumnsFirst,true);
-
-    // set legend's row stretch factor very small so it ends up with minimum height:
-    systemPlot->plotLayout()->setRowStretchFactor(1, 0.001);
-
-    // plotsetting
+    // plot setting
     activePileIdx = 0;
     activeLayerIdx = -1;
 
+    //
+    // this connect statement needs to be updated to reflect changes to the SystemPlotSuper class
+    //
     connect(systemPlot, SIGNAL(selectionChangedByUser()), this, SLOT(on_systemPlot_selectionChangedByUser()));
 
     inSetupState = false;
 
+    //
+    // adjust size of application window to the available display
+    //
     QRect rec = QApplication::desktop()->screenGeometry();
     int height = this->height()<0.85*rec.height()?this->height():0.85*rec.height();
     int width  = this->width()<0.85*rec.width()?this->width():0.85*rec.width();
     this->resize(width, height);
 
+    //
+    // create the initial set of plots
+    //
     this->doAnalysis();
     this->updateSystemPlot();
 
+    //
+    // connect to the application usage counter
+    //
     manager = new QNetworkAccessManager(this);
 
     connect(manager, SIGNAL(finished(QNetworkReply*)),
@@ -186,6 +191,8 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+
+    if (pileFEAmodel != NULL) delete pileFEAmodel;
 }
 
 void MainWindow::refreshUI() {
@@ -225,6 +232,67 @@ void MainWindow::refreshUI() {
 
 void MainWindow::doAnalysis(void)
 {
+    //
+    // create pile information for plotting
+    //
+    QVector<PILE_INFO> pileInfo;
+
+    pileInfo.clear();
+
+    for (int i=0; i<numPiles; i++)
+    {
+        PILE_INFO thisPile;
+        thisPile.L1           = L1;
+        thisPile.L2           = L2[i];
+        thisPile.pileDiameter = pileDiameter[i];
+        thisPile.xOffset      = xOffset[i];
+        thisPile.E            = E[i];
+        pileInfo.append(thisPile);
+    }
+    pileFEAmodel->updatePiles(pileInfo);
+
+    //
+    // set the soil layer information
+    //
+    pileFEAmodel->updateSoil(mSoilLayers);
+
+    //
+    // update ground water table
+    //
+    pileFEAmodel->updateGWtable(gwtDepth);
+
+    //
+    // set the load control type
+    //
+    pileFEAmodel->setLoadType(loadControlType);
+
+    //
+    // update the load control data
+    //
+    switch (loadControlType) {
+    case LoadControlType::ForceControl:
+        pileFEAmodel->updateLoad(P, PV, PMom);
+        break;
+    case LoadControlType::PushOver:
+        pileFEAmodel->updateDisplacement(HDisp, VDisp);
+        break;
+    case LoadControlType::SoilMotion:
+        QVector<double> profile;
+        profile.append(surfaceDisp);
+        profile.append(percentage12);
+        profile.append(percentage23);
+        profile.append(percentageBase);
+        pileFEAmodel->updateDispProfile(profile);
+        break;
+    }
+
+    //
+    // run the analysis
+    //
+    //pileFEAmodel->doAnalysis();
+
+    /* ******************* everything below will become obsolete once the PileFEAmodeler is functional **** */
+
     double overburdonStress;
 
     //QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
@@ -886,11 +954,19 @@ void MainWindow::fetchSettings()
     if (settings != NULL) { delete settings; }
     settings = new QSettings("NHERI SimCenter","Pile Group Tool");
 
+    // general settings
+    settings->beginGroup("general");
+        useGraphicsLib    = settings->value("graphicsLib", QString("QCP")).toString();
+        useFEAnalyzer     = settings->value("femAnalyzer", QString("OpenSeesInt")).toString();
+    settings->endGroup();
+
     // viewer settings
     settings->beginGroup("viewer");
         showDisplacements = settings->value("displacements",1).toBool();
+        showPullOut       = settings->value("pullout",1).toBool();
         showMoments       = settings->value("moments",1).toBool();
         showShear         = settings->value("shear",1).toBool();
+        showAxial         = settings->value("axial",1).toBool();
         showStress        = settings->value("stress",1).toBool();
         showPultimate     = settings->value("pult",1).toBool();
         showY50           = settings->value("compliance",1).toBool();
@@ -938,7 +1014,7 @@ void MainWindow::setupLayers()
     mSoilLayers.clear();
     mSoilLayers.push_back(soilLayer("Layer 1", 3.0, 15.0, 18.0, 2.0e5, 30, 0.0, QColor(100,0,0,100)));
     mSoilLayers.push_back(soilLayer("Layer 2", 3.0, 16.0, 19.0, 2.0e5, 35, 0.0, QColor(0,100,0,100)));
-    mSoilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 25, 0.0, QColor(0,0,100,100)));
+    mSoilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 28, 0.0, QColor(0,0,100,100)));
 
     updateLayerState();
 }
@@ -964,11 +1040,17 @@ void MainWindow::updateUI()
     if (!showDisplacements && ui->tabWidget->indexOf(ui->displacement)>=0 ) {
         ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->displacement));
     }
+    if (!showPullOut && ui->tabWidget->indexOf(ui->pullout)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pullout));
+    }
     if (!showMoments && ui->tabWidget->indexOf(ui->moment)>=0 ) {
         ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->moment));
     }
     if (!showShear && ui->tabWidget->indexOf(ui->shear)>=0 ) {
         ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->shear));
+    }
+    if (!showAxial && ui->tabWidget->indexOf(ui->axial)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->axial));
     }
     if (!showStress && ui->tabWidget->indexOf(ui->stress)>=0 ) {
         ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->stress));
@@ -983,13 +1065,19 @@ void MainWindow::updateUI()
     int numTabs = ui->tabWidget->count();
 
     if (showDisplacements && ui->tabWidget->indexOf(ui->displacement) < 0 ) {
-        ui->tabWidget->addTab(ui->displacement,"Displacement");
+        ui->tabWidget->addTab(ui->displacement,"Lateral Disp");
+    }
+    if (showPullOut && ui->tabWidget->indexOf(ui->pullout) < 0 ) {
+        ui->tabWidget->addTab(ui->pullout,"Axial Disp");
     }
     if (showMoments && ui->tabWidget->indexOf(ui->moment) < 0 ) {
         ui->tabWidget->addTab(ui->moment,"Moment");
     }
     if (showShear && ui->tabWidget->indexOf(ui->shear) < 0 ) {
         ui->tabWidget->addTab(ui->shear,"Shear");
+    }
+    if (showAxial && ui->tabWidget->indexOf(ui->axial) < 0 ) {
+        ui->tabWidget->addTab(ui->axial,"Axial");
     }
     if (showStress && ui->tabWidget->indexOf(ui->stress) < 0 ) {
         ui->tabWidget->addTab(ui->stress,"Stress");
@@ -1466,229 +1554,78 @@ void MainWindow::on_properties_currentChanged(int index)
     this->updateSystemPlot();
 }
 
-void MainWindow::updateSystemPlot() {
-
-    for (int k=0; k<MAXPILES; k++) {
-        headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
-    }
-
-    //if (inSetupState) return;
+void MainWindow::updateSystemPlot()
+{
+    if (inSetupState) return;
 
     //
-    // find dimensions for plotting
+    // create pile information for plotting
     //
-    QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
+    QVector<PILE_INFO> pileInfo;
 
-    /* ******** sizing and adjustments ******** */
+    pileInfo.clear();
 
-    double minX0 =  999999.;
-    double maxX0 = -999999.;
-    double xbar  = 0.0;
-    double H     = 0.0;
-    double W, WP;
-    double depthSoil = 0.0;
-    double nPiles = 0.;
-    double maxD = 0.0;
-    double maxH = 0.0;
+    for (int i=0; i<numPiles; i++)
+    {
+        PILE_INFO thisPile;
+        thisPile.L1           = L1;
+        thisPile.L2           = L2[i];
+        thisPile.pileDiameter = pileDiameter[i];
+        thisPile.xOffset      = xOffset[i];
+        thisPile.E            = E[i];
+        pileInfo.append(thisPile);
+    }
+    systemPlot->updatePiles(pileInfo);
 
     //
-    // find depth of defined soil layers
+    // create list of layer interface positions
     //
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) { depthSoil += mSoilLayers[iLayer].getLayerThickness(); }
+    this->updateLayerState();
 
-    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
-        if ( xOffset[pileIdx] < minX0) { minX0 = xOffset[pileIdx]; }
-        if ( xOffset[pileIdx] > maxX0) { maxX0 = xOffset[pileIdx]; }
-        if (L2[pileIdx] > H) { H = L2[pileIdx]; }
-        double D = pileDiameter[pileIdx];
-        if (D>maxD) maxD = D;
-
-        xbar += xOffset[pileIdx]; nPiles++;
+    QVector<double> layerDepth(MAXLAYERS+1, 0.00);
+    for (int i=1; i<=MAXLAYERS; i++)
+    {
+        if (mSoilLayers.size() >= i)
+            { layerDepth[i] = mSoilLayers[i-1].getLayerDepth() + mSoilLayers[i-1].getLayerThickness(); }
+        else
+            { layerDepth[i] = layerDepth[i-1]; }
     }
-    xbar /= nPiles;
-    if (depthSoil > H) H = depthSoil;
-    if ( L1 > 0.0 ) H += L1;
+    systemPlot->updateSoil(layerDepth);
 
-    WP = maxX0 - minX0;
-    W  = (1.10*WP + 0.50*H);
-    if ( (WP + 0.35*H) > W ) { W = WP + 0.35*H; }
+    //
+    // update ground water table
+    //
+    systemPlot->updateGWtable(gwtDepth);
 
-    maxH = maxD;
-    if (maxH > L1/2.) maxH = L1/2.;
+    //
+    // set the load control type
+    //
+    systemPlot->setLoadType(loadControlType);
 
-    // setup system plot
-    systemPlot->clearPlottables();
-    systemPlot->clearGraphs();
-    systemPlot->clearItems();
-
-    if (!systemPlot->layer("groundwater"))
-        { systemPlot->addLayer("groundwater", systemPlot->layer("grid"), QCustomPlot::limAbove); }
-    if (!systemPlot->layer("soil"))
-        { systemPlot->addLayer("soil", systemPlot->layer("groundwater"), QCustomPlot::limAbove); }
-    if (!systemPlot->layer("piles"))
-        { systemPlot->addLayer("piles", systemPlot->layer("soil"), QCustomPlot::limAbove); }
-
-    systemPlot->autoAddPlottableToLegend();
-    systemPlot->legend->setVisible(true);
-
-    QVector<double> zero(2,xbar-0.5*W);
-    QVector<double> loc(2,0.0);
-    loc[0] = -(H-L1); loc[1] = L1;
-
-    systemPlot->addGraph();
-    systemPlot->graph(0)->setData(zero,loc);
-    systemPlot->graph(0)->setPen(QPen(Qt::black,1));
-    systemPlot->graph(0)->removeFromLegend();
-
-    // create layers
-
-    systemPlot->setCurrentLayer("soil");
-
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
-
-/* set the following to #if 1 once we can select a rectangle */
-#if 0
-        QCPItemRect* layerII = new QCPItemRect(systemPlot);
-        layerII->topLeft->setCoords(xbar - W/2., -mSoilLayers[iLayer].getLayerDepth());
-        layerII->bottomRight->setCoords(xbar + W/2.,-mSoilLayers[iLayer].getLayerDepth() - mSoilLayers[iLayer].getLayerThickness());
-
-        connect(layerII, SIGNAL(selectionChanged(bool) ), this, SLOT(on_layerSelectedInSystemPlot(bool)));
-#else
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        x[0] = xbar - W/2.; y[0] = -mSoilLayers[iLayer].getLayerDepth();
-        x[1] = x[0];        y[1] = y[0] - mSoilLayers[iLayer].getLayerThickness();
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
-
-        QCPCurve *layerII = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
-        layerII->setData(x,y);
-        layerII->setName(QString("Layer #%1").arg(iLayer+1));
-#endif
-        if (iLayer == activeLayerIdx) {
-            layerII->setPen(QPen(Qt::red, 2));
-            layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
-        }
-        else {
-            layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
-            layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
-        }
-
-        //systemPlot->addPlottable(layerII);
+    //
+    // update the load control data
+    //
+    switch (loadControlType) {
+    case LoadControlType::ForceControl:
+        systemPlot->updateLoad(P, PV, PMom);
+        break;
+    case LoadControlType::PushOver:
+        systemPlot->updateDisplacement(HDisp, VDisp);
+        break;
+    case LoadControlType::SoilMotion:
+        QVector<double> profile;
+        profile.append(surfaceDisp);
+        profile.append(percentage12);
+        profile.append(percentage23);
+        profile.append(percentageBase);
+        systemPlot->updateDispProfile(profile);
+        break;
     }
 
-    // ground water table
-
-    systemPlot->setCurrentLayer("groundwater");
-
-    if (gwtDepth < (H-L1)) {
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        x[0] = xbar - W/2.; y[0] = -gwtDepth;
-        x[1] = x[0];        y[1] = -(H - L1);
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
-
-        QCPCurve *water = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
-        water->setData(x,y);
-
-        water->setPen(QPen(Qt::blue, 2));
-        water->setBrush(QBrush(GROUND_WATER_BLUE));
-
-        water->setName(QString("groundwater"));
-    }
-
-    // plot the pile cap
-
-    systemPlot->setCurrentLayer("piles");
-
-    QVector<double> x(5,0.0);
-    QVector<double> y(5,0.0);
-
-    x[0] = minX0 - maxD/2.; y[0] = L1 + maxH;
-    x[1] = x[0];            y[1] = L1 - maxH;
-    x[2] = maxX0 + maxD/2.; y[2] = y[1];
-    x[3] = x[2];            y[3] = y[0];
-    x[4] = x[0];            y[4] = y[0];
-
-    QCPCurve *pileCap = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
-    pileCap->setData(x,y);
-    pileCap->setPen(QPen(Qt::black, 1));
-    pileCap->setBrush(QBrush(Qt::gray));
-    //pileCap->setName(QString("pile cap"));
-    pileCap->removeFromLegend();
-
-    //ui->systemPlot->addPlottable(pileCap);
-
-    // plot the piles
-    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
-
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        double D = pileDiameter[pileIdx];
-
-        x[0] = xOffset[pileIdx] - D/2.; y[0] = L1;
-        x[1] = x[0];                    y[1] = -L2[pileIdx];
-        x[2] = xOffset[pileIdx] + D/2.; y[2] = y[1];
-        x[3] = x[2];                    y[3] = y[0];
-        x[4] = x[0];                    y[4] = y[0];
-
-        QCPCurve *pileII = new QCPCurve(systemPlot->xAxis, systemPlot->yAxis);
-        pileII->setData(x,y);
-        if (pileIdx == activePileIdx) {
-            pileII->setPen(QPen(Qt::red, 2));
-            pileII->setBrush(QBrush(BRUSH_COLOR[9+pileIdx]));
-        }
-        else {
-            pileII->setPen(QPen(Qt::black, 1));
-            pileII->setBrush(QBrush(BRUSH_COLOR[6+pileIdx]));
-        }
-        //pileII->setBrush(QBrush(Qt::black));
-        pileII->setName(QString("Pile #%1").arg(pileIdx+1));
-
-        //systemPlot->addPlottable(pileII);
-    }
-
-    // add force to the plot
-
-    if (ABS(P) > 0.0) {
-        double force = 0.45*W*P/MAX_FORCE;
-
-        // add the arrow:
-        QCPItemLine *arrow = new QCPItemLine(systemPlot);
-        //systemPlot->addItem(arrow);
-        arrow->setPen(QPen(Qt::red, 3));
-        arrow->start->setCoords(xbar, L1);
-        arrow->end->setCoords(xbar + force, L1);
-        arrow->setHead(QCPLineEnding::esSpikeArrow);
-    }
-
-    if (ABS(PV) > 0.0) {
-        double force = 0.45*W*PV/MAX_FORCE;
-
-        // add the arrow:
-        QCPItemLine *arrow = new QCPItemLine(systemPlot);
-        //systemPlot->addItem(arrow);
-        arrow->setPen(QPen(Qt::red, 3));
-        arrow->start->setCoords(xbar, L1 - force);
-        arrow->end->setCoords(xbar, L1);
-        arrow->setHead(QCPLineEnding::esSpikeArrow);
-    }
-
-    // plot scaling options
-
-    systemPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
-    //ui->systemPlot->axisRect()->autoMargins();
-    //setupFullAxesBox();
-    systemPlot->xAxis->setScaleRatio(systemPlot->yAxis);
-    systemPlot->rescaleAxes();
-    systemPlot->replot();
+    //
+    // refresh the plot
+    //
+    systemPlot->refresh();
 }
 
 void MainWindow::on_layerSelectedInSystemPlot(bool selected)
