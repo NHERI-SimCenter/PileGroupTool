@@ -159,7 +159,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //
     // this connect statement needs to be updated to reflect changes to the SystemPlotSuper class
     //
-    QObject::connect(systemPlot, SIGNAL(on_pileSelected(int)), this, SLOT(on_systemPlot_pileSelected(int)));
+    QObject::connect(dynamic_cast<SystemPlotQCP*>(systemPlot), SIGNAL(on_pileSelected(int)), this, SLOT(on_systemPlot_pileSelected(int)));
     QObject::connect(systemPlot, SIGNAL(on_soilLayerSelected(int)), this, SLOT(on_systemPlot_soilLayerSelected(int)));
     QObject::connect(systemPlot, SIGNAL(on_groundWaterSelected()), this, SLOT(on_systemPlot_groundWaterSelected()));
 

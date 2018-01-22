@@ -273,7 +273,7 @@ void SystemPlotQCP::on_plot_selectionChangedByUser(void)
             activePileIdx  = pileIdx;
             activeLayerIdx = -1;
 
-            //emit SystemPlotSuper::on_pileSelected(activePileIdx);
+            emit on_pileSelected(activePileIdx);
 
             break;
 
@@ -285,7 +285,7 @@ void SystemPlotQCP::on_plot_selectionChangedByUser(void)
             activePileIdx  = -1;
             activeLayerIdx = layerIdx;
 
-            //emit SystemPlotSuper::on_soilLayerSelected(activeLayerIdx);
+            emit on_soilLayerSelected(activeLayerIdx);
 
             break;
 
@@ -296,7 +296,7 @@ void SystemPlotQCP::on_plot_selectionChangedByUser(void)
             activePileIdx  = -1;
             activeLayerIdx = -1;
 
-            //emit SystemPlotSuper::on_groundWaterSelected();
+            emit on_groundWaterSelected();
 
             break;
 
