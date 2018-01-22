@@ -255,8 +255,6 @@ void SystemPlotQCP::refresh()
 
 void SystemPlotQCP::on_plot_selectionChangedByUser(void)
 {
-    qDebug() << "called:  SystemPlotQCP::on_plot_selectionChangedByUser(void)";
-
     foreach (QCPAbstractPlottable * item, plot->selectedPlottables()) {
 
         QString name = item->name();

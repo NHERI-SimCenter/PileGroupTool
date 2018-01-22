@@ -22,12 +22,10 @@ public:
 
 private:
 
-/*
 signals:
     void on_pileSelected(int );
     void on_soilLayerSelected(int );
     void on_groundWaterSelected(void);
-*/
 
 protected:
     // QwtCanvas * plot;

@@ -6,6 +6,7 @@
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
 #include "pilefeamodeler.h"
+#include "systemplotsuper.h"
 #include "systemplotqcp.h"
 #include "systemplotqwt.h"
 
