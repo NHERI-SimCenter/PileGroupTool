@@ -959,7 +959,7 @@ void MainWindow::fetchSettings()
 
     // general settings
     settings->beginGroup("general");
-        useGraphicsLib    = settings->value("graphicsLib", QString("QCP")).toString();
+        useGraphicsLib    = settings->value("graphicsLibrary", QString("QCP")).toString();
         useFEAnalyzer     = settings->value("femAnalyzer", QString("OpenSeesInt")).toString();
     settings->endGroup();
 
