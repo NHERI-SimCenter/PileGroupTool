@@ -26,6 +26,7 @@ SystemPlotQCP::SystemPlotQCP(QWidget *parent) :
     subLayout->addElement(0, 0, plot->legend);
     //
     // change the fill order of the legend, so it's filled left to right in columns:
+    plot->legend->setWrap(4);
     plot->legend->setRowSpacing(1);
     plot->legend->setColumnSpacing(2);
 
@@ -255,8 +256,6 @@ void SystemPlotQCP::refresh()
 
 void SystemPlotQCP::on_plot_selectionChangedByUser(void)
 {
-    qDebug() << "called:  SystemPlotQCP::on_plot_selectionChangedByUser(void)";
-
     foreach (QCPAbstractPlottable * item, plot->selectedPlottables()) {
 
         QString name = item->name();
@@ -275,7 +274,7 @@ void SystemPlotQCP::on_plot_selectionChangedByUser(void)
             activePileIdx  = pileIdx;
             activeLayerIdx = -1;
 
-            //emit SystemPlotSuper::on_pileSelected(activePileIdx);
+            emit on_pileSelected(activePileIdx);
 
             break;
 
@@ -287,7 +286,7 @@ void SystemPlotQCP::on_plot_selectionChangedByUser(void)
             activePileIdx  = -1;
             activeLayerIdx = layerIdx;
 
-            //emit SystemPlotSuper::on_soilLayerSelected(activeLayerIdx);
+            emit on_soilLayerSelected(activeLayerIdx);
 
             break;
 
@@ -298,7 +297,7 @@ void SystemPlotQCP::on_plot_selectionChangedByUser(void)
             activePileIdx  = -1;
             activeLayerIdx = -1;
 
-            //emit SystemPlotSuper::on_groundWaterSelected();
+            emit on_groundWaterSelected();
 
             break;
 

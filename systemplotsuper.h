@@ -31,18 +31,6 @@ public:
 
     virtual QList<QCPAbstractPlottable *> selectedPlottables();
 
-/*
-signals:
-    virtual void on_pileSelected(int ) = 0;
-    virtual void on_soilLayerSelected(int ) = 0;
-    virtual void on_groundWaterSelected(void) = 0;
-*/
-
-signals:
-    void on_pileSelected(int );
-    void on_soilLayerSelected(int );
-    void on_groundWaterSelected(void);
-
 private:
 
 protected:
