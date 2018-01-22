@@ -57,10 +57,6 @@ private slots:
     void on_actionVersion_triggered();
     void on_actionProvide_Feedback_triggered();
 
-  //  void on_actionLicense_triggered();
-  //  void on_actionVersion_triggered();
-  //  void on_actionProvide_Feedback_triggered();
-
     void on_action_About_triggered();
     void on_actionPreferences_triggered();
 
@@ -82,7 +78,6 @@ private slots:
     void on_pileIndex_valueChanged(int arg1);
     void on_btn_deletePile_clicked();
     void on_btn_newPile_clicked();
-    void on_systemPlot_selectionChangedByUser();
 
     // material table slots
     void on_appliedHorizontalForce_editingFinished();
@@ -120,6 +115,11 @@ private slots:
     void on_Interface23Slider_valueChanged(int value);
     void on_BaseDisplacement_editingFinished();
     void on_BaseDisplacementSlider_valueChanged(int value);
+
+    // response to signals from systemPlot
+    void on_systemPlot_pileSelected(int );
+    void on_systemPlot_soilLayerSelected(int );
+    void on_systemPlot_groundWaterSelected();
 
 private:
     Q_OBJECT
