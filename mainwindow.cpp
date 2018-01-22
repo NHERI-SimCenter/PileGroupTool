@@ -158,7 +158,9 @@ MainWindow::MainWindow(QWidget *parent) :
     //
     // this connect statement needs to be updated to reflect changes to the SystemPlotSuper class
     //
-    connect(systemPlot, SIGNAL(selectionChangedByUser()), this, SLOT(on_systemPlot_selectionChangedByUser()));
+    QObject::connect(systemPlot, SIGNAL(on_pileSelected(int)), this, SLOT(on_systemPlot_pileSelected(int)));
+    QObject::connect(systemPlot, SIGNAL(on_soilLayerSelected(int)), this, SLOT(on_systemPlot_soilLayerSelected(int)));
+    QObject::connect(systemPlot, SIGNAL(on_groundWaterSelected()), this, SLOT(on_systemPlot_groundWaterSelected()));
 
     inSetupState = false;
 
@@ -1633,62 +1635,33 @@ void MainWindow::on_layerSelectedInSystemPlot(bool selected)
     qDebug() << "on_layerSelectedInSystemPlot(" << selected << ") triggered";
 }
 
-void MainWindow::on_systemPlot_selectionChangedByUser()
+
+void MainWindow::on_systemPlot_pileSelected(int index)
 {
-    foreach (QCPAbstractPlottable * item, systemPlot->selectedPlottables()) {
+    activePileIdx  = index;
+    activeLayerIdx = -1;
 
-        QString name = item->name();
-        if (name.length()<1) name = "X";
+    // make pile controls visible
+    ui->properties->setCurrentWidget(ui->pilePropertiesWidget);
+    ui->pileIndex->setValue(activePileIdx+1);
 
-        int layerIdx = -1;
-        int pileIdx  = -1;
+}
 
-        switch (name.at(0).unicode()) {
-        case 'P':
-        case 'p':
-            if (name.toLower() == QString("pile cap")) break;
+void MainWindow::on_systemPlot_soilLayerSelected(int index)
+{
+    activePileIdx  = -1;
+    activeLayerIdx = index;
 
-            //qDebug() << "PILE: " << name;
-            ui->properties->setCurrentWidget(ui->pilePropertiesWidget);
-            pileIdx = name.mid(6,1).toInt() - 1;
+    // make soil layer controls visible
+    ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
+    setActiveLayer(index);
 
-            activePileIdx  = pileIdx;
-            activeLayerIdx = -1;
+}
 
-            ui->pileIndex->setValue(pileIdx+1);
-            break;
-
-        case 'L':
-        case 'l':
-            //qDebug() << "LAYER: " << name;
-            ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
-            layerIdx = name.mid(7,1).toInt() - 1;
-
-            activePileIdx  = -1;
-            activeLayerIdx = layerIdx;
-
-            setActiveLayer(layerIdx);
-            break;
-
-        case 'G':
-        case 'g':
-            //qDebug() << "LAYER: " << name;
-            ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
-
-            activePileIdx  = -1;
-            activeLayerIdx = -1;
-            break;
-
-        default:
-            qDebug() << "WHAT IS THIS? " << name;
-        }
-
-        // check for selected piles
-
-        // check for selected soil layers
-    }
-
-    this->updateSystemPlot();
+void MainWindow::on_systemPlot_groundWaterSelected()
+{
+    // make groundwater settings visible:
+    ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
 }
 
 void MainWindow::on_actionLicense_Information_triggered()
@@ -1696,7 +1669,6 @@ void MainWindow::on_actionLicense_Information_triggered()
     CopyrightDialog *dlg = new CopyrightDialog(this);
     dlg->exec();
 }
-
 
 void MainWindow::on_actionLicense_triggered()
 {

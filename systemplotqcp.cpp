@@ -32,6 +32,8 @@ SystemPlotQCP::SystemPlotQCP(QWidget *parent) :
     // set legend's row stretch factor very small so it ends up with minimum height:
     plot->plotLayout()->setRowStretchFactor(1, 0.001);
 
+    QObject::connect(plot, SIGNAL(selectionChangedByUser()), this, SLOT(on_plot_selectionChangedByUser()));
+
     //
     // default plot selection settings
     //
@@ -247,4 +249,62 @@ void SystemPlotQCP::refresh()
     plot->xAxis->setScaleRatio(plot->yAxis);
     plot->rescaleAxes();
     plot->replot();
+}
+
+/* **** SLOTS **** */
+
+void SystemPlotQCP::on_plot_selectionChangedByUser(void)
+{
+    qDebug() << "called:  SystemPlotQCP::on_plot_selectionChangedByUser(void)";
+
+    foreach (QCPAbstractPlottable * item, plot->selectedPlottables()) {
+
+        QString name = item->name();
+        if (name.length()<1) name = "X";
+
+        int layerIdx = -1;
+        int pileIdx  = -1;
+
+        switch (name.at(0).unicode()) {
+        case 'P':
+        case 'p':
+            if (name.toLower() == QString("pile cap")) break;
+
+            pileIdx = name.mid(6,1).toInt() - 1;
+
+            activePileIdx  = pileIdx;
+            activeLayerIdx = -1;
+
+            //emit SystemPlotSuper::on_pileSelected(activePileIdx);
+
+            break;
+
+        case 'L':
+        case 'l':
+            //qDebug() << "LAYER: " << name;
+            layerIdx = name.mid(7,1).toInt() - 1;
+
+            activePileIdx  = -1;
+            activeLayerIdx = layerIdx;
+
+            //emit SystemPlotSuper::on_soilLayerSelected(activeLayerIdx);
+
+            break;
+
+        case 'G':
+        case 'g':
+            //qDebug() << "LAYER: " << name;
+
+            activePileIdx  = -1;
+            activeLayerIdx = -1;
+
+            //emit SystemPlotSuper::on_groundWaterSelected();
+
+            break;
+
+        default:
+            qDebug() << "WHAT IS THIS? " << name;
+        }
+    }
+    this->refresh();
 }
