@@ -441,6 +441,7 @@ DIST          = ../../../Qt/5.10.0/clang_64/mkspecs/features/spec_pre.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/qt_config.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake.conf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/exclusive_builds.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/mac/sdk.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/toolchain.prf \
@@ -895,6 +896,7 @@ Makefile: PileGroupTool.pro ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake
 		../../../Qt/5.10.0/clang_64/mkspecs/features/qt_config.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake.conf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/exclusive_builds.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/mac/sdk.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/toolchain.prf \
@@ -1081,6 +1083,7 @@ Makefile: PileGroupTool.pro ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake
 ../../../Qt/5.10.0/clang_64/mkspecs/features/qt_config.prf:
 ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake.conf:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/spec_post.prf:
+.qmake.stash:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/exclusive_builds.prf:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/mac/sdk.prf:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/toolchain.prf:
@@ -1163,6 +1166,7 @@ clean: compiler_clean
 
 distclean: clean 
 	-$(DEL_FILE) -r PileGroupTool.app
+	-$(DEL_FILE) .qmake.stash
 	-$(DEL_FILE) Makefile
 
 
@@ -3144,7 +3148,33 @@ systemplotqwt.o: systemplotqwt.cpp systemplotqwt.h \
 		qcustomplot.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric \
+		/usr/local/qwt-6.2.0-svn/lib/qwt.framework/Headers/qwt_plot.h \
+		/usr/local/qwt-6.2.0-svn/lib/qwt.framework/Headers/qwt_global.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qglobal.h \
+		/usr/local/qwt-6.2.0-svn/lib/qwt.framework/Headers/qwt_text.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qstring.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qsize.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qfont.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmetatype.h \
+		/usr/local/qwt-6.2.0-svn/lib/qwt.framework/Headers/qwt_plot_dict.h \
+		/usr/local/qwt-6.2.0-svn/lib/qwt.framework/Headers/qwt_plot_item.h \
+		/usr/local/qwt-6.2.0-svn/lib/qwt.framework/Headers/qwt_legend_data.h \
+		/usr/local/qwt-6.2.0-svn/lib/qwt.framework/Headers/qwt_graphic.h \
+		/usr/local/qwt-6.2.0-svn/lib/qwt.framework/Headers/qwt_null_paintdevice.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpaintdevice.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpaintengine.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qimage.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpixmap.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvariant.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmap.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qrect.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qlist.h \
+		/usr/local/qwt-6.2.0-svn/lib/qwt.framework/Headers/qwt_scale_map.h \
+		/usr/local/qwt-6.2.0-svn/lib/qwt.framework/Headers/qwt_transform.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdebug.h \
+		/usr/local/qwt-6.2.0-svn/lib/qwt.framework/Headers/qwt_interval.h \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qframe.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o systemplotqwt.o systemplotqwt.cpp
 
 systemplotsuper.o: systemplotsuper.cpp systemplotsuper.h \
