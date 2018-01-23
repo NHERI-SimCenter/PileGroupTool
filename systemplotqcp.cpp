@@ -1,24 +1,19 @@
-#include "systemplotqwt.h"
+#include "systemplotqcp.h"
 #include "systemplotsuper.h"
 
-#include <qwt_plot.h>
-
-
-SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
+SystemPlotQCP::SystemPlotQCP(QWidget *parent) :
     SystemPlotSuper(parent)
 {
-
     //
-    // create a Qwt
+    // create a QCustomPlot
     //
-    plot = new QwtPlot(this);
+    plot = new QCustomPlot(this);
 
     QGridLayout *lyt = new QGridLayout(this);
     lyt->addWidget(plot,0,0);
     lyt->setMargin(0);
     this->setLayout(lyt);
 
-#if 0
     //
     // add legend
     //
@@ -39,7 +34,6 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     plot->plotLayout()->setRowStretchFactor(1, 0.001);
 
     QObject::connect(plot, SIGNAL(selectionChangedByUser()), this, SLOT(on_plot_selectionChangedByUser()));
-#endif
 
     //
     // default plot selection settings
@@ -48,13 +42,13 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     activeLayerIdx = -1;
 }
 
-SystemPlotQwt::~SystemPlotQwt()
+SystemPlotQCP::~SystemPlotQCP()
 {
     delete plot;
 }
 
-void SystemPlotQwt::refresh()
-{  
+void SystemPlotQCP::refresh()
+{
     for (int k=0; k<MAXPILES; k++) {
         headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
     }
@@ -101,7 +95,6 @@ void SystemPlotQwt::refresh()
     maxH = maxD;
     if (maxH > L1/2.) maxH = L1/2.;
 
-#if 0
     // setup system plot
     plot->clearPlottables();
     plot->clearGraphs();
@@ -113,14 +106,9 @@ void SystemPlotQwt::refresh()
         { plot->addLayer("soil", plot->layer("groundwater"), QCustomPlot::limAbove); }
     if (!plot->layer("piles"))
         { plot->addLayer("piles", plot->layer("soil"), QCustomPlot::limAbove); }
-#endif
 
-#if 0
     plot->autoAddPlottableToLegend();
     plot->legend->setVisible(true);
-#endif
-
-#if 0
 
     QVector<double> zero(2,xbar-0.5*W);
     QVector<double> loc(2,0.0);
@@ -135,41 +123,6 @@ void SystemPlotQwt::refresh()
 
     plot->setCurrentLayer("soil");
 
-#endif
-
-    //
-    // HERE IS WHERE TO START ...
-    //
-
-#if 0
-
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
-
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        x[0] = xbar - W/2.; y[0] = -depthOfLayer[iLayer];
-        x[1] = x[0];        y[1] = -depthOfLayer[iLayer+1];
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
-
-        QCPCurve *layerII = new QCPCurve(plot->xAxis, plot->yAxis);
-        layerII->setData(x,y);
-        layerII->setName(QString("Layer #%1").arg(iLayer+1));
-
-        if (iLayer == activeLayerIdx) {
-            layerII->setPen(QPen(Qt::red, 2));
-            layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
-        }
-        else {
-            layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
-            layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
-        }
-    }
-#endif
-
-#if 0
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
         QVector<double> x(5,0.0);
@@ -297,5 +250,60 @@ void SystemPlotQwt::refresh()
     plot->xAxis->setScaleRatio(plot->yAxis);
     plot->rescaleAxes();
     plot->replot();
-#endif
+}
+
+/* **** SLOTS **** */
+
+void SystemPlotQCP::on_plot_selectionChangedByUser(void)
+{
+    foreach (QCPAbstractPlottable * item, plot->selectedPlottables()) {
+
+        QString name = item->name();
+        if (name.length()<1) name = "X";
+
+        int layerIdx = -1;
+        int pileIdx  = -1;
+
+        switch (name.at(0).unicode()) {
+        case 'P':
+        case 'p':
+            if (name.toLower() == QString("pile cap")) break;
+
+            pileIdx = name.mid(6,1).toInt() - 1;
+
+            activePileIdx  = pileIdx;
+            activeLayerIdx = -1;
+
+            emit on_pileSelected(activePileIdx);
+
+            break;
+
+        case 'L':
+        case 'l':
+            //qDebug() << "LAYER: " << name;
+            layerIdx = name.mid(7,1).toInt() - 1;
+
+            activePileIdx  = -1;
+            activeLayerIdx = layerIdx;
+
+            emit on_soilLayerSelected(activeLayerIdx);
+
+            break;
+
+        case 'G':
+        case 'g':
+            //qDebug() << "LAYER: " << name;
+
+            activePileIdx  = -1;
+            activeLayerIdx = -1;
+
+            emit on_groundWaterSelected();
+
+            break;
+
+        default:
+            qDebug() << "WHAT IS THIS? " << name;
+        }
+    }
+    this->refresh();
 }

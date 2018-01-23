@@ -21,6 +21,9 @@ PRODUCT_NAME = 'PileGroupTool'
 #DEFINES += APPLICATION_VERSION=\"\\\"$$M_VERSION$$member(M_REV, 1)\\\"\"
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
+include( $${PWD}/qwtconfig.pri )
+include ( $${PWD}/qwt.prf )
+
 #win32: INCLUDES += "./ops"
 #win32: LIBS += -llapack -lblas
 unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable -std=c++11
@@ -45,9 +48,10 @@ SOURCES += main.cpp\
         utilWindows/dialogfuturefeature.cpp \
     ../widgets/Common/FooterWidget.cpp \
     ../widgets/Common/HeaderWidget.cpp \
-    systemplot.cpp \
     pilefeamodeler.cpp \
-    systemplotqwt.cpp
+    systemplotqwt.cpp \
+    systemplotsuper.cpp \
+    systemplotqcp.cpp
         
 HEADERS  += mainwindow.h \
         qcustomplot.h \
@@ -60,10 +64,11 @@ HEADERS  += mainwindow.h \
         utilWindows/dialogfuturefeature.h \
     ../widgets/Common/FooterWidget.h \
     ../widgets/Common/HeaderWidget.h \
-    systemplot.h \
     pilefeamodeler.h \
     pilegrouptool_parameters.h \
-    systemplotqwt.h
+    systemplotqwt.h \
+    systemplotsuper.h \
+    systemplotqcp.h
 
 FORMS    += mainwindow.ui \
         materialdbinterface.ui \
@@ -71,9 +76,7 @@ FORMS    += mainwindow.ui \
         utilWindows/copyrightdialog.ui \
         utilWindows/dialogabout.ui \
         utilWindows/dialogpreferences.ui \
-        utilWindows/dialogfuturefeature.ui \
-    systemplot.ui \
-    systemplotqwt.ui
+        utilWindows/dialogfuturefeature.ui
 
 RESOURCES += \
     qtpileresources.qrc

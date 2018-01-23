@@ -1,36 +1,37 @@
-#ifndef SYSTEMPLOT_H
-#define SYSTEMPLOT_H
+#ifndef SYSTEMPLOTSUPER_H
+#define SYSTEMPLOTSUPER_H
 
 #include <QWidget>
 #include "pilegrouptool_parameters.h"
+#include "qcustomplot.h"
 
 namespace Ui {
-class SystemPlot;
+class SystemPlotSuper;
 }
 
-class SystemPlot : public QWidget
+class SystemPlotSuper : public QWidget
 {
-    Q_OBJECT
-
 public:
-    explicit SystemPlot(QWidget *parent = 0);
-    ~SystemPlot();
-    void refresh();
-    void setLoadType(LoadControlType);
-    void updatePiles(QMap<QString, double> &);
-    void updateLoad(double, double, double);
-    void updateSoil(QVector<double> &);
-    void updateDisplacement(double ux=0.0, double uy=0.0);
-    void updateDispProfile(QVector<double> &);
-    void updatePileDeformation(QVector<double>, QVector<QVector<double> > &);
+    explicit SystemPlotSuper(QWidget *parent = 0);
+    ~SystemPlotSuper();
+    virtual void refresh() = 0;
+    virtual void setLoadType(LoadControlType);
+    virtual void updatePiles(QVector<PILE_INFO> &);
+    virtual void updateLoad(double, double, double);
+    virtual void updateSoil(QVector<double> &);
+    virtual void updateGWtable(double);
+    virtual void updateDisplacement(double ux=0.0, double uy=0.0);
+    virtual void updateDispProfile(QVector<double> &);
+    virtual void updatePileDeformation(QVector<double> &, QVector<QVector<double> > &);
 
-    void setActivePile(int index) {activePileIdx = index;}
-    int  getActivePileIndex() {return activePileIdx;}
-    void setActiveLayer(int index) {activeLayerIdx = index;}
-    int  getActiveLayerIndex() {return activeLayerIdx;}
+    virtual void setActivePile(int index) {activePileIdx = index;}
+    virtual int  getActivePileIndex() {return activePileIdx;}
+    virtual void setActiveLayer(int index) {activeLayerIdx = index;}
+    virtual int  getActiveLayerIndex() {return activeLayerIdx;}
+
+    virtual QList<QCPAbstractPlottable *> selectedPlottables();
 
 private:
-    Ui::SystemPlot *ui;
 
 protected:
     LoadControlType loadControlType;
@@ -83,4 +84,4 @@ protected:
     int activeLayerIdx = -1;
 };
 
-#endif // SYSTEMPLOT_H
+#endif // SYSTEMPLOTSUPER_H

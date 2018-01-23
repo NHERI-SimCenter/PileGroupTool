@@ -15,9 +15,11 @@ class PileFEAmodeler
 public:
     PileFEAmodeler();
 
-    void updatePiles(QMap<QString, double> &);
+    void updatePiles(QVector<PILE_INFO> &);
+    void setLoadType(LoadControlType);
     void updateLoad(double, double, double);
     void updateSoil(QVector<soilLayer> &);
+    void updateGWtable(double );
     void updateDisplacement(double ux=0.0, double uy=0.0);
     void updateDispProfile(QVector<double> &);
     void setAnalysisType(QString);
@@ -89,8 +91,10 @@ protected:
 
     // viewer settings
     bool showDisplacements;
+    bool showPullOut;
     bool showMoments;
     bool showShear;
+    bool showAxial;
     bool showStress;
     bool showPultimate;
     bool showY50;
