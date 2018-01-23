@@ -44,3 +44,4 @@ mainwindow - Copy.ui
 .qmake.stash
 Makefile
 qrc_qtpileresources.cpp
+Makefile
