@@ -10,7 +10,7 @@ class ResultPlotQwt : public ResultPlotSuper
 public:
     ResultPlotQwt(QWidget *parent = nullptr);
     ~ResultPlotQwt();
-    void plotResults(QVector<double> &z, QVector<double> &xOffset,  QVector<QVector<double> > &x, QVector<QVector<double> > &y);
+    void plotResults(QVector<QVector<double> *> &x, QVector<QVector<double> *> &y);
 
 protected:
     QwtPlot *plot;
