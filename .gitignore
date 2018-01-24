@@ -45,3 +45,13 @@ mainwindow - Copy.ui
 Makefile
 qrc_qtpileresources.cpp
 Makefile
+Makefile
+Makefile
+ui_copyrightdialog.h
+ui_dialogfuturefeature.h
+ui_mainwindow.h
+ui_dialogabout.h
+ui_dialogpreferences.h
+ui_materialdbinterface.h
+ui_surveysplashscreen.h
+Makefile
