@@ -123,32 +123,17 @@ MainWindow::MainWindow(QWidget *parent) :
     //
     QLayout *lyt;
 
-    lyt = ui->systemTab->layout();
-    lyt->addWidget(systemPlot);
+    lyt = ui->systemTab->layout();  lyt->addWidget(systemPlot);
+    lyt = ui->dispTab->layout();    lyt->addWidget(displPlot);
+    lyt = ui->pulloutTab->layout(); lyt->addWidget(pullOutPlot);
+    lyt = ui->momentTab->layout();  lyt->addWidget(momentPlot);
+    lyt = ui->shearTab->layout();   lyt->addWidget(shearPlot);
+    lyt = ui->axialTab->layout();   lyt->addWidget(axialPlot);
+    lyt = ui->stressTab->layout();  lyt->addWidget(stressPlot);
+    lyt = ui->pultTab->layout();    lyt->addWidget(pultPlot);
+    lyt = ui->y50Tab->layout();     lyt->addWidget(y50Plot);
 
-    lyt = ui->dispTab->layout();
-    lyt->addWidget(displPlot);
-
-    lyt = ui->pulloutTab->layout();
-    lyt->addWidget(pullOutPlot);
-
-    lyt = ui->momentTab->layout();
-    lyt->addWidget(momentPlot);
-
-    lyt = ui->shearTab->layout();
-    lyt->addWidget(shearPlot);
-
-    lyt = ui->axialTab->layout();
-    lyt->addWidget(axialPlot);
-
-    lyt = ui->stressTab->layout();
-    lyt->addWidget(stressPlot);
-
-    lyt = ui->pultTab->layout();
-    lyt->addWidget(pultPlot);
-
-    lyt = ui->y50Tab->layout();
-    lyt->addWidget(y50Plot);
+    ui->tabWidget->setCurrentWidget(ui->dispTab);
 
     //
     // general setup
@@ -966,8 +951,6 @@ void MainWindow::doAnalysis(void)
         stress.append(new QVector<double>(numNodePile[i],0.0));
     }
 
-    QVector<double> zero(numNodePiles,0.0);
-
     double maxHDisp  = 0.0;
     double minHDisp  = 0.0;
     double maxVDisp  = 0.0;
@@ -1053,58 +1036,77 @@ void MainWindow::doAnalysis(void)
 
     // lateral displacements
     if (showDisplacements) {
-        displPlot->plotResults(zero, loc[0], Hdisps, loc);
+        displPlot->plotResults(Hdisps, loc);
     }
 
     // axial displacements
     if (showPullOut) {
-        pullOutPlot->plotResults(zero, loc[0], Vdisps, loc);
+        pullOutPlot->plotResults(Vdisps, loc);
     }
 
     // axial
     if (showAxial) {
-        axialPlot->plotResults(zero, loc[0], axial, loc);
+        axialPlot->plotResults(axial, loc);
     }
 
     // shear
     if (showShear) {
-        shearPlot->plotResults(zero, loc[0], shear, loc);
+        shearPlot->plotResults(shear, loc);
     }
 
     // moments
     if (showMoments) {
-        momentPlot->plotResults(zero, loc[0], moment, loc);
+        momentPlot->plotResults(moment, loc);
     }
 
     // vertical stress
     if (showStress) {
-        stressPlot->plotResults(zero, loc[0], stress, loc);
+        stressPlot->plotResults(stress, loc);
     }
 
     // p_ultimate
     if (showPultimate) {
-        pultPlot->plotResults(zero, loc[0], pultList, locList);
+        pultPlot->plotResults(pultList, locList);
     }
 
     // y_50
     if (showY50) {
-        y50Plot->plotResults(zero, loc[0], y50List, locList);
+        y50Plot->plotResults(y50List, locList);
     }
 
     for (int i=0; i<numPiles; i++)
     {
-        if (loc[i]    != NULL) { delete loc[i];    loc[i]    = NULL; }
-        if (Hdisps[i] != NULL) { delete Hdisps[i]; Hdisps[i] = NULL; }
-        if (Vdisps[i] != NULL) { delete Vdisps[i]; Vdisps[i] = NULL; }
-        if (moment[i] != NULL) { delete moment[i]; moment[i] = NULL; }
-        if (shear[i]  != NULL) { delete shear[i];  shear[i]  = NULL; }
-        if (axial[i]  != NULL) { delete axial[i];  axial[i]  = NULL; }
-        if (stress[i] != NULL) { delete stress[i]; stress[i] = NULL; }
+        if (loc[i]      != NULL) { delete loc[i];      loc[i]      = NULL; }
+        if (Hdisps[i]   != NULL) { delete Hdisps[i];   Hdisps[i]   = NULL; }
+        if (Vdisps[i]   != NULL) { delete Vdisps[i];   Vdisps[i]   = NULL; }
+        if (moment[i]   != NULL) { delete moment[i];   moment[i]   = NULL; }
+        if (shear[i]    != NULL) { delete shear[i];    shear[i]    = NULL; }
+        if (axial[i]    != NULL) { delete axial[i];    axial[i]    = NULL; }
+        if (stress[i]   != NULL) { delete stress[i];   stress[i]   = NULL; }
 
         if (locList[i]  != NULL) { delete locList[i];  locList[i]  = NULL; }
         if (pultList[i] != NULL) { delete pultList[i]; pultList[i] = NULL; }
         if (y50List[i]  != NULL) { delete y50List[i];  y50List[i]  = NULL; }
     }
+
+    /*
+     *
+    //
+    // the following lines will become necessary once those vectors become member variables
+    //
+    loc.clear();
+    Hdisps.clear();
+    Vdisps.clear();
+    moment.clear();
+    shear.clear();
+    axial.clear();
+    stress.clear();
+
+    locList.clear();
+    pultList.clear();
+    y50List.clear();
+    *
+    */
 
 }
 

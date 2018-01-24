@@ -81,6 +81,31 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_restartInfo">
+            <property name="font">
+             <font>
+              <italic>true</italic>
+              <underline>false</underline>
+             </font>
+            </property>
+            <property name="text">
+             <string>This setting will become active 
+next time you run the PileGroupTool.
+(a manual restart required)</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

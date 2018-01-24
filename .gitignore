@@ -45,3 +45,5 @@ mainwindow - Copy.ui
 *.stash
 qrc_qtpileresources.cpp
 Makefile
+ui_mainwindow.h
+ui_mainwindow.h

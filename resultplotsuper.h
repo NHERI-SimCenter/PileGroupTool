@@ -9,7 +9,7 @@ class ResultPlotSuper : public QWidget
     Q_OBJECT
 public:
     explicit ResultPlotSuper(QWidget *parent = nullptr);
-    virtual void plotResults(QVector<double> &, QVector<double> *,  QVector<QVector<double> *> &, QVector<QVector<double> *> &) = 0;
+    virtual void plotResults(QVector<QVector<double> *> &, QVector<QVector<double> *> &) = 0;
 
 signals:
 
