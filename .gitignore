@@ -41,8 +41,6 @@ moc*
 *.autosave
 
 mainwindow - Copy.ui
-*.stash
 Makefile
 qrc_qtpileresources.cpp
-Makefile
 Makefile

@@ -5,6 +5,8 @@
 #include "pilegrouptool_parameters.h"
 #include "systemplotsuper.h"
 
+class QwtPlot;
+
 
 namespace Ui {
 class SystemPlotQwt;
@@ -28,7 +30,7 @@ signals:
     void on_groundWaterSelected(void);
 
 protected:
-    // QwtCanvas * plot;
+    QwtPlot *plot;
 
 };
 

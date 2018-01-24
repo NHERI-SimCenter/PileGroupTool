@@ -54,7 +54,10 @@ SOURCES += main.cpp\
     pilefeamodeler.cpp \
     systemplotqwt.cpp \
     systemplotsuper.cpp \
-    systemplotqcp.cpp
+    systemplotqcp.cpp \
+    resultplotsuper.cpp \
+    resultplotqcp.cpp \
+    resultplotqwt.cpp
         
 HEADERS  += mainwindow.h \
         qcustomplot.h \
@@ -71,7 +74,10 @@ HEADERS  += mainwindow.h \
     pilegrouptool_parameters.h \
     systemplotqwt.h \
     systemplotsuper.h \
-    systemplotqcp.h
+    systemplotqcp.h \
+    resultplotsuper.h \
+    resultplotqcp.h \
+    resultplotqwt.h
 
 FORMS    += mainwindow.ui \
         materialdbinterface.ui \
