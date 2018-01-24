@@ -6,6 +6,7 @@
 
 # Qt created files
 moc*
+ui_*.h
 
 # Compiled Object files
 *.slo
@@ -41,18 +42,6 @@ moc*
 *.autosave
 
 mainwindow - Copy.ui
-.qmake.stash
-Makefile
+*.stash
 qrc_qtpileresources.cpp
 Makefile
-Makefile
-Makefile
-ui_copyrightdialog.h
-ui_dialogfuturefeature.h
-ui_mainwindow.h
-ui_dialogabout.h
-ui_dialogpreferences.h
-ui_materialdbinterface.h
-ui_surveysplashscreen.h
-Makefile
-ui_mainwindow.h
