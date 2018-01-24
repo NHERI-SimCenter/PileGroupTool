@@ -2,6 +2,8 @@
 #include "systemplotsuper.h"
 
 #include <qwt_plot.h>
+#include <qwt_legend.h>
+#include <qwt_plot_curve.h>
 
 
 SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
@@ -141,6 +143,50 @@ void SystemPlotQwt::refresh()
     // HERE IS WHERE TO START ...
     //
 
+    //     Legend not working properly yet...
+    //plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
+
+    // Temp data to check if legend is working
+    QwtPlotCurve *curve = new QwtPlotCurve();
+    curve->setTitle( "Random Points" );
+    curve->setPen( LINE_COLOR[3], 2 );
+    curve->setBrush( GROUND_WATER_BLUE );
+
+    QPolygonF points;
+    points << QPointF( 2, 5 ) << QPointF( 2, 7 )
+        << QPointF( 4, 7 ) << QPointF( 4, 5 )
+        << QPointF( 2, 5 );
+
+    curve->setSamples( points);
+    curve->attach( plot );
+    // End Temp data
+
+    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
+
+        QVector<double> x(5,0.0);
+        QVector<double> y(5,0.0);
+
+        x[0] = xbar - W/2.; y[0] = -depthOfLayer[iLayer];
+        x[1] = x[0];        y[1] = -depthOfLayer[iLayer+1];
+        x[2] = xbar + W/2.; y[2] = y[1];
+        x[3] = x[2];        y[3] = y[0];
+        x[4] = x[0];        y[4] = y[0];
+
+        QwtPlotCurve *layerII = new QwtPlotCurve();
+        layerII->setSamples(x,y);
+        layerII->setTitle(QString("Layer #%1").arg(iLayer+1));
+
+        if (iLayer == activeLayerIdx) {
+            layerII->setPen(QPen(Qt::red, 2));
+            layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
+        }
+        else {
+            layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
+            layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
+        }
+
+        layerII->attach( plot );
+    }
 #if 0
 
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
