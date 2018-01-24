@@ -6,6 +6,11 @@ ResultPlotQCP::ResultPlotQCP(QWidget *parent) :
 {
     plot = new QCustomPlot(this);
 
+    QGridLayout *lyt = new QGridLayout(this);
+    lyt->addWidget(plot,0,0);
+    lyt->setMargin(0);
+    this->setLayout(lyt);
+
 }
 
 ResultPlotQCP::~ResultPlotQCP()

@@ -124,7 +124,6 @@ private:
     Q_OBJECT
     Ui::MainWindow *ui;
 
-    //QCustomPlot *systemPlot = NULL;
     SystemPlotSuper *systemPlot = NULL;
     PileFEAmodeler *pileFEAmodel = NULL;
 

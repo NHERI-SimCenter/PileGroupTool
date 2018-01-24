@@ -1184,7 +1184,7 @@ Layers 1 &amp; 2:</string>
       <property name="currentIndex">
        <number>7</number>
       </property>
-      <widget class="QWidget" name="displPlot">
+      <widget class="QWidget" name="dispTab">
        <attribute name="title">
         <string>Lateral Disp</string>
        </attribute>
@@ -1203,7 +1203,7 @@ Layers 1 &amp; 2:</string>
         </property>
        </layout>
       </widget>
-      <widget class="QWidget" name="pulloutPlot">
+      <widget class="QWidget" name="pulloutTab">
        <attribute name="title">
         <string>Axial Disp</string>
        </attribute>
@@ -1222,7 +1222,7 @@ Layers 1 &amp; 2:</string>
         </property>
        </layout>
       </widget>
-      <widget class="QWidget" name="momentPlot">
+      <widget class="QWidget" name="momentTab">
        <attribute name="title">
         <string>Moment</string>
        </attribute>
@@ -1241,7 +1241,7 @@ Layers 1 &amp; 2:</string>
         </property>
        </layout>
       </widget>
-      <widget class="QWidget" name="shearPlot">
+      <widget class="QWidget" name="shearTab">
        <attribute name="title">
         <string>Shear</string>
        </attribute>
@@ -1260,7 +1260,7 @@ Layers 1 &amp; 2:</string>
         </property>
        </layout>
       </widget>
-      <widget class="QWidget" name="axialPlot">
+      <widget class="QWidget" name="axialTab">
        <attribute name="title">
         <string>Axial</string>
        </attribute>
@@ -1279,7 +1279,7 @@ Layers 1 &amp; 2:</string>
         </property>
        </layout>
       </widget>
-      <widget class="QWidget" name="stressPlot">
+      <widget class="QWidget" name="stressTab">
        <attribute name="title">
         <string>effective Stress</string>
        </attribute>
@@ -1298,7 +1298,7 @@ Layers 1 &amp; 2:</string>
         </property>
        </layout>
       </widget>
-      <widget class="QWidget" name="pultPlot">
+      <widget class="QWidget" name="pultTab">
        <attribute name="title">
         <string>p_ult</string>
        </attribute>
@@ -1317,7 +1317,7 @@ Layers 1 &amp; 2:</string>
         </property>
        </layout>
       </widget>
-      <widget class="QWidget" name="y50Plot">
+      <widget class="QWidget" name="y50Tab">
        <attribute name="title">
         <string>y50</string>
        </attribute>

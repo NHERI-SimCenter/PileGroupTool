@@ -37,7 +37,6 @@
 #include <QtWidgets/QWidget>
 #include "../widgets/Common/FooterWidget.h"
 #include "../widgets/Common/HeaderWidget.h"
-#include "qcustomplot.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -184,30 +183,22 @@ public:
     QLabel *label_unitBaseDisplacement;
     QSpacerItem *verticalSpacer_4;
     QTabWidget *tabWidget;
-    QWidget *displacement;
+    QWidget *dispTab;
     QGridLayout *gridLayout_3;
-    QCustomPlot *displPlot;
-    QWidget *pullout;
+    QWidget *pulloutTab;
     QGridLayout *gridLayout_15;
-    QCustomPlot *pullOutPlot;
-    QWidget *moment;
+    QWidget *momentTab;
     QGridLayout *gridLayout_5;
-    QCustomPlot *momentPlot;
-    QWidget *shear;
+    QWidget *shearTab;
     QGridLayout *gridLayout_4;
-    QCustomPlot *shearPlot;
-    QWidget *axial;
+    QWidget *axialTab;
     QGridLayout *gridLayout_13;
-    QCustomPlot *axialPlot;
-    QWidget *stress;
+    QWidget *stressTab;
     QGridLayout *gridLayout_6;
-    QCustomPlot *stressPlot;
-    QWidget *pult;
+    QWidget *pultTab;
     QGridLayout *gridLayout_7;
-    QCustomPlot *pultPlot;
-    QWidget *y50;
+    QWidget *y50Tab;
     QGridLayout *gridLayout_8;
-    QCustomPlot *y50Plot;
     QTabWidget *tabWidget_system;
     QWidget *systemTab;
     QGridLayout *gridLayout_2;
@@ -1011,126 +1002,80 @@ public:
         tabWidget->setSizePolicy(sizePolicy11);
         tabWidget->setMinimumSize(QSize(0, 0));
         tabWidget->setTabPosition(QTabWidget::East);
-        displacement = new QWidget();
-        displacement->setObjectName(QStringLiteral("displacement"));
-        gridLayout_3 = new QGridLayout(displacement);
+        dispTab = new QWidget();
+        dispTab->setObjectName(QStringLiteral("dispTab"));
+        gridLayout_3 = new QGridLayout(dispTab);
         gridLayout_3->setSpacing(6);
         gridLayout_3->setContentsMargins(11, 11, 11, 11);
         gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
         gridLayout_3->setContentsMargins(6, 6, 6, 6);
-        displPlot = new QCustomPlot(displacement);
-        displPlot->setObjectName(QStringLiteral("displPlot"));
-        QSizePolicy sizePolicy12(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
-        sizePolicy12.setHorizontalStretch(3);
-        sizePolicy12.setVerticalStretch(2);
-        sizePolicy12.setHeightForWidth(displPlot->sizePolicy().hasHeightForWidth());
-        displPlot->setSizePolicy(sizePolicy12);
-        displPlot->setMinimumSize(QSize(200, 0));
-
-        gridLayout_3->addWidget(displPlot, 0, 0, 1, 1);
-
-        tabWidget->addTab(displacement, QString());
-        pullout = new QWidget();
-        pullout->setObjectName(QStringLiteral("pullout"));
-        gridLayout_15 = new QGridLayout(pullout);
+        tabWidget->addTab(dispTab, QString());
+        pulloutTab = new QWidget();
+        pulloutTab->setObjectName(QStringLiteral("pulloutTab"));
+        gridLayout_15 = new QGridLayout(pulloutTab);
         gridLayout_15->setSpacing(6);
         gridLayout_15->setContentsMargins(11, 11, 11, 11);
         gridLayout_15->setObjectName(QStringLiteral("gridLayout_15"));
         gridLayout_15->setContentsMargins(6, 6, 6, 6);
-        pullOutPlot = new QCustomPlot(pullout);
-        pullOutPlot->setObjectName(QStringLiteral("pullOutPlot"));
-
-        gridLayout_15->addWidget(pullOutPlot, 0, 0, 1, 1);
-
-        tabWidget->addTab(pullout, QString());
-        moment = new QWidget();
-        moment->setObjectName(QStringLiteral("moment"));
-        gridLayout_5 = new QGridLayout(moment);
+        tabWidget->addTab(pulloutTab, QString());
+        momentTab = new QWidget();
+        momentTab->setObjectName(QStringLiteral("momentTab"));
+        gridLayout_5 = new QGridLayout(momentTab);
         gridLayout_5->setSpacing(6);
         gridLayout_5->setContentsMargins(11, 11, 11, 11);
         gridLayout_5->setObjectName(QStringLiteral("gridLayout_5"));
         gridLayout_5->setContentsMargins(6, 6, 6, 6);
-        momentPlot = new QCustomPlot(moment);
-        momentPlot->setObjectName(QStringLiteral("momentPlot"));
-
-        gridLayout_5->addWidget(momentPlot, 0, 0, 1, 1);
-
-        tabWidget->addTab(moment, QString());
-        shear = new QWidget();
-        shear->setObjectName(QStringLiteral("shear"));
-        gridLayout_4 = new QGridLayout(shear);
+        tabWidget->addTab(momentTab, QString());
+        shearTab = new QWidget();
+        shearTab->setObjectName(QStringLiteral("shearTab"));
+        gridLayout_4 = new QGridLayout(shearTab);
         gridLayout_4->setSpacing(6);
         gridLayout_4->setContentsMargins(11, 11, 11, 11);
         gridLayout_4->setObjectName(QStringLiteral("gridLayout_4"));
         gridLayout_4->setContentsMargins(6, 6, 6, 6);
-        shearPlot = new QCustomPlot(shear);
-        shearPlot->setObjectName(QStringLiteral("shearPlot"));
-
-        gridLayout_4->addWidget(shearPlot, 0, 0, 1, 1);
-
-        tabWidget->addTab(shear, QString());
-        axial = new QWidget();
-        axial->setObjectName(QStringLiteral("axial"));
-        gridLayout_13 = new QGridLayout(axial);
+        tabWidget->addTab(shearTab, QString());
+        axialTab = new QWidget();
+        axialTab->setObjectName(QStringLiteral("axialTab"));
+        gridLayout_13 = new QGridLayout(axialTab);
         gridLayout_13->setSpacing(6);
         gridLayout_13->setContentsMargins(11, 11, 11, 11);
         gridLayout_13->setObjectName(QStringLiteral("gridLayout_13"));
         gridLayout_13->setContentsMargins(6, 6, 6, 6);
-        axialPlot = new QCustomPlot(axial);
-        axialPlot->setObjectName(QStringLiteral("axialPlot"));
-
-        gridLayout_13->addWidget(axialPlot, 0, 0, 1, 1);
-
-        tabWidget->addTab(axial, QString());
-        stress = new QWidget();
-        stress->setObjectName(QStringLiteral("stress"));
-        gridLayout_6 = new QGridLayout(stress);
+        tabWidget->addTab(axialTab, QString());
+        stressTab = new QWidget();
+        stressTab->setObjectName(QStringLiteral("stressTab"));
+        gridLayout_6 = new QGridLayout(stressTab);
         gridLayout_6->setSpacing(6);
         gridLayout_6->setContentsMargins(11, 11, 11, 11);
         gridLayout_6->setObjectName(QStringLiteral("gridLayout_6"));
         gridLayout_6->setContentsMargins(6, 6, 6, 6);
-        stressPlot = new QCustomPlot(stress);
-        stressPlot->setObjectName(QStringLiteral("stressPlot"));
-
-        gridLayout_6->addWidget(stressPlot, 0, 0, 1, 1);
-
-        tabWidget->addTab(stress, QString());
-        pult = new QWidget();
-        pult->setObjectName(QStringLiteral("pult"));
-        gridLayout_7 = new QGridLayout(pult);
+        tabWidget->addTab(stressTab, QString());
+        pultTab = new QWidget();
+        pultTab->setObjectName(QStringLiteral("pultTab"));
+        gridLayout_7 = new QGridLayout(pultTab);
         gridLayout_7->setSpacing(6);
         gridLayout_7->setContentsMargins(11, 11, 11, 11);
         gridLayout_7->setObjectName(QStringLiteral("gridLayout_7"));
         gridLayout_7->setContentsMargins(6, 6, 6, 6);
-        pultPlot = new QCustomPlot(pult);
-        pultPlot->setObjectName(QStringLiteral("pultPlot"));
-
-        gridLayout_7->addWidget(pultPlot, 0, 0, 1, 1);
-
-        tabWidget->addTab(pult, QString());
-        y50 = new QWidget();
-        y50->setObjectName(QStringLiteral("y50"));
-        gridLayout_8 = new QGridLayout(y50);
+        tabWidget->addTab(pultTab, QString());
+        y50Tab = new QWidget();
+        y50Tab->setObjectName(QStringLiteral("y50Tab"));
+        gridLayout_8 = new QGridLayout(y50Tab);
         gridLayout_8->setSpacing(6);
         gridLayout_8->setContentsMargins(11, 11, 11, 11);
         gridLayout_8->setObjectName(QStringLiteral("gridLayout_8"));
         gridLayout_8->setContentsMargins(6, 6, 6, 6);
-        y50Plot = new QCustomPlot(y50);
-        y50Plot->setObjectName(QStringLiteral("y50Plot"));
-
-        gridLayout_8->addWidget(y50Plot, 0, 0, 1, 1);
-
-        tabWidget->addTab(y50, QString());
+        tabWidget->addTab(y50Tab, QString());
 
         gridLayout_11->addWidget(tabWidget, 1, 4, 1, 1);
 
         tabWidget_system = new QTabWidget(centralWidget);
         tabWidget_system->setObjectName(QStringLiteral("tabWidget_system"));
-        QSizePolicy sizePolicy13(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        sizePolicy13.setHorizontalStretch(3);
-        sizePolicy13.setVerticalStretch(0);
-        sizePolicy13.setHeightForWidth(tabWidget_system->sizePolicy().hasHeightForWidth());
-        tabWidget_system->setSizePolicy(sizePolicy13);
+        QSizePolicy sizePolicy12(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        sizePolicy12.setHorizontalStretch(3);
+        sizePolicy12.setVerticalStretch(0);
+        sizePolicy12.setHeightForWidth(tabWidget_system->sizePolicy().hasHeightForWidth());
+        tabWidget_system->setSizePolicy(sizePolicy12);
         tabWidget_system->setMinimumSize(QSize(0, 0));
         systemTab = new QWidget();
         systemTab->setObjectName(QStringLiteral("systemTab"));
@@ -1156,11 +1101,11 @@ public:
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
-        QSizePolicy sizePolicy14(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-        sizePolicy14.setHorizontalStretch(0);
-        sizePolicy14.setVerticalStretch(0);
-        sizePolicy14.setHeightForWidth(mainToolBar->sizePolicy().hasHeightForWidth());
-        mainToolBar->setSizePolicy(sizePolicy14);
+        QSizePolicy sizePolicy13(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+        sizePolicy13.setHorizontalStretch(0);
+        sizePolicy13.setVerticalStretch(0);
+        sizePolicy13.setHeightForWidth(mainToolBar->sizePolicy().hasHeightForWidth());
+        mainToolBar->setSizePolicy(sizePolicy13);
         mainToolBar->setMinimumSize(QSize(800, 0));
         MainWindow->addToolBar(Qt::TopToolBarArea, mainToolBar);
         statusBar = new QStatusBar(MainWindow);
@@ -1187,7 +1132,7 @@ public:
 
         properties->setCurrentIndex(0);
         loadTypesStack->setCurrentIndex(0);
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(7);
         tabWidget_system->setCurrentIndex(0);
 
 
@@ -1277,14 +1222,14 @@ public:
         label_unitInterface23->setText(QApplication::translate("MainWindow", "%", nullptr));
         label_unitBaseDisplacement->setText(QApplication::translate("MainWindow", "%", nullptr));
         properties->setTabText(properties->indexOf(loadPropertyWidget), QApplication::translate("MainWindow", "Load Options", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(displacement), QApplication::translate("MainWindow", "Lateral Disp", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(pullout), QApplication::translate("MainWindow", "Axial Disp", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(moment), QApplication::translate("MainWindow", "Moment", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(shear), QApplication::translate("MainWindow", "Shear", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(axial), QApplication::translate("MainWindow", "Axial", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(stress), QApplication::translate("MainWindow", "effective Stress", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(pult), QApplication::translate("MainWindow", "p_ult", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(y50), QApplication::translate("MainWindow", "y50", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(dispTab), QApplication::translate("MainWindow", "Lateral Disp", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(pulloutTab), QApplication::translate("MainWindow", "Axial Disp", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(momentTab), QApplication::translate("MainWindow", "Moment", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(shearTab), QApplication::translate("MainWindow", "Shear", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(axialTab), QApplication::translate("MainWindow", "Axial", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(stressTab), QApplication::translate("MainWindow", "effective Stress", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(pultTab), QApplication::translate("MainWindow", "p_ult", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(y50Tab), QApplication::translate("MainWindow", "y50", nullptr));
         tabWidget_system->setTabText(tabWidget_system->indexOf(systemTab), QApplication::translate("MainWindow", "System Plot", nullptr));
         menuOpenSeesPile->setTitle(QApplication::translate("MainWindow", "File", nullptr));
         menuAnalysis->setTitle(QApplication::translate("MainWindow", "Analysis", nullptr));

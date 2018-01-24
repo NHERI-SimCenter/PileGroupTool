@@ -95,32 +95,64 @@ MainWindow::MainWindow(QWidget *parent) :
     {
         systemPlot  = new SystemPlotQwt(ui->systemTab);
 
-        displPlot   = new ResultPlotQwt(ui->displPlot);
-        pullOutPlot = new ResultPlotQwt(ui->pullOutPlot);
-        momentPlot  = new ResultPlotQwt(ui->momentPlot);
-        shearPlot   = new ResultPlotQwt(ui->shearPlot);
-        axialPlot   = new ResultPlotQwt(ui-> axialPlot);
-        stressPlot  = new ResultPlotQwt(ui->stressPlot);
-        pultPlot    = new ResultPlotQwt(ui->pultPlot);
-        y50Plot     = new ResultPlotQwt(ui->y50Plot);
+        displPlot   = new ResultPlotQwt(ui->dispTab);
+        pullOutPlot = new ResultPlotQwt(ui->pulloutTab);
+        momentPlot  = new ResultPlotQwt(ui->momentTab);
+        shearPlot   = new ResultPlotQwt(ui->shearTab);
+        axialPlot   = new ResultPlotQwt(ui-> axialTab);
+        stressPlot  = new ResultPlotQwt(ui->stressTab);
+        pultPlot    = new ResultPlotQwt(ui->pultTab);
+        y50Plot     = new ResultPlotQwt(ui->y50Tab);
     }
     else
     {
         systemPlot  = new SystemPlotQCP(ui->systemTab);
 
-        displPlot   = new ResultPlotQCP(ui->displPlot);
-        pullOutPlot = new ResultPlotQCP(ui->pullOutPlot);
-        momentPlot  = new ResultPlotQCP(ui->momentPlot);
-        shearPlot   = new ResultPlotQCP(ui->shearPlot);
-        axialPlot   = new ResultPlotQCP(ui-> axialPlot);
-        stressPlot  = new ResultPlotQCP(ui->stressPlot);
-        pultPlot    = new ResultPlotQCP(ui->pultPlot);
-        y50Plot     = new ResultPlotQCP(ui->y50Plot);
+        displPlot   = new ResultPlotQCP(ui->dispTab);
+        pullOutPlot = new ResultPlotQCP(ui->pulloutTab);
+        momentPlot  = new ResultPlotQCP(ui->momentTab);
+        shearPlot   = new ResultPlotQCP(ui->shearTab);
+        axialPlot   = new ResultPlotQCP(ui->axialTab);
+        stressPlot  = new ResultPlotQCP(ui->stressTab);
+        pultPlot    = new ResultPlotQCP(ui->pultTab);
+        y50Plot     = new ResultPlotQCP(ui->y50Tab);
     }
 
-    QLayout *lyt = ui->systemTab->layout();
+    //
+    // place widgets into their respective layouts
+    //
+    QLayout *lyt;
+
+    lyt = ui->systemTab->layout();
     lyt->addWidget(systemPlot);
 
+    lyt = ui->dispTab->layout();
+    lyt->addWidget(displPlot);
+
+    lyt = ui->pulloutTab->layout();
+    lyt->addWidget(pullOutPlot);
+
+    lyt = ui->momentTab->layout();
+    lyt->addWidget(momentPlot);
+
+    lyt = ui->shearTab->layout();
+    lyt->addWidget(shearPlot);
+
+    lyt = ui->axialTab->layout();
+    lyt->addWidget(axialPlot);
+
+    lyt = ui->stressTab->layout();
+    lyt->addWidget(stressPlot);
+
+    lyt = ui->pultTab->layout();
+    lyt->addWidget(pultPlot);
+
+    lyt = ui->y50Tab->layout();
+    lyt->addWidget(y50Plot);
+
+    //
+    // general setup
+    //
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
     ui->appliedHorizontalForce->setMaximum(MAX_FORCE);
@@ -1128,56 +1160,56 @@ void MainWindow::updateLayerState()
 
 void MainWindow::updateUI()
 {
-    if (!showDisplacements && ui->tabWidget->indexOf(ui->displacement)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->displacement));
+    if (!showDisplacements && ui->tabWidget->indexOf(ui->dispTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->dispTab));
     }
-    if (!showPullOut && ui->tabWidget->indexOf(ui->pullout)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pullout));
+    if (!showPullOut && ui->tabWidget->indexOf(ui->pulloutTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pulloutTab));
     }
-    if (!showMoments && ui->tabWidget->indexOf(ui->moment)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->moment));
+    if (!showMoments && ui->tabWidget->indexOf(ui->momentTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->momentTab));
     }
-    if (!showShear && ui->tabWidget->indexOf(ui->shear)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->shear));
+    if (!showShear && ui->tabWidget->indexOf(ui->shearTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->shearTab));
     }
-    if (!showAxial && ui->tabWidget->indexOf(ui->axial)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->axial));
+    if (!showAxial && ui->tabWidget->indexOf(ui->axialTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->axialTab));
     }
-    if (!showStress && ui->tabWidget->indexOf(ui->stress)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->stress));
+    if (!showStress && ui->tabWidget->indexOf(ui->stressTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->stressTab));
     }
-    if (!showPultimate && ui->tabWidget->indexOf(ui->pult)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pult));
+    if (!showPultimate && ui->tabWidget->indexOf(ui->pultTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pultTab));
     }
-    if (!showY50 && ui->tabWidget->indexOf(ui->y50)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->y50));
+    if (!showY50 && ui->tabWidget->indexOf(ui->y50Tab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->y50Tab));
     }
 
     int numTabs = ui->tabWidget->count();
 
-    if (showDisplacements && ui->tabWidget->indexOf(ui->displacement) < 0 ) {
-        ui->tabWidget->addTab(ui->displacement,"Lateral Disp");
+    if (showDisplacements && ui->tabWidget->indexOf(ui->dispTab) < 0 ) {
+        ui->tabWidget->addTab(ui->dispTab,"Lateral Disp");
     }
-    if (showPullOut && ui->tabWidget->indexOf(ui->pullout) < 0 ) {
-        ui->tabWidget->addTab(ui->pullout,"Axial Disp");
+    if (showPullOut && ui->tabWidget->indexOf(ui->pulloutTab) < 0 ) {
+        ui->tabWidget->addTab(ui->pulloutTab,"Axial Disp");
     }
-    if (showMoments && ui->tabWidget->indexOf(ui->moment) < 0 ) {
-        ui->tabWidget->addTab(ui->moment,"Moment");
+    if (showMoments && ui->tabWidget->indexOf(ui->momentTab) < 0 ) {
+        ui->tabWidget->addTab(ui->momentTab,"Moment");
     }
-    if (showShear && ui->tabWidget->indexOf(ui->shear) < 0 ) {
-        ui->tabWidget->addTab(ui->shear,"Shear");
+    if (showShear && ui->tabWidget->indexOf(ui->shearTab) < 0 ) {
+        ui->tabWidget->addTab(ui->shearTab,"Shear");
     }
-    if (showAxial && ui->tabWidget->indexOf(ui->axial) < 0 ) {
-        ui->tabWidget->addTab(ui->axial,"Axial");
+    if (showAxial && ui->tabWidget->indexOf(ui->axialTab) < 0 ) {
+        ui->tabWidget->addTab(ui->axialTab,"Axial");
     }
-    if (showStress && ui->tabWidget->indexOf(ui->stress) < 0 ) {
-        ui->tabWidget->addTab(ui->stress,"Stress");
+    if (showStress && ui->tabWidget->indexOf(ui->stressTab) < 0 ) {
+        ui->tabWidget->addTab(ui->stressTab,"Stress");
     }
-    if (showPultimate && ui->tabWidget->indexOf(ui->pult) < 0 ) {
-        ui->tabWidget->addTab(ui->pult,"p_ult");
+    if (showPultimate && ui->tabWidget->indexOf(ui->pultTab) < 0 ) {
+        ui->tabWidget->addTab(ui->pultTab,"p_ult");
     }
-    if (showY50 && ui->tabWidget->indexOf(ui->y50) < 0) {
-        ui->tabWidget->addTab(ui->y50,"y50");
+    if (showY50 && ui->tabWidget->indexOf(ui->y50Tab) < 0) {
+        ui->tabWidget->addTab(ui->y50Tab,"y50");
     }
 }
 

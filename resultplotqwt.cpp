@@ -1,10 +1,16 @@
 #include "resultplotqwt.h"
 #include "qwt_plot.h"
+#include <QGridLayout>
 
 ResultPlotQwt::ResultPlotQwt(QWidget *parent) :
     ResultPlotSuper(parent)
 {
     plot = new QwtPlot(this);
+
+    QGridLayout *lyt = new QGridLayout(this);
+    lyt->addWidget(plot,0,0);
+    lyt->setMargin(0);
+    this->setLayout(lyt);
 
 }
 
