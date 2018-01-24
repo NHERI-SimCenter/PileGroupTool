@@ -19,9 +19,9 @@ ResultPlotQCP::~ResultPlotQCP()
 }
 
 void ResultPlotQCP::plotResults(QVector<double> &z,
-                                QVector<double> &xOffset,
-                                QVector<QVector<double> > &x,
-                                QVector<QVector<double> > &y)
+                                QVector<double> *xOffset,
+                                QVector<QVector<double> *> &x,
+                                QVector<QVector<double> *> &y)
 {
     /*
      * MAKE SURE THE LENGTH OF THE VECTORS IN ALL PLOTS MATCHES THE ACTUAL PILE
@@ -37,14 +37,17 @@ void ResultPlotQCP::plotResults(QVector<double> &z,
     plot->legend->setVisible(true);
 
     plot->addGraph();
-    plot->graph(0)->setData(z,xOffset);
+    plot->graph(0)->setData(z,*xOffset);
     plot->graph(0)->setPen(QPen(Qt::black));
     plot->graph(0)->removeFromLegend();
 
     for (int ii=0; ii<numPiles; ii++) {
         QCPCurve *mCurve = new QCPCurve(plot->xAxis, plot->yAxis);
         // mCurve->setData(x[ii].mid(0,numNodePile[ii]),y[ii].mid(0,numNodePile[ii]));
-        mCurve->setData(x[ii],y[ii]);
+
+        qDebug() << ii << z.size() << x[ii]->size() << y[ii]->size() ;
+
+        mCurve->setData(*x[ii],*y[ii]);
         mCurve->setPen(QPen(LINE_COLOR[ii], 3));
         mCurve->setName(QString("Pile #%1").arg(ii+1));
     }

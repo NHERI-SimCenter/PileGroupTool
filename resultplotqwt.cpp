@@ -20,9 +20,9 @@ ResultPlotQwt::~ResultPlotQwt()
 }
 
 void ResultPlotQwt::plotResults(QVector<double> &z,
-                                QVector<double> &xOffset,
-                                QVector<QVector<double> > &x,
-                                QVector<QVector<double> > &y)
+                                QVector<double> *xOffset,
+                                QVector<QVector<double> *> &x,
+                                QVector<QVector<double> *> &y)
 {
 #if 0
     plot->clearPlottables();

@@ -447,11 +447,16 @@ void MainWindow::doAnalysis(void)
 
     /* ******** done with sizing and adjustments ******** */
 
-    //this->updateSystemPlot();
+    QVector<QVector<double> *> locList;
+    QVector<QVector<double> *> pultList;
+    QVector<QVector<double> *> y50List;
 
-    QVector<QVector<double> > locList(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double> > pultList(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double> > y50List(MAXPILES, QVector<double>(numNodePiles,0.0));
+    for (int i=0; i<numPiles; i++)
+    {
+        locList.append(new QVector<double>(numNodePile[i],0.0));
+        pultList.append(new QVector<double>(numNodePile[i],0.0));
+        y50List.append(new QVector<double>(numNodePile[i],0.0));
+    }
 
     int ioffset  = numNodePiles;              // for p-y spring nodes
     int ioffset2 = ioffset + numNodePiles;    // for pile nodes
@@ -560,9 +565,9 @@ void MainWindow::doAnalysis(void)
             theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
         }
 
-        locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-        pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
-        y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+        (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+        (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
+        (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
 
         //
         // work the way up layer by layer
@@ -655,11 +660,11 @@ void MainWindow::doAnalysis(void)
                 theMat = new PySimple1(numNode, 0, 2, pult, y50, 0.0, 0.0);
                 OPS_addUniaxialMaterial(theMat);
 
-                locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+                (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
                 // pult is a nodal value for the p-y spring.
                 // It needs to be scaled by element length ito represent a line load
-                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = pult/eleSize;
-                y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = y50;
+                (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = pult/eleSize;
+                (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = y50;
 
                 // t-z spring material
                 getTzParam(phi, pileDiameter[pileIdx],  sigV,  eleSize, &tult, &z50);
@@ -725,9 +730,15 @@ void MainWindow::doAnalysis(void)
                 theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
             }
 
-            locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-            pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
-            y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+            /*
+            (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+            (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
+            (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+            */
+
+            locList[pileIdx]->append(zCoord);
+            pultList[pileIdx]->append(0.001);
+            y50List[pileIdx]->append(0.00001);
 
             zCoord += eleSize;
         }
@@ -936,13 +947,25 @@ void MainWindow::doAnalysis(void)
 
 
 
-    QVector<QVector<double>> loc(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> Hdisp(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> Vdisp(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> moment(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> shear(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> axial(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> stress(MAXPILES, QVector<double>(numNodePiles,0.0));
+    QVector<QVector<double> *> loc;
+    QVector<QVector<double> *> Hdisps;
+    QVector<QVector<double> *> Vdisps;
+    QVector<QVector<double> *> moment;
+    QVector<QVector<double> *> shear;
+    QVector<QVector<double> *> axial;
+    QVector<QVector<double> *> stress;
+
+    for (int i=0; i<numPiles; i++)
+    {
+        loc.append(new QVector<double>(numNodePile[i],0.0));
+        Hdisps.append(new QVector<double>(numNodePile[i],0.0));
+        Vdisps.append(new QVector<double>(numNodePile[i],0.0));
+        moment.append(new QVector<double>(numNodePile[i],0.0));
+        shear.append(new QVector<double>(numNodePile[i],0.0));
+        axial.append(new QVector<double>(numNodePile[i],0.0));
+        stress.append(new QVector<double>(numNodePile[i],0.0));
+    }
+
     QVector<double> zero(numNodePiles,0.0);
 
     double maxHDisp  = 0.0;
@@ -964,19 +987,19 @@ void MainWindow::doAnalysis(void)
 
             Node *theNode = theDomain.getNode(i+nodeIDoffset[pileIdx]);
             const Vector &nodeCoord = theNode->getCrds();
-            loc[pileIdx][i-1] = nodeCoord(2);
+            (*loc[pileIdx])[i-1] = nodeCoord(2);
             int iLayer;
             for (iLayer=0; iLayer<maxLayers[pileIdx]; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
-            stress[pileIdx][i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
+            (*stress[pileIdx])[i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
             //if (stress[pileIdx][i-1] > maxStress) maxStress = stress[pileIdx][i-1];
             //if (stress[pileIdx][i-1] < minStress) minStress = stress[pileIdx][i-1];
             const Vector &nodeDisp = theNode->getDisp();
-            Hdisp[pileIdx][i-1] = nodeDisp(0);
-            if (Hdisp[pileIdx][i-1] > maxHDisp) maxHDisp = Hdisp[pileIdx][i-1];
-            if (Hdisp[pileIdx][i-1] < minHDisp) minHDisp = Hdisp[pileIdx][i-1];
-            Vdisp[pileIdx][i-1] = nodeDisp(2);
-            if (Vdisp[pileIdx][i-1] > maxVDisp) maxVDisp = Vdisp[pileIdx][i-1];
-            if (Vdisp[pileIdx][i-1] < minVDisp) minVDisp = Vdisp[pileIdx][i-1];
+            (*Hdisps[pileIdx])[i-1] = nodeDisp(0);
+            if ((*Hdisps[pileIdx])[i-1] > maxHDisp) maxHDisp = Hdisps[pileIdx]->value(i-1);
+            if ((*Hdisps[pileIdx])[i-1] < minHDisp) minHDisp = Hdisps[pileIdx]->value(i-1);
+            (*Vdisps[pileIdx])[i-1] = nodeDisp(2);
+            if ((*Vdisps[pileIdx])[i-1] > maxVDisp) maxVDisp = Vdisps[pileIdx]->value(i-1);
+            if ((*Vdisps[pileIdx])[i-1] < minVDisp) minVDisp = Vdisps[pileIdx]->value(i-1);
         }
     }
 
@@ -984,9 +1007,9 @@ void MainWindow::doAnalysis(void)
 
         //qDebug() << "= pile index: " << pileIdx ;
 
-        moment[pileIdx][0] = 0.0;
-        shear[pileIdx][0]  = 0.0;
-        axial[pileIdx][0]  = 0.0;
+        (*moment[pileIdx])[0] = 0.0;
+        (*shear[pileIdx])[0]  = 0.0;
+        (*axial[pileIdx])[0]  = 0.0;
 
         for (int i=1; i<numNodePile[pileIdx]; i++) {
 
@@ -1010,15 +1033,15 @@ void MainWindow::doAnalysis(void)
 
             Element *theEle = theDomain.getElement(i+elemIDoffset[pileIdx]);
             const Vector &eleForces = theEle->getResistingForce();
-            moment[pileIdx][i] = eleForces(10);
-            if (moment[pileIdx][i] > maxMoment) maxMoment = moment[pileIdx][i];
-            if (moment[pileIdx][i] < minMoment) minMoment = moment[pileIdx][i];
-            shear[pileIdx][i] = eleForces(6);
-            if (shear[pileIdx][i] > maxShear) maxShear = shear[pileIdx][i];
-            if (shear[pileIdx][i] < minShear) minShear = shear[pileIdx][i];
-            axial[pileIdx][i] = eleForces(8);
-            if (axial[pileIdx][i] > maxAxial) maxAxial = axial[pileIdx][i];
-            if (axial[pileIdx][i] < minAxial) minAxial = axial[pileIdx][i];
+            (*moment[pileIdx])[i] = eleForces(10);
+            if ((*moment[pileIdx])[i] > maxMoment) maxMoment = moment[pileIdx]->value(i);
+            if ((*moment[pileIdx])[i] < minMoment) minMoment = moment[pileIdx]->value(i);
+            (*shear[pileIdx])[i] = eleForces(6);
+            if ((*shear[pileIdx])[i] > maxShear) maxShear = shear[pileIdx]->value(i);
+            if ((*shear[pileIdx])[i] < minShear) minShear = shear[pileIdx]->value(i);
+            (*axial[pileIdx])[i] = eleForces(8);
+            if ((*axial[pileIdx])[i] > maxAxial) maxAxial = axial[pileIdx]->value(i);
+            if ((*axial[pileIdx])[i] < minAxial) minAxial = axial[pileIdx]->value(i);
         }
     }
 
@@ -1026,14 +1049,16 @@ void MainWindow::doAnalysis(void)
     // plot results
     //
 
+    //qDebug() << numNodePile[0] << numNodePile[1] << numNodePile[2] ;
+
     // lateral displacements
     if (showDisplacements) {
-        displPlot->plotResults(zero, loc[0], Hdisp, loc);
+        displPlot->plotResults(zero, loc[0], Hdisps, loc);
     }
 
     // axial displacements
     if (showPullOut) {
-        pullOutPlot->plotResults(zero, loc[0], Vdisp, loc);
+        pullOutPlot->plotResults(zero, loc[0], Vdisps, loc);
     }
 
     // axial
@@ -1065,6 +1090,22 @@ void MainWindow::doAnalysis(void)
     if (showY50) {
         y50Plot->plotResults(zero, loc[0], y50List, locList);
     }
+
+    for (int i=0; i<numPiles; i++)
+    {
+        if (loc[i]    != NULL) { delete loc[i];    loc[i]    = NULL; }
+        if (Hdisps[i] != NULL) { delete Hdisps[i]; Hdisps[i] = NULL; }
+        if (Vdisps[i] != NULL) { delete Vdisps[i]; Vdisps[i] = NULL; }
+        if (moment[i] != NULL) { delete moment[i]; moment[i] = NULL; }
+        if (shear[i]  != NULL) { delete shear[i];  shear[i]  = NULL; }
+        if (axial[i]  != NULL) { delete axial[i];  axial[i]  = NULL; }
+        if (stress[i] != NULL) { delete stress[i]; stress[i] = NULL; }
+
+        if (locList[i]  != NULL) { delete locList[i];  locList[i]  = NULL; }
+        if (pultList[i] != NULL) { delete pultList[i]; pultList[i] = NULL; }
+        if (y50List[i]  != NULL) { delete y50List[i];  y50List[i]  = NULL; }
+    }
+
 }
 
 void MainWindow::updateResultPlots()
