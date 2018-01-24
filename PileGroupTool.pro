@@ -24,7 +24,7 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 #include( $${PWD}/qwtconfig.pri )
 #include ( $${PWD}/qwt.prf )
 
-include( /usr/local/qwt-6.2.0-svn/features//qwtconfig.pri )
+include( /usr/local/qwt-6.2.0-svn/features/qwtconfig.pri )
 include( /usr/local/qwt-6.2.0-svn/features/qwt.prf )
 
 #win32: INCLUDES += "./ops"
