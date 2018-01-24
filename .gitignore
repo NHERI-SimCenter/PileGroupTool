@@ -55,3 +55,4 @@ ui_dialogpreferences.h
 ui_materialdbinterface.h
 ui_surveysplashscreen.h
 Makefile
+ui_mainwindow.h
