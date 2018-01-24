@@ -1182,9 +1182,9 @@ Layers 1 &amp; 2:</string>
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>7</number>
       </property>
-      <widget class="QWidget" name="displacement">
+      <widget class="QWidget" name="displPlot">
        <attribute name="title">
         <string>Lateral Disp</string>
        </attribute>
@@ -1201,25 +1201,9 @@ Layers 1 &amp; 2:</string>
         <property name="bottomMargin">
          <number>6</number>
         </property>
-        <item row="0" column="0">
-         <widget class="QCustomPlot" name="displPlot" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
-            <horstretch>3</horstretch>
-            <verstretch>2</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>200</width>
-            <height>0</height>
-           </size>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="pullout">
+      <widget class="QWidget" name="pulloutPlot">
        <attribute name="title">
         <string>Axial Disp</string>
        </attribute>
@@ -1236,12 +1220,9 @@ Layers 1 &amp; 2:</string>
         <property name="bottomMargin">
          <number>6</number>
         </property>
-        <item row="0" column="0">
-         <widget class="QCustomPlot" name="pullOutPlot" native="true"/>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="moment">
+      <widget class="QWidget" name="momentPlot">
        <attribute name="title">
         <string>Moment</string>
        </attribute>
@@ -1258,12 +1239,9 @@ Layers 1 &amp; 2:</string>
         <property name="bottomMargin">
          <number>6</number>
         </property>
-        <item row="0" column="0">
-         <widget class="QCustomPlot" name="momentPlot" native="true"/>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="shear">
+      <widget class="QWidget" name="shearPlot">
        <attribute name="title">
         <string>Shear</string>
        </attribute>
@@ -1280,12 +1258,9 @@ Layers 1 &amp; 2:</string>
         <property name="bottomMargin">
          <number>6</number>
         </property>
-        <item row="0" column="0">
-         <widget class="QCustomPlot" name="shearPlot" native="true"/>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="axial">
+      <widget class="QWidget" name="axialPlot">
        <attribute name="title">
         <string>Axial</string>
        </attribute>
@@ -1302,12 +1277,9 @@ Layers 1 &amp; 2:</string>
         <property name="bottomMargin">
          <number>6</number>
         </property>
-        <item row="0" column="0">
-         <widget class="QCustomPlot" name="axialPlot" native="true"/>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="stress">
+      <widget class="QWidget" name="stressPlot">
        <attribute name="title">
         <string>effective Stress</string>
        </attribute>
@@ -1324,12 +1296,9 @@ Layers 1 &amp; 2:</string>
         <property name="bottomMargin">
          <number>6</number>
         </property>
-        <item row="0" column="0">
-         <widget class="QCustomPlot" name="stressPlot" native="true"/>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="pult">
+      <widget class="QWidget" name="pultPlot">
        <attribute name="title">
         <string>p_ult</string>
        </attribute>
@@ -1346,12 +1315,9 @@ Layers 1 &amp; 2:</string>
         <property name="bottomMargin">
          <number>6</number>
         </property>
-        <item row="0" column="0">
-         <widget class="QCustomPlot" name="pultPlot" native="true"/>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="y50">
+      <widget class="QWidget" name="y50Plot">
        <attribute name="title">
         <string>y50</string>
        </attribute>
@@ -1368,9 +1334,6 @@ Layers 1 &amp; 2:</string>
         <property name="bottomMargin">
          <number>6</number>
         </property>
-        <item row="0" column="0">
-         <widget class="QCustomPlot" name="y50Plot" native="true"/>
-        </item>
        </layout>
       </widget>
      </widget>
@@ -1544,12 +1507,6 @@ Layers 1 &amp; 2:</string>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
-  <customwidget>
-   <class>QCustomPlot</class>
-   <extends>QWidget</extends>
-   <header>qcustomplot.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>HeaderWidget</class>
    <extends>QFrame</extends>

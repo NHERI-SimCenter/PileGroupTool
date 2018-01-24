@@ -6,9 +6,14 @@
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
 #include "pilefeamodeler.h"
+
 #include "systemplotsuper.h"
 #include "systemplotqcp.h"
 #include "systemplotqwt.h"
+
+#include "resultplotsuper.h"
+#include "resultplotqcp.h"
+#include "resultplotqwt.h"
 
 #include <QApplication>
 #include <QtNetwork/QNetworkAccessManager>
@@ -87,9 +92,31 @@ MainWindow::MainWindow(QWidget *parent) :
     this->fetchSettings();
 
     if (useGraphicsLib == "Qwt")
-        { systemPlot = new SystemPlotQwt(ui->systemTab); }
+    {
+        systemPlot  = new SystemPlotQwt(ui->systemTab);
+
+        displPlot   = new ResultPlotQwt(ui->displPlot);
+        pullOutPlot = new ResultPlotQwt(ui->pullOutPlot);
+        momentPlot  = new ResultPlotQwt(ui->momentPlot);
+        shearPlot   = new ResultPlotQwt(ui->shearPlot);
+        axialPlot   = new ResultPlotQwt(ui-> axialPlot);
+        stressPlot  = new ResultPlotQwt(ui->stressPlot);
+        pultPlot    = new ResultPlotQwt(ui->pultPlot);
+        y50Plot     = new ResultPlotQwt(ui->y50Plot);
+    }
     else
-        { systemPlot = new SystemPlotQCP(ui->systemTab); }
+    {
+        systemPlot  = new SystemPlotQCP(ui->systemTab);
+
+        displPlot   = new ResultPlotQCP(ui->displPlot);
+        pullOutPlot = new ResultPlotQCP(ui->pullOutPlot);
+        momentPlot  = new ResultPlotQCP(ui->momentPlot);
+        shearPlot   = new ResultPlotQCP(ui->shearPlot);
+        axialPlot   = new ResultPlotQCP(ui-> axialPlot);
+        stressPlot  = new ResultPlotQCP(ui->stressPlot);
+        pultPlot    = new ResultPlotQCP(ui->pultPlot);
+        y50Plot     = new ResultPlotQCP(ui->y50Plot);
+    }
 
     QLayout *lyt = ui->systemTab->layout();
     lyt->addWidget(systemPlot);
@@ -869,15 +896,29 @@ void MainWindow::doAnalysis(void)
     theAnalysis.analyze(20);
     theDomain.calculateNodalReactions(0);
 
+    this->updateResultPlots();
+
+
+
+
+
+
+
     QVector<QVector<double>> loc(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> disp(MAXPILES, QVector<double>(numNodePiles,0.0));
+    QVector<QVector<double>> Hdisp(MAXPILES, QVector<double>(numNodePiles,0.0));
+    QVector<QVector<double>> Vdisp(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> moment(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> shear(MAXPILES, QVector<double>(numNodePiles,0.0));
+    QVector<QVector<double>> axial(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<QVector<double>> stress(MAXPILES, QVector<double>(numNodePiles,0.0));
     QVector<double> zero(numNodePiles,0.0);
 
-    double maxDisp   = 0.0;
-    double minDisp   = 0.0;
+    double maxHDisp  = 0.0;
+    double minHDisp  = 0.0;
+    double maxVDisp  = 0.0;
+    double minVDisp  = 0.0;
+    double maxAxial  = 0.0;
+    double minAxial  = 0.0;
     double maxShear  = 0.0;
     double minShear  = 0.0;
     double maxMoment = 0.0;
@@ -888,9 +929,6 @@ void MainWindow::doAnalysis(void)
     for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
         for (int i=1; i<=numNodePile[pileIdx]; i++) {
-            //zero[i-1] = 0.0;
-
-            //qDebug() << "getNode(" << i+nodeIDoffset[pileIdx] << ")";
 
             Node *theNode = theDomain.getNode(i+nodeIDoffset[pileIdx]);
             const Vector &nodeCoord = theNode->getCrds();
@@ -901,9 +939,12 @@ void MainWindow::doAnalysis(void)
             //if (stress[pileIdx][i-1] > maxStress) maxStress = stress[pileIdx][i-1];
             //if (stress[pileIdx][i-1] < minStress) minStress = stress[pileIdx][i-1];
             const Vector &nodeDisp = theNode->getDisp();
-            disp[pileIdx][i-1] = nodeDisp(0);
-            if (disp[pileIdx][i-1] > maxDisp) maxDisp = disp[pileIdx][i-1];
-            if (disp[pileIdx][i-1] < minDisp) minDisp = disp[pileIdx][i-1];
+            Hdisp[pileIdx][i-1] = nodeDisp(0);
+            if (Hdisp[pileIdx][i-1] > maxHDisp) maxHDisp = Hdisp[pileIdx][i-1];
+            if (Hdisp[pileIdx][i-1] < minHDisp) minHDisp = Hdisp[pileIdx][i-1];
+            Vdisp[pileIdx][i-1] = nodeDisp(2);
+            if (Vdisp[pileIdx][i-1] > maxVDisp) maxVDisp = Vdisp[pileIdx][i-1];
+            if (Vdisp[pileIdx][i-1] < minVDisp) minVDisp = Vdisp[pileIdx][i-1];
         }
     }
 
@@ -913,10 +954,27 @@ void MainWindow::doAnalysis(void)
 
         moment[pileIdx][0] = 0.0;
         shear[pileIdx][0]  = 0.0;
+        axial[pileIdx][0]  = 0.0;
 
         for (int i=1; i<numNodePile[pileIdx]; i++) {
 
-            //qDebug() << "getElement(" << i+elemIDoffset[pileIdx] << ")";
+            /*
+             *  identify force components
+             *  components identified by *** will be shown in plots
+             *
+             * eleForces[0] ... Px on node 1 == in plane shear force
+             * eleForces[1] ... Py on node 1 == out of plane shear force
+             * eleForces[2] ... Pz on node 1 == axial force
+             * eleForces[3] ... Mx on node 1 == out of plane bending moment
+             * eleForces[4] ... My on node 1 == in plane bending moment
+             * eleForces[5] ... Mz on node 1 == torsion
+             * eleForces[6] ... Px on node 2 == in plane shear force        ***
+             * eleForces[7] ... Py on node 2 == out of plane shear force
+             * eleForces[8] ... Pz on node 2 == axial force                 ***
+             * eleForces[9] ... Mx on node 2 == out of plane bending moment
+             * eleForces[10] .. My on node 2 == in plane bending moment     ***
+             * eleForces[11] .. Mz on node 2 == torsion
+             */
 
             Element *theEle = theDomain.getElement(i+elemIDoffset[pileIdx]);
             const Vector &eleForces = theEle->getResistingForce();
@@ -926,6 +984,9 @@ void MainWindow::doAnalysis(void)
             shear[pileIdx][i] = eleForces(6);
             if (shear[pileIdx][i] > maxShear) maxShear = shear[pileIdx][i];
             if (shear[pileIdx][i] < minShear) minShear = shear[pileIdx][i];
+            axial[pileIdx][i] = eleForces(8);
+            if (axial[pileIdx][i] > maxAxial) maxAxial = axial[pileIdx][i];
+            if (axial[pileIdx][i] < minAxial) minAxial = axial[pileIdx][i];
         }
     }
 
@@ -933,23 +994,50 @@ void MainWindow::doAnalysis(void)
     // plot results
     //
 
-    // displacements
-    if (showDisplacements) { this->plotResults(ui->displPlot, zero, loc[0], disp, loc); }
+    // lateral displacements
+    if (showDisplacements) {
+        displPlot->plotResults(zero, loc[0], Hdisp, loc);
+    }
+
+    // axial displacements
+    if (showPullOut) {
+        pullOutPlot->plotResults(zero, loc[0], Vdisp, loc);
+    }
+
+    // axial
+    if (showAxial) {
+        axialPlot->plotResults(zero, loc[0], axial, loc);
+    }
 
     // shear
-    if (showShear) { this->plotResults(ui->shearPlot, zero, loc[0], shear, loc); }
+    if (showShear) {
+        shearPlot->plotResults(zero, loc[0], shear, loc);
+    }
 
     // moments
-    if (showMoments) { this->plotResults(ui->momentPlot, zero, loc[0], moment, loc); }
+    if (showMoments) {
+        momentPlot->plotResults(zero, loc[0], moment, loc);
+    }
 
     // vertical stress
-    if (showStress) { this->plotResults(ui->stressPlot, zero, loc[0], stress, loc); }
+    if (showStress) {
+        stressPlot->plotResults(zero, loc[0], stress, loc);
+    }
 
     // p_ultimate
-    if (showPultimate) { this->plotResults(ui->pultPlot, zero, loc[0], pultList, locList); }
+    if (showPultimate) {
+        pultPlot->plotResults(zero, loc[0], pultList, locList);
+    }
 
     // y_50
-    if (showY50) { this->plotResults(ui->y50Plot, zero, loc[0], y50List, locList); }
+    if (showY50) {
+        y50Plot->plotResults(zero, loc[0], y50List, locList);
+    }
+}
+
+void MainWindow::updateResultPlots()
+{
+    // this should call the results update from th eanalysis modeler and the plot methods
 }
 
 void MainWindow::fetchSettings()
@@ -1507,38 +1595,6 @@ int  MainWindow::adjustLayersToPiles()
 {
     return 0;
 }
-
-//
-// plotter functions
-//
-void MainWindow::plotResults(QCustomPlot *qcp, QVector<double> z, QVector<double> xOffset, \
-                             QVector<QVector<double> > x, QVector<QVector<double> > y)
-{
-    qcp->clearPlottables();
-
-    qcp->autoAddPlottableToLegend();
-    qcp->legend->setVisible(true);
-
-    qcp->addGraph();
-    qcp->graph(0)->setData(z,xOffset);
-    qcp->graph(0)->setPen(QPen(Qt::black));
-    qcp->graph(0)->removeFromLegend();
-
-    for (int ii=0; ii<numPiles; ii++) {
-        QCPCurve *mCurve = new QCPCurve(qcp->xAxis, qcp->yAxis);
-        mCurve->setData(x[ii].mid(0,numNodePile[ii]),y[ii].mid(0,numNodePile[ii]));
-        mCurve->setPen(QPen(LINE_COLOR[ii], 3));
-        mCurve->setName(QString("Pile #%1").arg(ii+1));
-        //qcp->addPlottable(mCurve);
-    }
-
-    qcp->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    qcp->axisRect()->autoMargins();
-    qcp->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignLeft|Qt::AlignBottom);
-    qcp->rescaleAxes();
-    qcp->replot();
-}
-
 
 void MainWindow::on_properties_currentChanged(int index)
 {

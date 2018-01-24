@@ -5,7 +5,6 @@
 class QNetworkAccessManager;
 
 #include <QMainWindow>
-#include <qcustomplot.h>
 #include <QtNetwork/QNetworkReply>
 #include "pilegrouptool_parameters.h"
 
@@ -15,6 +14,7 @@ class QTableWidgetItem;
 class QSettings;
 class PileFEAmodeler;
 class SystemPlotSuper;
+class ResultPlotSuper;
 
 namespace Ui {
 class MainWindow;
@@ -34,14 +34,12 @@ public:
     void updateLayerState();
     int  findActiveLayer();
     int  adjustLayersToPiles();
-    void plotResults(QCustomPlot *, QVector<double> z, QVector<double> xOffset,
-                     QVector<QVector<double> >, QVector<QVector<double> >);
+    void updateResultPlots();
 
 private slots:
-    // soil parameter values entered/changed
-
+    //
     // program controls
-    //void on_analyzeButton_clicked();
+    //
 
     // menu actions
     void on_actionExit_triggered();
@@ -76,6 +74,7 @@ private slots:
     void on_groundWaterTable_valueChanged(double arg1);
     void on_xOffset_valueChanged(double arg1);
     void on_pileIndex_valueChanged(int arg1);
+
     void on_btn_deletePile_clicked();
     void on_btn_newPile_clicked();
 
@@ -230,6 +229,16 @@ private:
     int activeLayerIdx;
 
      QNetworkAccessManager *manager;
+
+     // plot widgets
+     ResultPlotSuper *displPlot;
+     ResultPlotSuper *pullOutPlot;
+     ResultPlotSuper *momentPlot;
+     ResultPlotSuper *shearPlot;
+     ResultPlotSuper *axialPlot;
+     ResultPlotSuper *stressPlot;
+     ResultPlotSuper *pultPlot;
+     ResultPlotSuper *y50Plot;
 
 };
 
