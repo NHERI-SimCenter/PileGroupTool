@@ -161,6 +161,8 @@ void SystemPlotQwt::refresh()
     curve->attach( plot );
     // End Temp data
 
+
+    // Ground Layers
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
         QVector<double> x(5,0.0);
@@ -187,8 +189,8 @@ void SystemPlotQwt::refresh()
 
         layerII->attach( plot );
     }
-#if 0
 
+#if 0
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
         QVector<double> x(5,0.0);
@@ -213,34 +215,33 @@ void SystemPlotQwt::refresh()
             layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
         }
     }
+
 #endif
 
-#if 0
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
+    // ground water table
 
+    // plot->setCurrentLayer("groundwater");
+
+    if (gwtDepth < (H-L1)) {
         QVector<double> x(5,0.0);
         QVector<double> y(5,0.0);
 
-        x[0] = xbar - W/2.; y[0] = -depthOfLayer[iLayer];
-        x[1] = x[0];        y[1] = -depthOfLayer[iLayer+1];
+        x[0] = xbar - W/2.; y[0] = -gwtDepth;
+        x[1] = x[0];        y[1] = -(H - L1);
         x[2] = xbar + W/2.; y[2] = y[1];
         x[3] = x[2];        y[3] = y[0];
         x[4] = x[0];        y[4] = y[0];
 
-        QCPCurve *layerII = new QCPCurve(plot->xAxis, plot->yAxis);
-        layerII->setData(x,y);
-        layerII->setName(QString("Layer #%1").arg(iLayer+1));
+        QwtPlotCurve *water = new QwtPlotCurve();
+        water->setSamples(x,y);
 
-        if (iLayer == activeLayerIdx) {
-            layerII->setPen(QPen(Qt::red, 2));
-            layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
-        }
-        else {
-            layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
-            layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
-        }
+        water->setPen(QPen(Qt::blue, 2));
+        water->setBrush(QBrush(GROUND_WATER_BLUE));
+
+        water->setTitle(QString("groundwater"));
     }
 
+#if 0
     // ground water table
 
     plot->setCurrentLayer("groundwater");
