@@ -1,6 +1,7 @@
 #ifndef PILEGROUPTOOL_PARAMETERS_H
 #define PILEGROUPTOOL_PARAMETERS_H
 
+#include <QVector>
 #include <QColor>
 
 // fixed parameters (limits for piles and soil layers)

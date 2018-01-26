@@ -1,5 +1,9 @@
 #include "pilefeamodeler.h"
 
+#include <QList>
+#include <QListIterator>
+#include <QVector>
+
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
 extern int getPyParam(double pyDepth,
@@ -49,11 +53,6 @@ extern int getPyParam(double pyDepth,
 #include <QDebug>
 
 
-#define CHECK_STATE(X)   modelState.value(X)
-#define ENABLE_STATE(X)  modelState[X]=true
-#define DISABLE_STATE(X) modelState[X]=false
-
-
 PileFEAmodeler::PileFEAmodeler()
 {
     // set default parameters
@@ -69,9 +68,27 @@ PileFEAmodeler::PileFEAmodeler()
 
     numLoadedNode = -1;
 
+    locList.clear();
+    lateralDispList.clear();
+    axialDispList.clear();
+    MomentList.clear();
+    ShearList.clear();
+    AxialList.clear();
+    StressList.clear();
+    pultList.clear();
+    y50List.clear();
+    tultList.clear();
+    z50List.clear();
+
     /* set default parameters */
     this->setDefaultParameters();
 }
+
+PileFEAmodeler::~PileFEAmodeler()
+{
+
+}
+
 
 void PileFEAmodeler::setDefaultParameters(void)
 {
@@ -846,92 +863,125 @@ void PileFEAmodeler::buildAnalysis()
     ENABLE_STATE("analysisValid");
 }
 
+
+void PileFEAmodeler::clearPlotBuffers()
+{
+    foreach (QVector<double> *ptr, locList) { if (ptr != NULL) delete ptr; }
+    locList.clear();
+
+    foreach (QVector<double> *ptr, lateralDispList) { if (ptr != NULL) delete ptr; }
+    lateralDispList.clear();
+
+    foreach (QVector<double> *ptr, axialDispList) { if (ptr != NULL) delete ptr; }
+    axialDispList.clear();
+
+    foreach (QVector<double> *ptr, MomentList) { if (ptr != NULL) delete ptr; }
+    MomentList.clear();
+
+    foreach (QVector<double> *ptr, ShearList) { if (ptr != NULL) delete ptr; }
+    ShearList.clear();
+
+    foreach (QVector<double> *ptr, AxialList) { if (ptr != NULL) delete ptr; }
+    AxialList.clear();
+
+    foreach (QVector<double> *ptr, pultList) { if (ptr != NULL) delete ptr; }
+    pultList.clear();
+
+    foreach (QVector<double> *ptr, y50List) { if (ptr != NULL) delete ptr; }
+    y50List.clear();
+
+    foreach (QVector<double> *ptr, tultList) { if (ptr != NULL) delete ptr; }
+    tultList.clear();
+
+    foreach (QVector<double> *ptr, z50List) { if (ptr != NULL) delete ptr; }
+    z50List.clear();
+}
+
 void PileFEAmodeler::extractPlotData()
 {
+    if ( CHECK_STATE("dataExtracted")) return;
+
     if (!CHECK_STATE("solutionAvailable")) this->doAnalysis();
-    if (!CHECK_STATE("dataExtracted")) this->extractPlotData();
 
-#if 1
-    QVector<QVector<double>> loc(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> disp(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> moment(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> shear(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> stress(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<double> zero(numNodePiles,0.0);
-#else
-    QVector<QVector<double> *> loc(MAXPILES, 0);
-    QVector<QVector<double> *> disp(MAXPILES, 0);
-    QVector<QVector<double> *> moment(MAXPILES, 0);
-    QVector<QVector<double> *> shear(MAXPILES, 0);
-    QVector<QVector<double> *> stress(MAXPILES, 0);
-    QVector<double> zero(numNodePiles,0.0);
+    this->clearPlotBuffers();
 
-    for (int k=0; k<numPiles; k++) {
-        if (loc[k] != NULL)    delete loc[k];
-        if (disp[k] != NULL)   delete disp[k];
-        if (moment[k] != NULL) delete moment[k];
-        if (shear[k] != NULL)  delete shear[k];
-        if (stress[k] != NULL) delete stress[k];
-        loc[k]    = new QVector<double>(numNodePile[k],0.0);
-        disp[k]   = new QVector<double>(numNodePile[k],0.0);
-        moment[k] = new QVector<double>(numNodePile[k],0.0);
-        shear[k]  = new QVector<double>(numNodePile[k],0.0);
-        stress[k] = new QVector<double>(numNodePile[k],0.0);
-    }
-#endif
-
-    double maxDisp   = 0.0;
-    double minDisp   = 0.0;
+    /*
+    double maxHDisp  = 0.0;
+    double minHDisp  = 0.0;
+    double maxVDisp  = 0.0;
+    double minVDisp  = 0.0;
     double maxShear  = 0.0;
     double minShear  = 0.0;
+    double maxAxial  = 0.0;
+    double minAxial  = 0.0;
     double maxMoment = 0.0;
     double minMoment = 0.0;
+    */
 
     int pileIdx;
 
     for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
-        for (int i=1; i<=numNodePile[pileIdx]; i++) {
-            //zero[i-1] = 0.0;
+        //
+        // allocate storage for results from pile with pileIdx
+        //
+        locList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
+        lateralDispList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
+        axialDispList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
+        MomentList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
+        ShearList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
+        AxialList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
 
-            //qDebug() << "getNode(" << i+nodeIDoffset[pileIdx] << ")";
+        StressList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
 
+        pultList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
+        y50List.append(new QVector<double>(numNodePile[pileIdx],  0.0));
+        tultList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
+        z50List.append(new QVector<double>(numNodePile[pileIdx],  0.0));
+
+        //
+        // collect nodal results
+        //
+        for (int i=0; i<numNodePile[pileIdx]; i++) {
             Node *theNode = theDomain->getNode(i+nodeIDoffset[pileIdx]);
             const Vector &nodeCoord = theNode->getCrds();
-            loc[pileIdx][i-1] = nodeCoord(2);
+            (*locList[pileIdx])[i] = nodeCoord(2);
             int iLayer;
             for (iLayer=0; iLayer<maxLayers[pileIdx]; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
-            stress[pileIdx][i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
-            //if (stress[pileIdx][i-1] > maxStress) maxStress = stress[pileIdx][i-1];
-            //if (stress[pileIdx][i-1] < minStress) minStress = stress[pileIdx][i-1];
+            (*StressList[pileIdx])[i] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
+            //if (stress[pileIdx][i] > maxStress) maxStress = stress[pileIdx][i];
+            //if (stress[pileIdx][i] < minStress) minStress = stress[pileIdx][i];
+
             const Vector &nodeDisp = theNode->getDisp();
-            disp[pileIdx][i-1] = nodeDisp(0);
-            if (disp[pileIdx][i-1] > maxDisp) maxDisp = disp[pileIdx][i-1];
-            if (disp[pileIdx][i-1] < minDisp) minDisp = disp[pileIdx][i-1];
+
+            (*lateralDispList[pileIdx])[i] = nodeDisp(0);
+            //if ((*lateralDispList[pileIdx])[i] > maxHDisp) maxHDisp = (*lateralDispList[pileIdx])[i];
+            //if ((*lateralDispList[pileIdx])[i] < minHDisp) minHDisp = (*lateralDispList[pileIdx])[i];
+
+            (*axialDispList[pileIdx])[i] = nodeDisp(2);
+            //if ((*axialDispList[pileIdx])[i] > maxVDisp) maxVDisp = (*axialDispList[pileIdx])[i];
+            //if ((*axialDispList[pileIdx])[i] < minVDisp) minVDisp = (*axialDispList[pileIdx])[i];
         }
-    }
 
-    for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
-
-        //qDebug() << "= pile index: " << pileIdx ;
-
-        moment[pileIdx][0] = 0.0;
-        shear[pileIdx][0]  = 0.0;
+        (*MomentList[pileIdx])[0] = 0.0;
+        (*ShearList[pileIdx])[0]  = 0.0;
 
         for (int i=1; i<numNodePile[pileIdx]; i++) {
 
-            //qDebug() << "getElement(" << i+elemIDoffset[pileIdx] << ")";
-
             Element *theEle = theDomain->getElement(i+elemIDoffset[pileIdx]);
             const Vector &eleForces = theEle->getResistingForce();
-            moment[pileIdx][i] = eleForces(10);
-            if (moment[pileIdx][i] > maxMoment) maxMoment = moment[pileIdx][i];
-            if (moment[pileIdx][i] < minMoment) minMoment = moment[pileIdx][i];
-            shear[pileIdx][i] = eleForces(6);
-            if (shear[pileIdx][i] > maxShear) maxShear = shear[pileIdx][i];
-            if (shear[pileIdx][i] < minShear) minShear = shear[pileIdx][i];
+
+            (*MomentList[pileIdx])[i] = eleForces(10);
+            //if ((*MomentList[pileIdx])[i] > maxMoment) maxMoment = (*MomentList[pileIdx])[i];
+            //if ((*MomentList[pileIdx])[i] < minMoment) minMoment = (*MomentList[pileIdx])[i];
+
+            (*ShearList[pileIdx])[i] = eleForces(6);
+            //if ((*ShearList[pileIdx])[i] > maxShear) maxShear = (*ShearList[pileIdx])[i];
+            //if ((*ShearList[pileIdx])[i] < minShear) minShear = (*ShearList[pileIdx])[i];
         }
     }
+
+    ENABLE_STATE("dataExtracted");
 }
 
 int  PileFEAmodeler::getExitStatus()
@@ -939,47 +989,105 @@ int  PileFEAmodeler::getExitStatus()
     return 0;
 }
 
-/* **** return data for plotting or post analysis output **** */
+/* ******** return data for plotting or post analysis output ******** *
+ *
+ * collect data according to the requested type
+ *
+ * both x and y are QVectors with one QVector<double>entry per pile
+ * The length of each associated vactor must match, i.e.,
+ *       x[i].size() == y[i].size()
+ * BUT
+ *       x[i].size() need not match x[j].size()  for i != j
+ *
+ * ******************************************************************* */
 
-QList<QVector<double> > *getDisplacements(int pile, int dir)
+QList<QVector<QVector<double> *> *> PileFEAmodeler::getLateralDisplacements()
 {
-    QList<QVector<double> > *list = new QList<QVector<double> >;
-
+    this->extractPlotData();
+    QList<QVector<QVector<double> *> *> list;
+    list.append(&locList);
+    list.append(&lateralDispList);
     return list;
 }
 
-QList<QVector<double> > *getMoment(int pile)
+QList<QVector<QVector<double> *> *> PileFEAmodeler::getAxialDisplacements()
 {
-    QList<QVector<double> > *list = new QList<QVector<double> >;
-
+    this->extractPlotData();
+    QList<QVector<QVector<double> *> *> list;
+    list.append(&locList);
+    list.append(&axialDispList);
     return list;
 }
 
-QList<QVector<double> > *getShear(int pile)
+QList<QVector<QVector<double> *> *> PileFEAmodeler::getMoment()
 {
-    QList<QVector<double> > *list = new QList<QVector<double> >;
-
+    this->extractPlotData();
+    QList<QVector<QVector<double> *> *> list;
+    list.append(&locList);
+    list.append(&MomentList);
     return list;
 }
 
-QList<QVector<double> > *getForce(int pile)
+QList<QVector<QVector<double> *> *> PileFEAmodeler::getShear()
 {
-    QList<QVector<double> > *list = new QList<QVector<double> >;
-
+    this->extractPlotData();
+    QList<QVector<QVector<double> *> *> list;
+    list.append(&locList);
+    list.append(&ShearList);
     return list;
 }
 
-QList<QVector<double> > *getPult(int pile)
+QList<QVector<QVector<double> *> *> PileFEAmodeler::getForce()
 {
-    QList<QVector<double> > *list = new QList<QVector<double> >;
-
+    this->extractPlotData();
+    QList<QVector<QVector<double> *> *> list;
+    list.append(&locList);
+    list.append(&AxialList);
     return list;
 }
 
-QList<QVector<double> > *getY50(int pile)
+QList<QVector<QVector<double> *> *> PileFEAmodeler::getStress()
 {
-    QList<QVector<double> > *list = new QList<QVector<double> >;
+    this->extractPlotData();
+    QList<QVector<QVector<double> *> *> list;
+    list.append(&locList);
+    list.append(&StressList);
+    return list;
+}
 
+QList<QVector<QVector<double> *> *> PileFEAmodeler::getPult()
+{
+    this->extractPlotData();
+    QList<QVector<QVector<double> *> *> list;
+    list.append(&locList);
+    list.append(&pultList);
+    return list;
+}
+
+QList<QVector<QVector<double> *> *> PileFEAmodeler::getY50()
+{
+    this->extractPlotData();
+    QList<QVector<QVector<double> *> *> list;
+    list.append(&locList);
+    list.append(&y50List);
+    return list;
+}
+
+QList<QVector<QVector<double> *> *> PileFEAmodeler::getTult()
+{
+    this->extractPlotData();
+    QList<QVector<QVector<double> *> *> list;
+    list.append(&locList);
+    list.append(&tultList);
+    return list;
+}
+
+QList<QVector<QVector<double> *> *> PileFEAmodeler::getZ50()
+{
+    this->extractPlotData();
+    QList<QVector<QVector<double> *> *> list;
+    list.append(&locList);
+    list.append(&z50List);
     return list;
 }
 
