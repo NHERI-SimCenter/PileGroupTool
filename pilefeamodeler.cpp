@@ -68,6 +68,7 @@ PileFEAmodeler::PileFEAmodeler()
 
     numLoadedNode = -1;
 
+    /*
     locList.clear();
     lateralDispList.clear();
     axialDispList.clear();
@@ -79,6 +80,7 @@ PileFEAmodeler::PileFEAmodeler()
     y50List.clear();
     tultList.clear();
     z50List.clear();
+    */
 
     /* set default parameters */
     this->setDefaultParameters();
@@ -158,20 +160,20 @@ void PileFEAmodeler::setDefaultParameters(void)
     maxElementsPerLayer = MAX_ELEMENTS_PER_LAYER;
     numElementsInAir    = NUM_ELEMENTS_IN_AIR;
 
-    L1 = 0.00;               // pile length above ground (all the same)
     numNodePiles = 0
             ;
     for (int k=0; k<MAXPILES;k++)
     {
-        numNodePile[k]  = 0;
-        maxLayers[k]    = 0;
-        nodeIDoffset[k] = 0;
-        elemIDoffset[k] = 0;
+        pileInfo[k].L1           = 0.00;      // pile length above ground (all the same)
+        pileInfo[k].L2           = 10.0;      // embedded length of pile
+        pileInfo[k].pileDiameter = 1.00;      // pile diameter
+        pileInfo[k].E            = 1.00;      // pile modulus of elasticity
+        pileInfo[k].xOffset      = double(k); // x-offset of pile
 
-        L2[k]           = 10.0;      // embedded length of pile
-        pileDiameter[k] = 1.00;      // pile diameter
-        E[k]            = 1.00;      // pile modulus of elasticity
-        xOffset[k]      = double(k); // x-offset of pile
+        pileInfo[k].numNodePile  = 0;
+        pileInfo[k].maxLayers    = 0;
+        pileInfo[k].nodeIDoffset = 0;
+        pileInfo[k].elemIDoffset = 0;
     }
 
     // pile head parameters
@@ -190,6 +192,8 @@ void PileFEAmodeler::setDefaultParameters(void)
 
 void PileFEAmodeler::updatePiles(QVector<PILE_INFO> &pileInfo)
 {
+    if (numPiles == pileInfo.size())
+
     DISABLE_STATE("meshValid");
 }
 
@@ -302,45 +306,45 @@ void PileFEAmodeler::buildMesh()
     numNodePiles = numPiles;
 
     for (int k=0; k<MAXPILES; k++) {
-        numNodePile[k]  = 0;
-        maxLayers[k]    = MAXLAYERS;
-        nodeIDoffset[k] = 0;
-        elemIDoffset[k] = 0;
+        pileInfo[k].numNodePile  = 0;
+        pileInfo[k].maxLayers    = MAXLAYERS;
+        pileInfo[k].nodeIDoffset = 0;
+        pileInfo[k].elemIDoffset = 0;
     }
 
     /* ******** sizing and adjustments ******** */
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
-        numNodePile[pileIdx] = 2; // bottom plus surface node
-        if (L1 > 0.0001) numNodePile[pileIdx] += numElementsInAir; // free standing
+        pileInfo[pileIdx].numNodePile = 2; // bottom plus surface node
+        if (pileInfo[pileIdx].L1 > 0.0001) pileInfo[pileIdx].numNodePile += numElementsInAir; // free standing
 
         //
         // find active layers for pile #pileIdx
         //
-        for (int iLayer=0; iLayer < maxLayers[pileIdx]; iLayer++)
+        for (int iLayer=0; iLayer < pileInfo[pileIdx].maxLayers; iLayer++)
         {
-            if (depthOfLayer[iLayer] >= L2[pileIdx]) {
+            if (depthOfLayer[iLayer] >= pileInfo[pileIdx].L2) {
                 // this pile only penetrates till layer #iLayer
-                maxLayers[pileIdx] = iLayer;
+                pileInfo[pileIdx].maxLayers = iLayer;
                 break;
             }
 
             double thickness = mSoilLayers[iLayer].getLayerThickness();
 
             // compute bottom of this layer/top of the next layer
-            if (depthOfLayer[iLayer] + thickness < L2[pileIdx] && iLayer == MAXLAYERS - 1) {
-                thickness = L2[pileIdx] - depthOfLayer[iLayer];
+            if (depthOfLayer[iLayer] + thickness < pileInfo[pileIdx].L2 && iLayer == MAXLAYERS - 1) {
+                thickness = pileInfo[pileIdx].L2 - depthOfLayer[iLayer];
                 mSoilLayers[iLayer].setLayerThickness(thickness);
             }
             depthOfLayer[iLayer+1] = depthOfLayer[iLayer] + thickness;
 
             // check if layer ends below the pile toe and adjust thickness for mesh generation
-            if (depthOfLayer[iLayer+1] > L2[pileIdx]) {
-                thickness = L2[pileIdx] - depthOfLayer[iLayer];
+            if (depthOfLayer[iLayer+1] > pileInfo[pileIdx].L2) {
+                thickness = pileInfo[pileIdx].L2 - depthOfLayer[iLayer];
             }
 
-            int numElemThisLayer = int(thickness/pileDiameter[pileIdx]);
+            int numElemThisLayer = int(thickness/pileInfo[pileIdx].pileDiameter);
             if (numElemThisLayer < minElementsPerLayer) numElemThisLayer = minElementsPerLayer;
             if (numElemThisLayer > maxElementsPerLayer) numElemThisLayer = maxElementsPerLayer;
 
@@ -348,7 +352,7 @@ void PileFEAmodeler::buildMesh()
             elemsInLayer[pileIdx][iLayer] = numElemThisLayer;
 
             // total node count
-            numNodePile[pileIdx] += numElemThisLayer;
+            pileInfo[pileIdx].numNodePile += numElemThisLayer;
 
             // update layer information on overburdon stress and water table
             double overburdonStress;
@@ -365,7 +369,7 @@ void PileFEAmodeler::buildMesh()
         }
 
         // add numper of nodes in this pile to global number of nodes
-        numNodePiles += numNodePile[pileIdx];
+        numNodePiles += pileInfo[pileIdx].numNodePile;
     }
 
     /* ******** done with sizing and adjustments ******** */
@@ -407,11 +411,11 @@ void PileFEAmodeler::buildMesh()
     int numElem = ioffset2;
     int nodeTag = 0;
 
-    nodeIDoffset[0] = ioffset2;
-    elemIDoffset[0] = ioffset2;
+    pileInfo[0].nodeIDoffset = ioffset2;
+    pileInfo[0].elemIDoffset = ioffset2;
     for (int k=1; k<numPiles; k++) {
-        nodeIDoffset[k] = nodeIDoffset[k-1] + numNodePile[k-1];
-        elemIDoffset[k] = elemIDoffset[k-1] + numNodePile[k-1] - 1;
+        pileInfo[k].nodeIDoffset = pileInfo[k-1].nodeIDoffset + pileInfo[k-1].numNodePile;
+        pileInfo[k].elemIDoffset = pileInfo[k-1].elemIDoffset + pileInfo[k-1].numNodePile - 1;
     }
 
     // build the FE-model one pile at a time
@@ -424,14 +428,14 @@ void PileFEAmodeler::buildMesh()
         // compute pile properties (compute once; used for all pile elements)
         //
         double PI = 3.14159;
-        double A  = 0.2500 * PI * pileDiameter[pileIdx] * pileDiameter[pileIdx];
-        double Iz = 0.0625 *  A * pileDiameter[pileIdx] * pileDiameter[pileIdx];
-        double G  = E[pileIdx]/(2.0*(1.+0.3));
+        double A  = 0.2500 * PI * pileInfo[pileIdx].pileDiameter * pileInfo[pileIdx].pileDiameter;
+        double Iz = 0.0625 *  A * pileInfo[pileIdx].pileDiameter * pileInfo[pileIdx].pileDiameter;
+        double G  = pileInfo[pileIdx].E/(2.0*(1.+0.3));
         double J  = 1.0e10;
 
         // suitable pile head parameters (make pile head stiff)
-        if (100.*E[pileIdx]*A > EA ) EA = 100.*E[pileIdx]*A;
-        if (100.*E[pileIdx]*Iz > EI) EI = 100.*E[pileIdx]*Iz;
+        if (100.*pileInfo[pileIdx].E*A > EA ) EA = 100.*pileInfo[pileIdx].E*A;
+        if (100.*pileInfo[pileIdx].E*Iz > EI) EI = 100.*pileInfo[pileIdx].E*Iz;
         if (10.*G*J > GJ)            GJ = 10.*G*J;
 
         //
@@ -440,7 +444,7 @@ void PileFEAmodeler::buildMesh()
 
         /* embedded pile portion */
 
-        zCoord = -L2[pileIdx];
+        zCoord = -pileInfo[pileIdx].L2;
 
         //
         // create bottom pile node
@@ -452,7 +456,7 @@ void PileFEAmodeler::buildMesh()
 
         //qDebug() << "Node(" << nodeTag << "," << 6 << "," << xOffset[pileIdx] << "," << 0.0 << "," << zCoord << ")";
 
-        theNode = new Node(nodeTag, 6, xOffset[pileIdx], 0., zCoord);  theDomain->addNode(theNode);
+        theNode = new Node(nodeTag, 6, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
         if (numNode != 1) {
             SP_Constraint *theSP = 0;
             theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain->addSP_Constraint(theSP);
@@ -471,8 +475,8 @@ void PileFEAmodeler::buildMesh()
         if (useToeResistance) {
             Node *theNode = 0;
 
-            theNode = new Node(numNode,         3, xOffset[pileIdx], 0., zCoord);  theDomain->addNode(theNode);
-            theNode = new Node(numNode+ioffset, 3, xOffset[pileIdx], 0., zCoord);  theDomain->addNode(theNode);
+            theNode = new Node(numNode,         3, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
+            theNode = new Node(numNode+ioffset, 3, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
 
             SP_Constraint *theSP = 0;
             theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain->addSP_Constraint(theSP);
@@ -483,19 +487,19 @@ void PileFEAmodeler::buildMesh()
             theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain->addSP_Constraint(theSP);
         }
 
-        locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-        pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
-        y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+        locList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = zCoord;
+        pultList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset] = 0.001;
+        y50List[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = 0.00001;
 
         //
         // work the way up layer by layer
         //
 
-        for (int iLayer=maxLayers[pileIdx]-1; iLayer >= 0; iLayer--)
+        for (int iLayer=pileInfo[pileIdx].maxLayers-1; iLayer >= 0; iLayer--)
         {
             double thickness = mSoilLayers[iLayer].getLayerThickness();
-            if (depthOfLayer[iLayer+1] > L2[pileIdx]) {
-                thickness = L2[pileIdx] - depthOfLayer[iLayer];
+            if (depthOfLayer[iLayer+1] > pileInfo[pileIdx].L2) {
+                thickness = pileInfo[pileIdx].L2 - depthOfLayer[iLayer];
             }
 
             eleSize = thickness/(1.0*elemsInLayer[pileIdx][iLayer]);
@@ -515,8 +519,8 @@ void PileFEAmodeler::buildMesh()
 
                 Node *theNode = 0;
 
-                theNode = new Node(numNode,         3, xOffset[pileIdx], 0., zCoord);  theDomain->addNode(theNode);
-                theNode = new Node(numNode+ioffset, 3, xOffset[pileIdx], 0., zCoord);  theDomain->addNode(theNode);
+                theNode = new Node(numNode,         3, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
+                theNode = new Node(numNode+ioffset, 3, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
 
                 SP_Constraint *theSP = 0;
                 theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain->addSP_Constraint(theSP);
@@ -533,7 +537,7 @@ void PileFEAmodeler::buildMesh()
 
                 //qDebug() << "Node(" << nodeTag << "," << 6 << "," << xOffset[pileIdx] << "," << 0.0 << "," << zCoord << ")";
 
-                theNode = new Node(nodeTag, 6, xOffset[pileIdx], 0., zCoord);  theDomain->addNode(theNode);
+                theNode = new Node(nodeTag, 6, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
                 if (numNode != 1) {
                     SP_Constraint *theSP = 0;
                     theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain->addSP_Constraint(theSP);
@@ -563,7 +567,7 @@ void PileFEAmodeler::buildMesh()
                 double phi  = mSoilLayers[iLayer].getLayerFrictionAng();
 
                 UniaxialMaterial *theMat;
-                getPyParam(-zCoord, sigV, phi, pileDiameter[pileIdx], eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
+                getPyParam(-zCoord, sigV, phi, pileInfo[pileIdx].pileDiameter, eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
 
                 if(pult <= 0.0 || y50 <= 0.0) {
                     qDebug() << "WARNING -- only accepts positive nonzero pult and y50";
@@ -571,27 +575,27 @@ void PileFEAmodeler::buildMesh()
                              << "   depth: " << -zCoord
                              << "   depth in layer: " << depthInLayer
                              << "   sigV: "  << sigV
-                             << "   diameter: " << pileDiameter[pileIdx] << "   eleSize: " << eleSize;
+                             << "   diameter: " << pileInfo[pileIdx].pileDiameter << "   eleSize: " << eleSize;
                     qDebug() << "*** pult: " << pult << "   y50: " << y50;
                 }
 
                 theMat = new PySimple1(numNode, 0, 2, pult, y50, 0.0, 0.0);
                 OPS_addUniaxialMaterial(theMat);
 
-                locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+                locList[pileIdx][numNode+ioffset2- pileInfo[pileIdx].nodeIDoffset]  = zCoord;
                 // pult is a nodal value for the p-y spring.
                 // It needs to be scaled by element length ito represent a line load
-                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = pult/eleSize;
-                y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = y50;
+                pultList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset] = pult/eleSize;
+                y50List[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = y50;
 
                 // t-z spring material
-                getTzParam(phi, pileDiameter[pileIdx],  sigV,  eleSize, &tult, &z50);
+                getTzParam(phi, pileInfo[pileIdx].pileDiameter,  sigV,  eleSize, &tult, &z50);
 
                 if(tult <= 0.0 || z50 <= 0.0) {
                     qDebug() << "WARNING -- only accepts positive nonzero tult and z50";
                     qDebug() << "*** iLayer: " << iLayer << "   pile number" << pileIdx+1
                              << "   depth: " << -zCoord << "   sigV: "  << sigV
-                             << "   diameter: " << pileDiameter[pileIdx] << "   eleSize: " << eleSize;
+                             << "   diameter: " << pileInfo[pileIdx].pileDiameter << "   eleSize: " << eleSize;
                     qDebug() << "*** tult: " << tult << "   z50: " << z50;
                 }
 
@@ -624,8 +628,8 @@ void PileFEAmodeler::buildMesh()
         // add elements above ground
         //
 
-        if (L1 > 0.0001) {
-            eleSize = L1 / (1.0*numElementsInAir);
+        if (pileInfo[pileIdx].L1 > 0.0001) {
+            eleSize = pileInfo[pileIdx].L1 / (1.0*numElementsInAir);
             zCoord = 0.0;
         }
         else {
@@ -633,14 +637,14 @@ void PileFEAmodeler::buildMesh()
             zCoord = 0.0;
         }
 
-        while (zCoord < (L1 + 1.0e-6)) {
+        while (zCoord < (pileInfo[pileIdx].L1 + 1.0e-6)) {
             numNode += 1;
 
             nodeTag = numNode+ioffset2;
 
             //qDebug() << "Node(" << nodeTag << "," << 6 << "," << xOffset[pileIdx] << "," << 0.0 << "," << zCoord << ")";
 
-            Node *theNode = new Node(nodeTag, 6, xOffset[pileIdx], 0., zCoord);  theDomain->addNode(theNode);
+            Node *theNode = new Node(nodeTag, 6, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
             if (numNode != 1) {
                 SP_Constraint *theSP = 0;
                 theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain->addSP_Constraint(theSP);
@@ -648,15 +652,15 @@ void PileFEAmodeler::buildMesh()
                 theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain->addSP_Constraint(theSP);
             }
 
-            locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-            pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
-            y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+            locList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = zCoord;
+            pultList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset] = 0.001;
+            y50List[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = 0.00001;
 
             zCoord += eleSize;
         }
 
 
-        headNodeList[pileIdx] = {pileIdx, nodeTag, xOffset[pileIdx]};
+        headNodeList[pileIdx] = {pileIdx, nodeTag, pileInfo[pileIdx].xOffset};
 
         //
         // create pile elements
@@ -665,11 +669,11 @@ void PileFEAmodeler::buildMesh()
         static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
         CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
 
-        for (int i=0; i<numNodePile[pileIdx]-1; i++) {
+        for (int i=0; i<pileInfo[pileIdx].numNodePile-1; i++) {
             numElem++;
             BeamIntegration *theIntegration = new LegendreBeamIntegration();
             SectionForceDeformation *theSections[3];
-            SectionForceDeformation *theSection = new ElasticSection3d(pileIdx+1, E[pileIdx], A, Iz, Iz, G, J);
+            SectionForceDeformation *theSection = new ElasticSection3d(pileIdx+1, pileInfo[pileIdx].E, A, Iz, Iz, G, J);
             theSections[0] = theSection;
             theSections[1] = theSection;
             theSections[2] = theSection;
@@ -680,8 +684,8 @@ void PileFEAmodeler::buildMesh()
             //         << nodeIDoffset[pileIdx]+i+2 << ")";
 
             Element *theEle = new DispBeamColumn3d(numElem,
-                                                   nodeIDoffset[pileIdx]+i+1,
-                                                   nodeIDoffset[pileIdx]+i+2,
+                                                   pileInfo[pileIdx].nodeIDoffset+i+1,
+                                                   pileInfo[pileIdx].nodeIDoffset+i+2,
                                                    3, theSections, *theIntegration, *theTransformation);
             theDomain->addElement(theEle);
             //delete theSection;
@@ -695,10 +699,10 @@ void PileFEAmodeler::buildMesh()
 
             // # q-z spring material
             // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
-            double sigVq  = mSoilLayers[maxLayers[pileIdx]-1].getLayerBottomStress();
-            double phi  = mSoilLayers[maxLayers[pileIdx]-1].getLayerFrictionAng();
+            double sigVq  = mSoilLayers[pileInfo[pileIdx].maxLayers-1].getLayerBottomStress();
+            double phi  = mSoilLayers[pileInfo[pileIdx].maxLayers-1].getLayerFrictionAng();
 
-            getQzParam(phi, pileDiameter[pileIdx],  sigVq,  gSoil, &qult, &z50q);
+            getQzParam(phi, pileInfo[pileIdx].pileDiameter,  sigVq,  gSoil, &qult, &z50q);
             UniaxialMaterial *theMat = new QzSimple1(1+ioffset, 2, qult, z50q, 0.0, 0.0);
             OPS_addUniaxialMaterial(theMat);
 
@@ -748,7 +752,7 @@ void PileFEAmodeler::buildMesh()
 
             //qDebug() << "Node(" << nodeTag << "," << 6 << "," << headNodeList[pileIdx].x << "," << 0.0 << "," << L1 << ")";
 
-            Node *theNode = new Node(nodeTag, 6, headNodeList[pileIdx].x, 0., L1);  theDomain->addNode(theNode);
+            Node *theNode = new Node(nodeTag, 6, headNodeList[pileIdx].x, 0., pileInfo[pileIdx].L1);  theDomain->addNode(theNode);
 
             // create single point constraints
             if (assumeRigidPileHeadConnection) {
@@ -925,29 +929,29 @@ void PileFEAmodeler::extractPlotData()
         //
         // allocate storage for results from pile with pileIdx
         //
-        locList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
-        lateralDispList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
-        axialDispList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
-        MomentList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
-        ShearList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
-        AxialList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
+        locList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        lateralDispList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        axialDispList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        MomentList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        ShearList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        AxialList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
 
-        StressList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
+        StressList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
 
-        pultList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
-        y50List.append(new QVector<double>(numNodePile[pileIdx],  0.0));
-        tultList.append(new QVector<double>(numNodePile[pileIdx], 0.0));
-        z50List.append(new QVector<double>(numNodePile[pileIdx],  0.0));
+        pultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        y50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
+        tultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        z50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
 
         //
         // collect nodal results
         //
-        for (int i=0; i<numNodePile[pileIdx]; i++) {
-            Node *theNode = theDomain->getNode(i+nodeIDoffset[pileIdx]);
+        for (int i=0; i<pileInfo[pileIdx].numNodePile; i++) {
+            Node *theNode = theDomain->getNode(i+pileInfo[pileIdx].nodeIDoffset);
             const Vector &nodeCoord = theNode->getCrds();
             (*locList[pileIdx])[i] = nodeCoord(2);
             int iLayer;
-            for (iLayer=0; iLayer<maxLayers[pileIdx]; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
+            for (iLayer=0; iLayer<pileInfo[pileIdx].maxLayers; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
             (*StressList[pileIdx])[i] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
             //if (stress[pileIdx][i] > maxStress) maxStress = stress[pileIdx][i];
             //if (stress[pileIdx][i] < minStress) minStress = stress[pileIdx][i];
@@ -966,9 +970,9 @@ void PileFEAmodeler::extractPlotData()
         (*MomentList[pileIdx])[0] = 0.0;
         (*ShearList[pileIdx])[0]  = 0.0;
 
-        for (int i=1; i<numNodePile[pileIdx]; i++) {
+        for (int i=1; i<pileInfo[pileIdx].numNodePile; i++) {
 
-            Element *theEle = theDomain->getElement(i+elemIDoffset[pileIdx]);
+            Element *theEle = theDomain->getElement(i+pileInfo[pileIdx].elemIDoffset);
             const Vector &eleForces = theEle->getResistingForce();
 
             (*MomentList[pileIdx])[i] = eleForces(10);

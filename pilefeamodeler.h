@@ -129,17 +129,24 @@ protected:
     int maxElementsPerLayer = MAX_ELEMENTS_PER_LAYER;
     int numElementsInAir    = NUM_ELEMENTS_IN_AIR;
 
+    PILE_FEA_INFO pileInfo[MAXPILES];
+
+    /*
     double L1;                      // pile length above ground (all the same)
     double L2[MAXPILES];            // embedded length of pile
     double pileDiameter[MAXPILES];  // pile diameter
     double E[MAXPILES];             // pile modulus of elasticity
     double xOffset[MAXPILES];       // x-offset of pile
+    */
 
     int numNodePiles;
+
+    /*
     int numNodePile[MAXPILES];
     int maxLayers[MAXPILES];
     int nodeIDoffset[MAXPILES];
     int elemIDoffset[MAXPILES];
+    */
 
     // pile head parameters
     double EI = 1.;
