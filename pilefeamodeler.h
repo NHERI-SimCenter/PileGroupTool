@@ -1,11 +1,29 @@
 #ifndef PILEFEAMODELER_H
 #define PILEFEAMODELER_H
 
-#include <QVector>
+//#include <QVector>
 #include <QMap>
 
 #include "pilegrouptool_parameters.h"
 #include "soilmat.h"
+
+#define CHECK_STATE(X)   modelState.value(X)
+#define ENABLE_STATE(X)  modelState[X]=true
+#define DISABLE_STATE(X) modelState[X]=false
+
+enum class PilePlotData {
+    LateralDisplacement,
+    AxialDisplacement,
+    PileMoment,
+    PileShear,
+    PileAxialForce,
+    SoilStress,
+    Pultimate,
+    Y50,
+    Tultimate,
+    Z50
+};
+
 
 class Domain;
 class StaticAnalysis;
@@ -14,6 +32,7 @@ class PileFEAmodeler
 {
 public:
     PileFEAmodeler();
+    ~PileFEAmodeler();
 
     void updatePiles(QVector<PILE_INFO> &);
     void setLoadType(LoadControlType);
@@ -25,7 +44,6 @@ public:
     void setAnalysisType(QString);
     void setDefaultParameters(void);
     void doAnalysis();
-    void extractPlotData();
 
     int  getExitStatus();
 
@@ -33,15 +51,22 @@ public:
     void buildLoad();
     void buildAnalysis();
 
-    QList<QVector<double> > *getDisplacements(int pile=0, int dir=0);
-    QList<QVector<double> > *getMoment(int pile=0);
-    QList<QVector<double> > *getShear(int pile=0);
-    QList<QVector<double> > *getForce(int pile=0);
-    QList<QVector<double> > *getPult(int pile=0);
-    QList<QVector<double> > *getY50(int pile=0);
+    QList<QVector<QVector<double> *> *> getLateralDisplacements();
+    QList<QVector<QVector<double> *> *> getAxialDisplacements();
+    QList<QVector<QVector<double> *> *> getMoment();
+    QList<QVector<QVector<double> *> *> getShear();
+    QList<QVector<QVector<double> *> *> getForce();
+    QList<QVector<QVector<double> *> *> getStress();
+    QList<QVector<QVector<double> *> *> getPult();
+    QList<QVector<QVector<double> *> *> getY50();
+    QList<QVector<QVector<double> *> *> getTult();
+    QList<QVector<QVector<double> *> *> getZ50();
+
+private:
+    void extractPlotData();
+    void clearPlotBuffers();
 
 protected:
-
     // load control
     LoadControlType loadControlType;
 
@@ -104,17 +129,9 @@ protected:
     int maxElementsPerLayer = MAX_ELEMENTS_PER_LAYER;
     int numElementsInAir    = NUM_ELEMENTS_IN_AIR;
 
-    double L1;                      // pile length above ground (all the same)
-    double L2[MAXPILES];            // embedded length of pile
-    double pileDiameter[MAXPILES];  // pile diameter
-    double E[MAXPILES];             // pile modulus of elasticity
-    double xOffset[MAXPILES];       // x-offset of pile
+    PILE_FEA_INFO pileInfo[MAXPILES];
 
     int numNodePiles;
-    int numNodePile[MAXPILES];
-    int maxLayers[MAXPILES];
-    int nodeIDoffset[MAXPILES];
-    int elemIDoffset[MAXPILES];
 
     // pile head parameters
     double EI = 1.;
@@ -129,6 +146,19 @@ protected:
 
     int numLoadedNode;
     QVector<double> depthOfLayer = QVector<double>(4, 0.0);
+
+    // data containers
+    QVector<QVector<double> *> locList;
+    QVector<QVector<double> *> lateralDispList;
+    QVector<QVector<double> *> axialDispList;
+    QVector<QVector<double> *> MomentList;
+    QVector<QVector<double> *> ShearList;
+    QVector<QVector<double> *> AxialList;
+    QVector<QVector<double> *> StressList;
+    QVector<QVector<double> *> pultList;
+    QVector<QVector<double> *> y50List;
+    QVector<QVector<double> *> tultList;
+    QVector<QVector<double> *> z50List;
 };
 
 #endif // PILEFEAMODELER_H
