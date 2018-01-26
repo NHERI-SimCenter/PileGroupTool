@@ -190,9 +190,23 @@ void PileFEAmodeler::setDefaultParameters(void)
     DISABLE_STATE("solutionAvailable");
 }
 
-void PileFEAmodeler::updatePiles(QVector<PILE_INFO> &pileInfo)
+void PileFEAmodeler::updatePiles(QVector<PILE_INFO> &newPileInfo)
 {
-    if (numPiles == pileInfo.size())
+    numPiles = newPileInfo.size();
+
+    for (int k=0; k<numPiles; k++)
+    {
+        pileInfo[k].L1           = newPileInfo[k].L1;
+        pileInfo[k].L2           = newPileInfo[k].L2;
+        pileInfo[k].pileDiameter = newPileInfo[k].pileDiameter;
+        pileInfo[k].E            = newPileInfo[k].E;
+        pileInfo[k].xOffset      = newPileInfo[k].xOffset;
+
+        pileInfo[k].numNodePile  = 0;
+        pileInfo[k].maxLayers    = 0;
+        pileInfo[k].nodeIDoffset = 0;
+        pileInfo[k].elemIDoffset = 0;
+    }
 
     DISABLE_STATE("meshValid");
 }
@@ -219,6 +233,8 @@ void PileFEAmodeler::updateLoad(double Px, double Py, double Moment)
 
 void PileFEAmodeler::updateSoil(QVector<soilLayer> &layers)
 {
+    mSoilLayers = layers;
+
     DISABLE_STATE("meshValid");
 }
 
@@ -259,6 +275,7 @@ void PileFEAmodeler::updateDispProfile(QVector<double> &profile)
 
 void PileFEAmodeler::setAnalysisType(QString)
 {
+
     DISABLE_STATE("analysisValid");
 }
 
