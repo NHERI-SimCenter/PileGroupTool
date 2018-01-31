@@ -1767,7 +1767,7 @@ Node::Print(OPS_Stream &s, int flag)
 }
   
 int
-Node::displaySelf(Renderer &theRenderer, int displayMode, float fact)
+Node::displaySelf(Renderer &theRenderer, int displayMode, float fact, const char **displayModes, int numModes)
 {
 
   if (displayMode == 0)

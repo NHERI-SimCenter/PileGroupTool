@@ -5,7 +5,28 @@
 #include "utilWindows/dialogpreferences.h"
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
+#include "pilefeamodeler.h"
+
+#include "systemplotsuper.h"
+#include "systemplotqcp.h"
+#include "systemplotqwt.h"
+
+#include "resultplotsuper.h"
+#include "resultplotqcp.h"
+#include "resultplotqwt.h"
+
 #include <QApplication>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
+#include <QDateTime>
+#include <QFileDialog>
+#include <QDir>
+
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
 
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
@@ -14,9 +35,9 @@ extern int getPyParam(double pyDepth,
                       double phiDegree,
                       double b,
                       double pEleLength,
-                      double puSwitch,
-                      double kSwitch,
-                      double gwtSwitch,
+                      int puSwitch,
+                      int kSwitch,
+                      int gwtSwitch,
                       double *pult,
                       double *y50);
 
@@ -54,30 +75,73 @@ extern int getPyParam(double pyDepth,
 
 #include <soilmat.h>
 
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkReply>
-#include <QtNetwork/QNetworkRequest>
-
-#include <QDateTime>
-
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 Domain theDomain;
+
 //SimulationInformation simulationInfo;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
-
     inSetupState = true;
 
+    ui->setupUi(this);
+
     this->fetchSettings();
+
+    if (useGraphicsLib == "Qwt")
+    {
+        systemPlot  = new SystemPlotQwt(ui->systemTab);
+
+        displPlot   = new ResultPlotQwt(ui->dispTab);
+        pullOutPlot = new ResultPlotQwt(ui->pulloutTab);
+        momentPlot  = new ResultPlotQwt(ui->momentTab);
+        shearPlot   = new ResultPlotQwt(ui->shearTab);
+        axialPlot   = new ResultPlotQwt(ui-> axialTab);
+        stressPlot  = new ResultPlotQwt(ui->stressTab);
+        pultPlot    = new ResultPlotQwt(ui->pultTab);
+        y50Plot     = new ResultPlotQwt(ui->y50Tab);
+    }
+    else
+    {
+        systemPlot  = new SystemPlotQCP(ui->systemTab);
+
+        displPlot   = new ResultPlotQCP(ui->dispTab);
+        pullOutPlot = new ResultPlotQCP(ui->pulloutTab);
+        momentPlot  = new ResultPlotQCP(ui->momentTab);
+        shearPlot   = new ResultPlotQCP(ui->shearTab);
+        axialPlot   = new ResultPlotQCP(ui->axialTab);
+        stressPlot  = new ResultPlotQCP(ui->stressTab);
+        pultPlot    = new ResultPlotQCP(ui->pultTab);
+        y50Plot     = new ResultPlotQCP(ui->y50Tab);
+    }
+
+    //
+    // place widgets into their respective layouts
+    //
+    QLayout *lyt;
+
+    lyt = ui->systemTab->layout();  lyt->addWidget(systemPlot);
+    lyt = ui->dispTab->layout();    lyt->addWidget(displPlot);
+    lyt = ui->pulloutTab->layout(); lyt->addWidget(pullOutPlot);
+    lyt = ui->momentTab->layout();  lyt->addWidget(momentPlot);
+    lyt = ui->shearTab->layout();   lyt->addWidget(shearPlot);
+    lyt = ui->axialTab->layout();   lyt->addWidget(axialPlot);
+    lyt = ui->stressTab->layout();  lyt->addWidget(stressPlot);
+    lyt = ui->pultTab->layout();    lyt->addWidget(pultPlot);
+    lyt = ui->y50Tab->layout();     lyt->addWidget(y50Plot);
+
+    ui->tabWidget->setCurrentWidget(ui->dispTab);
+
+    //
+    // general setup
+    //
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
-    ui->appliedForce->setMaximum(MAX_FORCE);
-    ui->appliedForce->setMinimum(-MAX_FORCE);
+    ui->appliedHorizontalForce->setMaximum(MAX_FORCE);
+    ui->appliedHorizontalForce->setMinimum(-MAX_FORCE);
 
     ui->textBrowser->clear();
 #ifdef Q_OS_WIN
@@ -88,11 +152,22 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->textBrowser->setHtml("<b>Hints</b><p><ul><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
 
+    /* connect a FEA modeler */
+    pileFEAmodel = new PileFEAmodeler();
+
     // setup data
     numPiles = 1;
     P        = 1000.0;
     PV       =    0.0;
     PMom     =    0.0;
+
+    HDisp = 0.0; // prescribed horizontal displacement
+    VDisp = 0.0; // prescriber vertical displacement
+
+    surfaceDisp = 0.0;    // prescribed soil surface displacement
+    percentage12 = 1.0;   // percentage of surface displacement at 1st layer interface
+    percentage23 = 0.0;   // percentage of surface displacement at 2nd layer interface
+    percentageBase = 0.0; // percentage of surface displacement at base of soil column
 
     L1                       = 1.0;
     L2[numPiles-1]           = 20.0;
@@ -101,19 +176,14 @@ MainWindow::MainWindow(QWidget *parent) :
     xOffset[numPiles-1]      = 0.0;
 
     gwtDepth = 4.00;
-    gamma    = 17.0;
-    phi      = 36.0;
     gSoil    = 150000;
-    puSwitch = 1;
+    puSwitch = 2;
     kSwitch  = 1;
     gwtSwitch= 1;
 
      // set initial state of check boxes
     useToeResistance    = false;
     assumeRigidPileHeadConnection = false;
-
-    // analysis parameters
-    displacementRatio = 0.0;
 
     // set up initial values before activating live analysis (= connecting the slots)
     //    or the program will fail in the analysis due to missing information
@@ -124,59 +194,38 @@ MainWindow::MainWindow(QWidget *parent) :
     setActiveLayer(0);
 
     // set up pile input
+    this->refreshUI();
 
-    ui->pileIndex->setValue(1);
-    ui->pileIndex->setMinimum(1);
-    ui->pileIndex->setMaximum(numPiles);
-
-    int pileIdx = ui->pileIndex->value() - 1;
-
-    ui->appliedForce->setValue(P);
-    ui->xOffset->setValue(xOffset[pileIdx]);
-    ui->pileDiameter->setValue(pileDiameter[pileIdx]);
-    ui->freeLength->setValue(L1);
-    ui->embeddedLength->setValue(L2[pileIdx]);
-    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
-
-    ui->groundWaterTable->setValue(gwtDepth);
-
-    ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHeadConnection?Qt::Checked:Qt::Unchecked);
-    ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
-
-
-    // add legend
-    // now we move the legend from the inset layout of the axis rect into the main grid layout.
-    // We create a sub layout so we can generate a small gap between the plot layout cell border
-    // and the legend border:
-    QCPLayoutGrid *subLayout = new QCPLayoutGrid;
-    ui->systemPlot->plotLayout()->addElement(1, 0, subLayout);
-    subLayout->setMargins(QMargins(5, 0, 5, 5));
-    subLayout->addElement(0, 0, ui->systemPlot->legend);
-    // change the fill order of the legend, so it's filled left to right in columns:
-    //ui->systemPlot->legend->setFillOrder(QCPLegend::foColumnsFirst);
-    ui->systemPlot->legend->setRowSpacing(1);
-    ui->systemPlot->legend->setColumnSpacing(2);
-    //ui->systemPlot->legend->setFillOrder(QCPLayoutGrid::foColumnsFirst,true);
-
-    // set legend's row stretch factor very small so it ends up with minimum height:
-    ui->systemPlot->plotLayout()->setRowStretchFactor(1, 0.001);
-
-    // plotsetting
+    // plot setting
     activePileIdx = 0;
     activeLayerIdx = -1;
 
-    connect(ui->systemPlot, SIGNAL(selectionChangedByUser()), this, SLOT(on_systemPlot_selectionChangedByUser()));
+    //
+    // this connect statement needs to be updated to reflect changes to the SystemPlotSuper class
+    //
+    QObject::connect(systemPlot, SIGNAL(on_pileSelected(int)), this, SLOT(onSystemPlot_pileSelected(int)));
+    QObject::connect(systemPlot, SIGNAL(on_soilLayerSelected(int)), this, SLOT(onSystemPlot_soilLayerSelected(int)));
+    QObject::connect(systemPlot, SIGNAL(on_groundWaterSelected()), this, SLOT(onSystemPlot_groundWaterSelected()));
 
     inSetupState = false;
 
+    //
+    // adjust size of application window to the available display
+    //
     QRect rec = QApplication::desktop()->screenGeometry();
     int height = this->height()<0.85*rec.height()?this->height():0.85*rec.height();
     int width  = this->width()<0.85*rec.width()?this->width():0.85*rec.width();
     this->resize(width, height);
 
+    //
+    // create the initial set of plots
+    //
     this->doAnalysis();
     this->updateSystemPlot();
 
+    //
+    // connect to the application usage counter
+    //
     manager = new QNetworkAccessManager(this);
 
     connect(manager, SIGNAL(finished(QNetworkReply*)),
@@ -189,10 +238,110 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+
+    if (pileFEAmodel != NULL) delete pileFEAmodel;
+}
+
+void MainWindow::refreshUI() {
+
+    inSetupState = true;
+
+    ui->pileIndex->setValue(1);
+    ui->pileIndex->setMinimum(1);
+    ui->pileIndex->setMaximum(numPiles);
+
+    if (loadControlType == LoadControlType::ForceControl) { ui->forceTypeSelector->setCurrentIndex(0); }
+    else if (loadControlType == LoadControlType::PushOver) { ui->forceTypeSelector->setCurrentIndex(1); }
+    else if (loadControlType == LoadControlType::SoilMotion) { ui->forceTypeSelector->setCurrentIndex(2); }
+    else { ui->forceTypeSelector->setCurrentIndex(0); }
+
+    ui->appliedHorizontalForce->setValue(P);
+    ui->appliedVerticalForce->setValue(PV);
+    ui->appliedMoment->setValue(PMom);
+
+    int pileIdx = ui->pileIndex->value() - 1;
+
+    ui->xOffset->setValue(xOffset[pileIdx]);
+    ui->pileDiameter->setValue(pileDiameter[pileIdx]);
+    ui->freeLength->setValue(L1);
+    ui->embeddedLength->setValue(L2[pileIdx]);
+    ui->Emodulus->setValue( (E[pileIdx]/1.0e+6) );
+
+    ui->groundWaterTable->setValue(gwtDepth);
+
+    ui->chkBox_assume_rigid_cap->setCheckState(assumeRigidPileHeadConnection?Qt::Checked:Qt::Unchecked);
+    ui->chkBox_include_toe_resistance->setCheckState(useToeResistance?Qt::Checked:Qt::Unchecked);
+
+    this->updateLayerState();
+
+    inSetupState = false;
 }
 
 void MainWindow::doAnalysis(void)
 {
+    //
+    // create pile information for plotting
+    //
+    QVector<PILE_INFO> pileInfo;
+
+    pileInfo.clear();
+
+    for (int i=0; i<numPiles; i++)
+    {
+        PILE_INFO thisPile;
+        thisPile.L1           = L1;
+        thisPile.L2           = L2[i];
+        thisPile.pileDiameter = pileDiameter[i];
+        thisPile.xOffset      = xOffset[i];
+        thisPile.E            = E[i];
+        pileInfo.append(thisPile);
+    }
+    pileFEAmodel->updatePiles(pileInfo);
+
+    //
+    // set the soil layer information
+    //
+    pileFEAmodel->updateSoil(mSoilLayers);
+
+    //
+    // update ground water table
+    //
+    pileFEAmodel->updateGWtable(gwtDepth);
+
+    //
+    // set the load control type
+    //
+    pileFEAmodel->setLoadType(loadControlType);
+
+    //
+    // update the load control data
+    //
+    switch (loadControlType) {
+    case LoadControlType::ForceControl:
+        pileFEAmodel->updateLoad(P, PV, PMom);
+        break;
+    case LoadControlType::PushOver:
+        pileFEAmodel->updateDisplacement(HDisp, VDisp);
+        break;
+    case LoadControlType::SoilMotion:
+        QVector<double> profile;
+        profile.append(surfaceDisp);
+        profile.append(percentage12);
+        profile.append(percentage23);
+        profile.append(percentageBase);
+        pileFEAmodel->updateDispProfile(profile);
+        break;
+    }
+
+    //
+    // run the analysis
+    //
+    //pileFEAmodel->doAnalysis();
+
+    /* ******************* everything below will become obsolete once the PileFEAmodeler is functional **** */
+
+    double overburdonStress;
+
     //QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
 
     for (int k=0; k<MAXPILES; k++) {
@@ -273,7 +422,7 @@ void MainWindow::doAnalysis(void)
             }
             mSoilLayers[iLayer].setLayerOverburdenStress(overburdonStress);
 
-            groundWaterHead = gwtDepth - depthOfLayer[iLayer];
+            double groundWaterHead = gwtDepth - depthOfLayer[iLayer];
             mSoilLayers[iLayer].setLayerGWHead(groundWaterHead);
         }
 
@@ -283,11 +432,16 @@ void MainWindow::doAnalysis(void)
 
     /* ******** done with sizing and adjustments ******** */
 
-    //this->updateSystemPlot();
+    QVector<QVector<double> *> locList;
+    QVector<QVector<double> *> pultList;
+    QVector<QVector<double> *> y50List;
 
-    QVector<QVector<double> > locList(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double> > pultList(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double> > y50List(MAXPILES, QVector<double>(numNodePiles,0.0));
+    for (int i=0; i<numPiles; i++)
+    {
+        locList.append(new QVector<double>(numNodePile[i],0.0));
+        pultList.append(new QVector<double>(numNodePile[i],0.0));
+        y50List.append(new QVector<double>(numNodePile[i],0.0));
+    }
 
     int ioffset  = numNodePiles;              // for p-y spring nodes
     int ioffset2 = ioffset + numNodePiles;    // for pile nodes
@@ -396,9 +550,9 @@ void MainWindow::doAnalysis(void)
             theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
         }
 
-        locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-        pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
-        y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+        (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+        (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
+        (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
 
         //
         // work the way up layer by layer
@@ -473,7 +627,7 @@ void MainWindow::doAnalysis(void)
 
                 double depthInLayer = -zCoord - depthOfLayer[iLayer];
                 sigV = mSoilLayers[iLayer].getEffectiveStress(depthInLayer);
-                phi  = mSoilLayers[iLayer].getLayerFrictionAng();
+                double phi  = mSoilLayers[iLayer].getLayerFrictionAng();
 
                 UniaxialMaterial *theMat;
                 getPyParam(-zCoord, sigV, phi, pileDiameter[pileIdx], eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
@@ -491,11 +645,11 @@ void MainWindow::doAnalysis(void)
                 theMat = new PySimple1(numNode, 0, 2, pult, y50, 0.0, 0.0);
                 OPS_addUniaxialMaterial(theMat);
 
-                locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+                (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
                 // pult is a nodal value for the p-y spring.
                 // It needs to be scaled by element length ito represent a line load
-                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = pult/eleSize;
-                y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = y50;
+                (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = pult/eleSize;
+                (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = y50;
 
                 // t-z spring material
                 getTzParam(phi, pileDiameter[pileIdx],  sigV,  eleSize, &tult, &z50);
@@ -561,9 +715,15 @@ void MainWindow::doAnalysis(void)
                 theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
             }
 
-            locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-            pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
-            y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+            /*
+            (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+            (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
+            (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+            */
+
+            locList[pileIdx]->append(zCoord);
+            pultList[pileIdx]->append(0.001);
+            y50List[pileIdx]->append(0.00001);
 
             zCoord += eleSize;
         }
@@ -609,6 +769,7 @@ void MainWindow::doAnalysis(void)
             // # q-z spring material
             // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
             double sigVq  = mSoilLayers[maxLayers[pileIdx]-1].getLayerBottomStress();
+            double phi  = mSoilLayers[maxLayers[pileIdx]-1].getLayerFrictionAng();
 
             getQzParam(phi, pileDiameter[pileIdx],  sigVq,  gSoil, &qult, &z50q);
             UniaxialMaterial *theMat = new QzSimple1(1+ioffset, 2, qult, z50q, 0.0, 0.0);
@@ -763,37 +924,39 @@ void MainWindow::doAnalysis(void)
     theAnalysis.analyze(20);
     theDomain.calculateNodalReactions(0);
 
-#if 1
-    QVector<QVector<double>> loc(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> disp(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> moment(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> shear(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> stress(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<double> zero(numNodePiles,0.0);
-#else
-    QVector<QVector<double> *> loc(MAXPILES, 0);
-    QVector<QVector<double> *> disp(MAXPILES, 0);
-    QVector<QVector<double> *> moment(MAXPILES, 0);
-    QVector<QVector<double> *> shear(MAXPILES, 0);
-    QVector<QVector<double> *> stress(MAXPILES, 0);
-    QVector<double> zero(numNodePiles,0.0);
+    this->updateResultPlots();
 
-    for (int k=0; k<numPiles; k++) {
-        if (loc[k] != NULL)    delete loc[k];
-        if (disp[k] != NULL)   delete disp[k];
-        if (moment[k] != NULL) delete moment[k];
-        if (shear[k] != NULL)  delete shear[k];
-        if (stress[k] != NULL) delete stress[k];
-        loc[k]    = new QVector<double>(numNodePile[k],0.0);
-        disp[k]   = new QVector<double>(numNodePile[k],0.0);
-        moment[k] = new QVector<double>(numNodePile[k],0.0);
-        shear[k]  = new QVector<double>(numNodePile[k],0.0);
-        stress[k] = new QVector<double>(numNodePile[k],0.0);
+
+
+
+
+
+
+    QVector<QVector<double> *> loc;
+    QVector<QVector<double> *> Hdisps;
+    QVector<QVector<double> *> Vdisps;
+    QVector<QVector<double> *> moment;
+    QVector<QVector<double> *> shear;
+    QVector<QVector<double> *> axial;
+    QVector<QVector<double> *> stress;
+
+    for (int i=0; i<numPiles; i++)
+    {
+        loc.append(new QVector<double>(numNodePile[i],0.0));
+        Hdisps.append(new QVector<double>(numNodePile[i],0.0));
+        Vdisps.append(new QVector<double>(numNodePile[i],0.0));
+        moment.append(new QVector<double>(numNodePile[i],0.0));
+        shear.append(new QVector<double>(numNodePile[i],0.0));
+        axial.append(new QVector<double>(numNodePile[i],0.0));
+        stress.append(new QVector<double>(numNodePile[i],0.0));
     }
-#endif
 
-    double maxDisp   = 0.0;
-    double minDisp   = 0.0;
+    double maxHDisp  = 0.0;
+    double minHDisp  = 0.0;
+    double maxVDisp  = 0.0;
+    double minVDisp  = 0.0;
+    double maxAxial  = 0.0;
+    double minAxial  = 0.0;
     double maxShear  = 0.0;
     double minShear  = 0.0;
     double maxMoment = 0.0;
@@ -804,22 +967,22 @@ void MainWindow::doAnalysis(void)
     for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
         for (int i=1; i<=numNodePile[pileIdx]; i++) {
-            //zero[i-1] = 0.0;
-
-            //qDebug() << "getNode(" << i+nodeIDoffset[pileIdx] << ")";
 
             Node *theNode = theDomain.getNode(i+nodeIDoffset[pileIdx]);
             const Vector &nodeCoord = theNode->getCrds();
-            loc[pileIdx][i-1] = nodeCoord(2);
+            (*loc[pileIdx])[i-1] = nodeCoord(2);
             int iLayer;
             for (iLayer=0; iLayer<maxLayers[pileIdx]; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
-            stress[pileIdx][i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
+            (*stress[pileIdx])[i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
             //if (stress[pileIdx][i-1] > maxStress) maxStress = stress[pileIdx][i-1];
             //if (stress[pileIdx][i-1] < minStress) minStress = stress[pileIdx][i-1];
             const Vector &nodeDisp = theNode->getDisp();
-            disp[pileIdx][i-1] = nodeDisp(0);
-            if (disp[pileIdx][i-1] > maxDisp) maxDisp = disp[pileIdx][i-1];
-            if (disp[pileIdx][i-1] < minDisp) minDisp = disp[pileIdx][i-1];
+            (*Hdisps[pileIdx])[i-1] = nodeDisp(0);
+            if ((*Hdisps[pileIdx])[i-1] > maxHDisp) maxHDisp = Hdisps[pileIdx]->value(i-1);
+            if ((*Hdisps[pileIdx])[i-1] < minHDisp) minHDisp = Hdisps[pileIdx]->value(i-1);
+            (*Vdisps[pileIdx])[i-1] = nodeDisp(2);
+            if ((*Vdisps[pileIdx])[i-1] > maxVDisp) maxVDisp = Vdisps[pileIdx]->value(i-1);
+            if ((*Vdisps[pileIdx])[i-1] < minVDisp) minVDisp = Vdisps[pileIdx]->value(i-1);
         }
     }
 
@@ -827,21 +990,41 @@ void MainWindow::doAnalysis(void)
 
         //qDebug() << "= pile index: " << pileIdx ;
 
-        moment[pileIdx][0] = 0.0;
-        shear[pileIdx][0]  = 0.0;
+        (*moment[pileIdx])[0] = 0.0;
+        (*shear[pileIdx])[0]  = 0.0;
+        (*axial[pileIdx])[0]  = 0.0;
 
         for (int i=1; i<numNodePile[pileIdx]; i++) {
 
-            //qDebug() << "getElement(" << i+elemIDoffset[pileIdx] << ")";
+            /*
+             *  identify force components
+             *  components identified by *** will be shown in plots
+             *
+             * eleForces[0] ... Px on node 1 == in plane shear force
+             * eleForces[1] ... Py on node 1 == out of plane shear force
+             * eleForces[2] ... Pz on node 1 == axial force
+             * eleForces[3] ... Mx on node 1 == out of plane bending moment
+             * eleForces[4] ... My on node 1 == in plane bending moment
+             * eleForces[5] ... Mz on node 1 == torsion
+             * eleForces[6] ... Px on node 2 == in plane shear force        ***
+             * eleForces[7] ... Py on node 2 == out of plane shear force
+             * eleForces[8] ... Pz on node 2 == axial force                 ***
+             * eleForces[9] ... Mx on node 2 == out of plane bending moment
+             * eleForces[10] .. My on node 2 == in plane bending moment     ***
+             * eleForces[11] .. Mz on node 2 == torsion
+             */
 
             Element *theEle = theDomain.getElement(i+elemIDoffset[pileIdx]);
             const Vector &eleForces = theEle->getResistingForce();
-            moment[pileIdx][i] = eleForces(10);
-            if (moment[pileIdx][i] > maxMoment) maxMoment = moment[pileIdx][i];
-            if (moment[pileIdx][i] < minMoment) minMoment = moment[pileIdx][i];
-            shear[pileIdx][i] = eleForces(6);
-            if (shear[pileIdx][i] > maxShear) maxShear = shear[pileIdx][i];
-            if (shear[pileIdx][i] < minShear) minShear = shear[pileIdx][i];
+            (*moment[pileIdx])[i] = eleForces(10);
+            if ((*moment[pileIdx])[i] > maxMoment) maxMoment = moment[pileIdx]->value(i);
+            if ((*moment[pileIdx])[i] < minMoment) minMoment = moment[pileIdx]->value(i);
+            (*shear[pileIdx])[i] = eleForces(6);
+            if ((*shear[pileIdx])[i] > maxShear) maxShear = shear[pileIdx]->value(i);
+            if ((*shear[pileIdx])[i] < minShear) minShear = shear[pileIdx]->value(i);
+            (*axial[pileIdx])[i] = eleForces(8);
+            if ((*axial[pileIdx])[i] > maxAxial) maxAxial = axial[pileIdx]->value(i);
+            if ((*axial[pileIdx])[i] < minAxial) minAxial = axial[pileIdx]->value(i);
         }
     }
 
@@ -849,23 +1032,87 @@ void MainWindow::doAnalysis(void)
     // plot results
     //
 
-    // displacements
-    if (showDisplacements) { this->plotResults(ui->displPlot, zero, loc[0], disp, loc); }
+    //qDebug() << numNodePile[0] << numNodePile[1] << numNodePile[2] ;
+
+    // lateral displacements
+    if (showDisplacements) {
+        displPlot->plotResults(Hdisps, loc);
+    }
+
+    // axial displacements
+    if (showPullOut) {
+        pullOutPlot->plotResults(Vdisps, loc);
+    }
+
+    // axial
+    if (showAxial) {
+        axialPlot->plotResults(axial, loc);
+    }
 
     // shear
-    if (showShear) { this->plotResults(ui->shearPlot, zero, loc[0], shear, loc); }
+    if (showShear) {
+        shearPlot->plotResults(shear, loc);
+    }
 
     // moments
-    if (showMoments) { this->plotResults(ui->momentPlot, zero, loc[0], moment, loc); }
+    if (showMoments) {
+        momentPlot->plotResults(moment, loc);
+    }
 
     // vertical stress
-    if (showStress) { this->plotResults(ui->stressPlot, zero, loc[0], stress, loc); }
+    if (showStress) {
+        stressPlot->plotResults(stress, loc);
+    }
 
     // p_ultimate
-    if (showPultimate) { this->plotResults(ui->pultPlot, zero, loc[0], pultList, locList); }
+    if (showPultimate) {
+        pultPlot->plotResults(pultList, locList);
+    }
 
     // y_50
-    if (showY50) { this->plotResults(ui->y50Plot, zero, loc[0], y50List, locList); }
+    if (showY50) {
+        y50Plot->plotResults(y50List, locList);
+    }
+
+    for (int i=0; i<numPiles; i++)
+    {
+        if (loc[i]      != NULL) { delete loc[i];      loc[i]      = NULL; }
+        if (Hdisps[i]   != NULL) { delete Hdisps[i];   Hdisps[i]   = NULL; }
+        if (Vdisps[i]   != NULL) { delete Vdisps[i];   Vdisps[i]   = NULL; }
+        if (moment[i]   != NULL) { delete moment[i];   moment[i]   = NULL; }
+        if (shear[i]    != NULL) { delete shear[i];    shear[i]    = NULL; }
+        if (axial[i]    != NULL) { delete axial[i];    axial[i]    = NULL; }
+        if (stress[i]   != NULL) { delete stress[i];   stress[i]   = NULL; }
+
+        if (locList[i]  != NULL) { delete locList[i];  locList[i]  = NULL; }
+        if (pultList[i] != NULL) { delete pultList[i]; pultList[i] = NULL; }
+        if (y50List[i]  != NULL) { delete y50List[i];  y50List[i]  = NULL; }
+    }
+
+    /*
+     *
+    //
+    // the following lines will become necessary once those vectors become member variables
+    //
+    loc.clear();
+    Hdisps.clear();
+    Vdisps.clear();
+    moment.clear();
+    shear.clear();
+    axial.clear();
+    stress.clear();
+
+    locList.clear();
+    pultList.clear();
+    y50List.clear();
+    *
+    */
+
+}
+
+void MainWindow::updateResultPlots()
+{
+    // this should call the results update from th eanalysis modeler and the plot methods
 }
 
 void MainWindow::fetchSettings()
@@ -873,11 +1120,19 @@ void MainWindow::fetchSettings()
     if (settings != NULL) { delete settings; }
     settings = new QSettings("NHERI SimCenter","Pile Group Tool");
 
+    // general settings
+    settings->beginGroup("general");
+        useGraphicsLib    = settings->value("graphicsLibrary", QString("QCP")).toString();
+        useFEAnalyzer     = settings->value("femAnalyzer", QString("OpenSeesInt")).toString();
+    settings->endGroup();
+
     // viewer settings
     settings->beginGroup("viewer");
         showDisplacements = settings->value("displacements",1).toBool();
+        showPullOut       = settings->value("pullout",1).toBool();
         showMoments       = settings->value("moments",1).toBool();
         showShear         = settings->value("shear",1).toBool();
+        showAxial         = settings->value("axial",1).toBool();
         showStress        = settings->value("stress",1).toBool();
         showPultimate     = settings->value("pult",1).toBool();
         showY50           = settings->value("compliance",1).toBool();
@@ -923,9 +1178,9 @@ void MainWindow::on_chkBox_include_toe_resistance_clicked(bool checked)
 void MainWindow::setupLayers()
 {
     mSoilLayers.clear();
-    mSoilLayers.push_back(soilLayer("Layer 1", 3.0, 15.0, 18.0, 2.0e5, 30, QColor(100,0,0,100)));
-    mSoilLayers.push_back(soilLayer("Layer 2", 3.0, 16.0, 19.0, 2.0e5, 35, QColor(0,100,0,100)));
-    mSoilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 25, QColor(0,0,100,100)));
+    mSoilLayers.push_back(soilLayer("Layer 1", 3.0, 15.0, 18.0, 2.0e5, 30, 0.0, QColor(100,0,0,100)));
+    mSoilLayers.push_back(soilLayer("Layer 2", 3.0, 16.0, 19.0, 2.0e5, 35, 0.0, QColor(0,100,0,100)));
+    mSoilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 28, 0.0, QColor(0,0,100,100)));
 
     updateLayerState();
 }
@@ -946,102 +1201,58 @@ void MainWindow::updateLayerState()
     }
 }
 
-void MainWindow::on_updateInfo(QTableWidgetItem * item)
-{
-    //if (item && item == ui->matTable->currentItem()) {
-    double value = item->text().toDouble();
-
-    if(item->row() == 0) {
-        if (value < 0.10) {
-            value = 0.10;
-            item->setText(QString("%1").arg(value));
-        }
-        mSoilLayers[item->column()].setLayerThickness(value);
-    }
-    else if (item->row() == 1) {
-        if (value < 0.50) {
-            value = 0.50;
-            item->setText(QString("%1").arg(value));
-        }
-        mSoilLayers[item->column()].setLayerUnitWeight(value);
-    }
-    else if (item->row() == 2) {
-        if (value < GAMMA_WATER) {
-            value = GAMMA_WATER;
-            item->setText(QString("%1").arg(value));
-        }
-        mSoilLayers[item->column()].setLayerSatUnitWeight(value);
-    }
-    else if (item->row() == 3) {
-        if (value < 5.) {
-            value = 5.;
-            item->setText(QString("%1").arg(value));
-        }
-        mSoilLayers[item->column()].setLayerFrictionAng(value);
-    }
-    else if (item->row() == 4) {
-        if (value < 1000.) {
-            value = 1000.;
-            item->setText(QString("%1").arg(value));
-        }
-        mSoilLayers[item->column()].setLayerStiffness(value);
-    }
-
-    // set depth and GWT depth for each layer
-    //int numLayers = mSoilLayers.size();
-    double layerDepthFromSurface = 0.0;
-    for (int ii = 0; ii < MAXLAYERS; ii++)
-    {
-        mSoilLayers[ii].setLayerDepth(layerDepthFromSurface);
-        mSoilLayers[ii].setGWTdepth(gwtDepth - layerDepthFromSurface);
-        layerDepthFromSurface += mSoilLayers[ii].getLayerThickness();
-        if (ii > 0)
-            mSoilLayers[ii].setLayerTopStress(mSoilLayers[ii-1].getLayerBottomStress());
-    }
-
-    this->doAnalysis();
-}
-
 void MainWindow::updateUI()
 {
-    if (!showDisplacements && ui->tabWidget->indexOf(ui->displacement)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->displacement));
+    if (!showDisplacements && ui->tabWidget->indexOf(ui->dispTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->dispTab));
     }
-    if (!showMoments && ui->tabWidget->indexOf(ui->moment)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->moment));
+    if (!showPullOut && ui->tabWidget->indexOf(ui->pulloutTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pulloutTab));
     }
-    if (!showShear && ui->tabWidget->indexOf(ui->shear)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->shear));
+    if (!showMoments && ui->tabWidget->indexOf(ui->momentTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->momentTab));
     }
-    if (!showStress && ui->tabWidget->indexOf(ui->stress)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->stress));
+    if (!showShear && ui->tabWidget->indexOf(ui->shearTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->shearTab));
     }
-    if (!showPultimate && ui->tabWidget->indexOf(ui->pult)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pult));
+    if (!showAxial && ui->tabWidget->indexOf(ui->axialTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->axialTab));
     }
-    if (!showY50 && ui->tabWidget->indexOf(ui->y50)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->y50));
+    if (!showStress && ui->tabWidget->indexOf(ui->stressTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->stressTab));
+    }
+    if (!showPultimate && ui->tabWidget->indexOf(ui->pultTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pultTab));
+    }
+    if (!showY50 && ui->tabWidget->indexOf(ui->y50Tab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->y50Tab));
     }
 
     int numTabs = ui->tabWidget->count();
 
-    if (showDisplacements && ui->tabWidget->indexOf(ui->displacement) < 0 ) {
-        ui->tabWidget->addTab(ui->displacement,"Displacement");
+    if (showDisplacements && ui->tabWidget->indexOf(ui->dispTab) < 0 ) {
+        ui->tabWidget->addTab(ui->dispTab,"Lateral Disp");
     }
-    if (showMoments && ui->tabWidget->indexOf(ui->moment) < 0 ) {
-        ui->tabWidget->addTab(ui->moment,"Moment");
+    if (showPullOut && ui->tabWidget->indexOf(ui->pulloutTab) < 0 ) {
+        ui->tabWidget->addTab(ui->pulloutTab,"Axial Disp");
     }
-    if (showShear && ui->tabWidget->indexOf(ui->shear) < 0 ) {
-        ui->tabWidget->addTab(ui->shear,"Shear");
+    if (showMoments && ui->tabWidget->indexOf(ui->momentTab) < 0 ) {
+        ui->tabWidget->addTab(ui->momentTab,"Moment");
     }
-    if (showStress && ui->tabWidget->indexOf(ui->stress) < 0 ) {
-        ui->tabWidget->addTab(ui->stress,"Stress");
+    if (showShear && ui->tabWidget->indexOf(ui->shearTab) < 0 ) {
+        ui->tabWidget->addTab(ui->shearTab,"Shear");
     }
-    if (showPultimate && ui->tabWidget->indexOf(ui->pult) < 0 ) {
-        ui->tabWidget->addTab(ui->pult,"p_ult");
+    if (showAxial && ui->tabWidget->indexOf(ui->axialTab) < 0 ) {
+        ui->tabWidget->addTab(ui->axialTab,"Axial");
     }
-    if (showY50 && ui->tabWidget->indexOf(ui->y50) < 0) {
-        ui->tabWidget->addTab(ui->y50,"y50");
+    if (showStress && ui->tabWidget->indexOf(ui->stressTab) < 0 ) {
+        ui->tabWidget->addTab(ui->stressTab,"Stress");
+    }
+    if (showPultimate && ui->tabWidget->indexOf(ui->pultTab) < 0 ) {
+        ui->tabWidget->addTab(ui->pultTab,"p_ult");
+    }
+    if (showY50 && ui->tabWidget->indexOf(ui->y50Tab) < 0) {
+        ui->tabWidget->addTab(ui->y50Tab,"y50");
     }
 }
 
@@ -1056,18 +1267,16 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_action_Open_triggered()
 {
-    DialogFutureFeature *dlg = new DialogFutureFeature();
-    dlg->exec();
-    delete dlg;
+    if ( this->ReadFile("PileTool.json") ) {
+        this->refreshUI();
+        this->updateSystemPlot();
+        this->doAnalysis();
+    }
 }
 
 void MainWindow::on_actionSave_triggered()
 {
     this->WriteFile("PileTool.json");
-
-    DialogFutureFeature *dlg = new DialogFutureFeature();
-    dlg->exec();
-    delete dlg;
 }
 
 void MainWindow::on_actionExport_to_OpenSees_triggered()
@@ -1090,6 +1299,14 @@ void MainWindow::on_actionReset_triggered()
     PV       =    0.0;
     PMom     =    0.0;
 
+    HDisp = 0.0; // prescribed horizontal displacement
+    VDisp = 0.0; // prescriber vertical displacement
+
+    surfaceDisp    = 0.0; // prescribed soil surface displacement
+    percentage12   = 1.0; // percentage of surface displacement at 1st layer interface
+    percentage23   = 0.0; // percentage of surface displacement at 2nd layer interface
+    percentageBase = 0.0; // percentage of surface displacement at base of soil column
+
     L1                       = 1.0;
     L2[numPiles-1]           = 20.0;
     pileDiameter[numPiles-1] = 1.0;
@@ -1097,19 +1314,19 @@ void MainWindow::on_actionReset_triggered()
     xOffset[numPiles-1]      = 0.0;
 
     gwtDepth = 4.00;
-    gamma    = 17.0;
-    phi      = 36.0;
     gSoil    = 150000;
-    puSwitch = 1;
+    puSwitch = 2;
     kSwitch  = 1;
     gwtSwitch= 1;
 
      // set initial state of check boxes
-    useToeResistance    = false;
+    useToeResistance              = false;
     assumeRigidPileHeadConnection = false;
 
-    // analysis parameters
-    displacementRatio = 0.0;
+    // meshing parameters
+    minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
+    maxElementsPerLayer = MAX_ELEMENTS_PER_LAYER;
+    numElementsInAir    = NUM_ELEMENTS_IN_AIR;
 
     // set up initial values before activating live analysis (= connecting the slots)
     //    or the program will fail in the analysis due to missing information
@@ -1127,7 +1344,7 @@ void MainWindow::on_actionReset_triggered()
 
     int pileIdx = ui->pileIndex->value() - 1;
 
-    ui->appliedForce->setValue(P);
+    ui->appliedHorizontalForce->setValue(P);
     ui->xOffset->setValue(xOffset[pileIdx]);
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
@@ -1208,6 +1425,8 @@ void MainWindow::on_btn_newPile_clicked()
         E[numPiles]            = E[numPiles-1];
         xOffset[numPiles]      = xOffset[numPiles-1] + 2.0*pileDiameter[numPiles-1];
         numPiles++;
+
+        systemPlot->setActivePile(numPiles);
     }
     else
     {
@@ -1218,6 +1437,7 @@ void MainWindow::on_btn_newPile_clicked()
     ui->pileIndex->setMaximum(numPiles);
     ui->pileIndex->setValue(numPiles);
 
+    //this->updateSystemPlot();
     this->doAnalysis();
 }
 
@@ -1246,7 +1466,6 @@ void MainWindow::on_pileIndex_valueChanged(int arg1)
     activeLayerIdx = -1;
 
     this->updateSystemPlot();
-
 }
 
 /* ***** pile parameter changes ***** */
@@ -1292,49 +1511,6 @@ void MainWindow::on_groundWaterTable_valueChanged(double arg1)
     this->updateSystemPlot();
 }
 
-/* ***** loading parameter changes ***** */
-
-void MainWindow::on_appliedForce_valueChanged(double arg1)
-{
-    //P = ui->appliedForce->value();
-    P = arg1;
-
-    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-    ui->displacementSlider->setValue(sliderPosition);
-    //qDebug() << "valueChanged:: Force value: " << P << ",  sliderPosition: " << sliderPosition << endln;
-
-    this->doAnalysis();
-}
-
-void MainWindow::on_appliedForce_editingFinished()
-{
-    P = ui->appliedForce->value();
-
-    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-
-    //qDebug() << "editingFinished:: Force value: " << P << ",  sliderPosition: " << sliderPosition << endln;
-    ui->displacementSlider->setSliderPosition(sliderPosition);
-
-    this->doAnalysis();
-}
-
-void MainWindow::on_displacementSlider_valueChanged(int value)
-{
-    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
-    displacementRatio = double(value)/100.0;
-
-    P = MAX_FORCE * displacementRatio;
-
-    //qDebug() << "Force value: " << P << ",  sliderPosition: " << value << endln;
-    ui->appliedForce->setValue(P);
-
-    this->doAnalysis();
-    this->updateSystemPlot();
-}
 
 //
 // layer properties and setup methods
@@ -1495,38 +1671,6 @@ int  MainWindow::adjustLayersToPiles()
     return 0;
 }
 
-//
-// plotter functions
-//
-void MainWindow::plotResults(QCustomPlot *qcp, QVector<double> z, QVector<double> xOffset, \
-                             QVector<QVector<double> > x, QVector<QVector<double> > y)
-{
-    qcp->clearPlottables();
-
-    qcp->autoAddPlottableToLegend();
-    qcp->legend->setVisible(true);
-
-    qcp->addGraph();
-    qcp->graph(0)->setData(z,xOffset);
-    qcp->graph(0)->setPen(QPen(Qt::black));
-    qcp->graph(0)->removeFromLegend();
-
-    for (int ii=0; ii<numPiles; ii++) {
-        QCPCurve *mCurve = new QCPCurve(qcp->xAxis, qcp->yAxis);
-        mCurve->setData(x[ii].mid(0,numNodePile[ii]),y[ii].mid(0,numNodePile[ii]));
-        mCurve->setPen(QPen(LINE_COLOR[ii], 3));
-        mCurve->setName(QString("Pile #%1").arg(ii+1));
-        //qcp->addPlottable(mCurve);
-    }
-
-    qcp->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    qcp->axisRect()->autoMargins();
-    qcp->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignLeft|Qt::AlignBottom);
-    qcp->rescaleAxes();
-    qcp->replot();
-}
-
-
 void MainWindow::on_properties_currentChanged(int index)
 {
     switch (index) {
@@ -1546,219 +1690,78 @@ void MainWindow::on_properties_currentChanged(int index)
     this->updateSystemPlot();
 }
 
-void MainWindow::updateSystemPlot() {
-
-    for (int k=0; k<MAXPILES; k++) {
-        headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
-    }
-
-    //if (inSetupState) return;
+void MainWindow::updateSystemPlot()
+{
+    if (inSetupState) return;
 
     //
-    // find dimensions for plotting
+    // create pile information for plotting
     //
-    QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
+    QVector<PILE_INFO> pileInfo;
 
-    /* ******** sizing and adjustments ******** */
+    pileInfo.clear();
 
-    double minX0 =  999999.;
-    double maxX0 = -999999.;
-    double xbar  = 0.0;
-    double H     = 0.0;
-    double W, WP;
-    double depthSoil = 0.0;
-    double nPiles = 0.;
-    double maxD = 0.0;
-    double maxH = 0.0;
+    for (int i=0; i<numPiles; i++)
+    {
+        PILE_INFO thisPile;
+        thisPile.L1           = L1;
+        thisPile.L2           = L2[i];
+        thisPile.pileDiameter = pileDiameter[i];
+        thisPile.xOffset      = xOffset[i];
+        thisPile.E            = E[i];
+        pileInfo.append(thisPile);
+    }
+    systemPlot->updatePiles(pileInfo);
 
     //
-    // find depth of defined soil layers
+    // create list of layer interface positions
     //
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) { depthSoil += mSoilLayers[iLayer].getLayerThickness(); }
+    this->updateLayerState();
 
-    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
-        if ( xOffset[pileIdx] < minX0) { minX0 = xOffset[pileIdx]; }
-        if ( xOffset[pileIdx] > maxX0) { maxX0 = xOffset[pileIdx]; }
-        if (L2[pileIdx] > H) { H = L2[pileIdx]; }
-        double D = pileDiameter[pileIdx];
-        if (D>maxD) maxD = D;
-
-        xbar += xOffset[pileIdx]; nPiles++;
+    QVector<double> layerDepth(MAXLAYERS+1, 0.00);
+    for (int i=1; i<=MAXLAYERS; i++)
+    {
+        if (mSoilLayers.size() >= i)
+            { layerDepth[i] = mSoilLayers[i-1].getLayerDepth() + mSoilLayers[i-1].getLayerThickness(); }
+        else
+            { layerDepth[i] = layerDepth[i-1]; }
     }
-    xbar /= nPiles;
-    if (depthSoil > H) H = depthSoil;
-    if ( L1 > 0.0 ) H += L1;
+    systemPlot->updateSoil(layerDepth);
 
-    WP = maxX0 - minX0;
-    W  = (1.10*WP + 0.50*H);
-    if ( (WP + 0.35*H) > W ) { W = WP + 0.35*H; }
+    //
+    // update ground water table
+    //
+    systemPlot->updateGWtable(gwtDepth);
 
-    maxH = maxD;
-    if (maxH > L1/2.) maxH = L1/2.;
+    //
+    // set the load control type
+    //
+    systemPlot->setLoadType(loadControlType);
 
-    // setup system plot
-    ui->systemPlot->clearPlottables();
-    ui->systemPlot->clearGraphs();
-    ui->systemPlot->clearItems();
-
-    if (!ui->systemPlot->layer("groundwater"))
-        { ui->systemPlot->addLayer("groundwater", ui->systemPlot->layer("grid"), QCustomPlot::limAbove); }
-    if (!ui->systemPlot->layer("soil"))
-        { ui->systemPlot->addLayer("soil", ui->systemPlot->layer("groundwater"), QCustomPlot::limAbove); }
-    if (!ui->systemPlot->layer("piles"))
-        { ui->systemPlot->addLayer("piles", ui->systemPlot->layer("soil"), QCustomPlot::limAbove); }
-
-    ui->systemPlot->autoAddPlottableToLegend();
-    ui->systemPlot->legend->setVisible(true);
-
-    QVector<double> zero(2,xbar-0.5*W);
-    QVector<double> loc(2,0.0);
-    loc[0] = -(H-L1); loc[1] = L1;
-
-    ui->systemPlot->addGraph();
-    ui->systemPlot->graph(0)->setData(zero,loc);
-    ui->systemPlot->graph(0)->setPen(QPen(Qt::black,1));
-    ui->systemPlot->graph(0)->removeFromLegend();
-
-    // create layers
-
-    ui->systemPlot->setCurrentLayer("soil");
-
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
-
-/* set the following to #if 1 once we can select a rectangle */
-#if 0
-        QCPItemRect* layerII = new QCPItemRect(ui->systemPlot);
-        layerII->topLeft->setCoords(xbar - W/2., -mSoilLayers[iLayer].getLayerDepth());
-        layerII->bottomRight->setCoords(xbar + W/2.,-mSoilLayers[iLayer].getLayerDepth() - mSoilLayers[iLayer].getLayerThickness());
-
-        connect(layerII, SIGNAL(selectionChanged(bool) ), this, SLOT(on_layerSelectedInSystemPlot(bool)));
-#else
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        x[0] = xbar - W/2.; y[0] = -mSoilLayers[iLayer].getLayerDepth();
-        x[1] = x[0];        y[1] = y[0] - mSoilLayers[iLayer].getLayerThickness();
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
-
-        QCPCurve *layerII = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
-        layerII->setData(x,y);
-        layerII->setName(QString("Layer #%1").arg(iLayer+1));
-#endif
-        if (iLayer == activeLayerIdx) {
-            layerII->setPen(QPen(Qt::red, 2));
-            layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
-        }
-        else {
-            layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
-            layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
-        }
-
-        //ui->systemPlot->addPlottable(layerII);
+    //
+    // update the load control data
+    //
+    switch (loadControlType) {
+    case LoadControlType::ForceControl:
+        systemPlot->updateLoad(P, PV, PMom);
+        break;
+    case LoadControlType::PushOver:
+        systemPlot->updateDisplacement(HDisp, VDisp);
+        break;
+    case LoadControlType::SoilMotion:
+        QVector<double> profile;
+        profile.append(surfaceDisp);
+        profile.append(percentage12);
+        profile.append(percentage23);
+        profile.append(percentageBase);
+        systemPlot->updateDispProfile(profile);
+        break;
     }
 
-    // ground water table
-
-    ui->systemPlot->setCurrentLayer("groundwater");
-
-    if (gwtDepth < (H-L1)) {
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        x[0] = xbar - W/2.; y[0] = -gwtDepth;
-        x[1] = x[0];        y[1] = -(H - L1);
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
-
-        QCPCurve *water = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
-        water->setData(x,y);
-
-        water->setPen(QPen(Qt::blue, 2));
-        water->setBrush(QBrush(GROUND_WATER_BLUE));
-
-        water->setName(QString("groundwater"));
-
-        //ui->systemPlot->addPlottable(water);
-    }
-
-    // plot the pile cap
-
-    ui->systemPlot->setCurrentLayer("piles");
-
-    QVector<double> x(5,0.0);
-    QVector<double> y(5,0.0);
-
-    x[0] = minX0 - maxD/2.; y[0] = L1 + maxH;
-    x[1] = x[0];            y[1] = L1 - maxH;
-    x[2] = maxX0 + maxD/2.; y[2] = y[1];
-    x[3] = x[2];            y[3] = y[0];
-    x[4] = x[0];            y[4] = y[0];
-
-    QCPCurve *pileCap = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
-    pileCap->setData(x,y);
-    pileCap->setPen(QPen(Qt::black, 1));
-    pileCap->setBrush(QBrush(Qt::gray));
-    //pileCap->setName(QString("pile cap"));
-    pileCap->removeFromLegend();
-
-    //ui->systemPlot->addPlottable(pileCap);
-
-    // plot the piles
-    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
-
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        double D = pileDiameter[pileIdx];
-
-        x[0] = xOffset[pileIdx] - D/2.; y[0] = L1;
-        x[1] = x[0];                    y[1] = -L2[pileIdx];
-        x[2] = xOffset[pileIdx] + D/2.; y[2] = y[1];
-        x[3] = x[2];                    y[3] = y[0];
-        x[4] = x[0];                    y[4] = y[0];
-
-        QCPCurve *pileII = new QCPCurve(ui->systemPlot->xAxis, ui->systemPlot->yAxis);
-        pileII->setData(x,y);
-        if (pileIdx == activePileIdx) {
-            pileII->setPen(QPen(Qt::red, 2));
-            pileII->setBrush(QBrush(BRUSH_COLOR[9+pileIdx]));
-        }
-        else {
-            pileII->setPen(QPen(Qt::black, 1));
-            pileII->setBrush(QBrush(BRUSH_COLOR[6+pileIdx]));
-        }
-        //pileII->setBrush(QBrush(Qt::black));
-        pileII->setName(QString("Pile #%1").arg(pileIdx+1));
-
-        //ui->systemPlot->addPlottable(pileII);
-    }
-
-    // add force to the plot
-
-    if (ABS(P) > 0.0) {
-        double force = 0.45*W*P/MAX_FORCE;
-
-        // add the arrow:
-        QCPItemLine *arrow = new QCPItemLine(ui->systemPlot);
-        //ui->systemPlot->addItem(arrow);
-        arrow->setPen(QPen(Qt::red, 3));
-        arrow->start->setCoords(xbar, L1);
-        arrow->end->setCoords(xbar + force, L1);
-        arrow->setHead(QCPLineEnding::esSpikeArrow);
-    }
-
-    // plot scaling options
-
-    ui->systemPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
-    //ui->systemPlot->axisRect()->autoMargins();
-    //setupFullAxesBox();
-    ui->systemPlot->xAxis->setScaleRatio(ui->systemPlot->yAxis);
-    ui->systemPlot->rescaleAxes();
-    ui->systemPlot->replot();
+    //
+    // refresh the plot
+    //
+    systemPlot->refresh();
 }
 
 void MainWindow::on_layerSelectedInSystemPlot(bool selected)
@@ -1766,62 +1769,31 @@ void MainWindow::on_layerSelectedInSystemPlot(bool selected)
     qDebug() << "on_layerSelectedInSystemPlot(" << selected << ") triggered";
 }
 
-void MainWindow::on_systemPlot_selectionChangedByUser()
+
+void MainWindow::onSystemPlot_pileSelected(int index)
 {
-    foreach (QCPAbstractPlottable * item, ui->systemPlot->selectedPlottables()) {
+    activePileIdx  = index;
+    activeLayerIdx = -1;
 
-        QString name = item->name();
-        if (name.length()<1) name = "X";
+    // make pile controls visible
+    ui->properties->setCurrentWidget(ui->pilePropertiesWidget);
+    ui->pileIndex->setValue(index+1);
+}
 
-        int layerIdx = -1;
-        int pileIdx  = -1;
+void MainWindow::onSystemPlot_soilLayerSelected(int index)
+{
+    activePileIdx  = -1;
+    activeLayerIdx = index;
 
-        switch (name.at(0).unicode()) {
-        case 'P':
-        case 'p':
-            if (name.toLower() == QString("pile cap")) break;
+    // make soil layer controls visible
+    ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
+    setActiveLayer(index);
+}
 
-            //qDebug() << "PILE: " << name;
-            ui->properties->setCurrentWidget(ui->pilePropertiesWidget);
-            pileIdx = name.mid(6,1).toInt() - 1;
-
-            activePileIdx  = pileIdx;
-            activeLayerIdx = -1;
-
-            ui->pileIndex->setValue(pileIdx+1);
-            break;
-
-        case 'L':
-        case 'l':
-            //qDebug() << "LAYER: " << name;
-            ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
-            layerIdx = name.mid(7,1).toInt() - 1;
-
-            activePileIdx  = -1;
-            activeLayerIdx = layerIdx;
-
-            setActiveLayer(layerIdx);
-            break;
-
-        case 'G':
-        case 'g':
-            //qDebug() << "LAYER: " << name;
-            ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
-
-            activePileIdx  = -1;
-            activeLayerIdx = -1;
-            break;
-
-        default:
-            qDebug() << "WHAT IS THIS? " << name;
-        }
-
-        // check for selected piles
-
-        // check for selected soil layers
-    }
-
-    this->updateSystemPlot();
+void MainWindow::onSystemPlot_groundWaterSelected()
+{
+    // make groundwater settings visible:
+    ui->properties->setCurrentWidget(ui->soilPropertiesWidget);
 }
 
 void MainWindow::on_actionLicense_Information_triggered()
@@ -1829,7 +1801,6 @@ void MainWindow::on_actionLicense_Information_triggered()
     CopyrightDialog *dlg = new CopyrightDialog(this);
     dlg->exec();
 }
-
 
 void MainWindow::on_actionLicense_triggered()
 {
@@ -1850,14 +1821,209 @@ void MainWindow::on_actionProvide_Feedback_triggered()
 
 }
 
-int MainWindow::ReadFile(QString s)
+bool MainWindow::ReadFile(QString s)
 {
-    return 0;
+    /* identify filename and location for loading */
+
+    //QString filename = "PileGroupTool.json";
+
+    QString theFolder = QDir::homePath();
+    QString theFilter = "Json file (*.json)";
+    QFileDialog dlg;
+
+    QString filename = dlg.getOpenFileName(this, "Load file", theFolder, theFilter);
+
+    qWarning() << filename;
+
+    /* load JSON object from file */
+    QFile loadFile;
+    loadFile.setFileName(filename);
+
+    if (!loadFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning("Couldn't open load file.");
+        return false;
+    }
+
+    QString theFile = loadFile.readAll();
+    loadFile.close();
+
+    //qWarning() << theFile;
+
+    bool fileTypeError = false;
+
+    QJsonDocument infoDoc = QJsonDocument::fromJson(theFile.toUtf8());
+
+    /* start a JSON object to represent the system */
+    QJsonObject json = infoDoc.object();
+
+    QString creator;
+    creator  = json["creator"].toString();
+
+    if (creator != "PileGroupTool") fileTypeError = true;
+
+    QString version;
+    version  = json["version"].toString();
+
+    fileTypeError = true;
+    if (version == "1.0")   fileTypeError = false;
+    if (version == "1.99")  fileTypeError = false;
+    if (version == "2.0")   fileTypeError = false;
+
+    if (fileTypeError) {
+        QMessageBox msg(QMessageBox::Information, "Info", "Not a valid model file.");
+        msg.exec();
+        return false;
+    }
+
+    QString username;
+    username = json["username"].toString();
+    QString author;
+    author   = json["author"].toString();
+    QString filedate;
+    filedate = json["date"].toString();
+
+    /* write layer information */
+    QJsonArray layerInfo = json["layers"].toArray();
+
+    int nLayer = 0;
+
+    foreach (QJsonValue jval, layerInfo) {
+
+        QJsonObject aLayer = jval.toObject();
+
+        mSoilLayers[nLayer].setLayerDepth(aLayer["depth"].toDouble());
+        mSoilLayers[nLayer].setLayerThickness(aLayer["thickness"].toDouble());
+        mSoilLayers[nLayer].setLayerUnitWeight(aLayer["gamma"].toDouble());
+        mSoilLayers[nLayer].setLayerSatUnitWeight(aLayer["gammaSaturated"].toDouble());
+        mSoilLayers[nLayer].setLayerFrictionAng(aLayer["phi"].toDouble());
+        mSoilLayers[nLayer].setLayerCohesion(aLayer["cohesion"].toDouble());
+        mSoilLayers[nLayer].setLayerStiffness(aLayer["Gmodulus"].toDouble());
+
+        nLayer++;
+        if (nLayer >= MAXLAYERS)  break;
+    }
+
+    while (nLayer+1 < MAXLAYERS) {
+        /* fill layer array with identical layer properties */
+        mSoilLayers[nLayer+1].setLayerDepth(mSoilLayers[nLayer].getLayerDepth());
+        mSoilLayers[nLayer+1].setLayerThickness(mSoilLayers[nLayer].getLayerThickness());
+        mSoilLayers[nLayer+1].setLayerUnitWeight(mSoilLayers[nLayer].getLayerUnitWeight());
+        mSoilLayers[nLayer+1].setLayerSatUnitWeight(mSoilLayers[nLayer].getLayerSatUnitWeight());
+        mSoilLayers[nLayer+1].setLayerFrictionAng(mSoilLayers[nLayer].getLayerFrictionAng());
+        mSoilLayers[nLayer+1].setLayerCohesion(mSoilLayers[nLayer].getLayerCohesion());
+        mSoilLayers[nLayer+1].setLayerStiffness(mSoilLayers[nLayer].getLayerStiffness());
+
+        nLayer++;
+    }
+
+    double groundWaterTable = json["groundWaterTable"].toDouble();
+    if (groundWaterTable < 0.0) groundWaterTable = 0.0;
+    gwtDepth = groundWaterTable;
+
+    /* write pile information */
+    QJsonArray pileInfo = json["piles"].toArray();
+
+    int nPile = 0;
+
+    foreach (QJsonValue jval, pileInfo) {
+        QJsonObject aPile = jval.toObject();
+
+        L2[nPile]           = aPile["embeddedLength"].toDouble();
+        L1                  = aPile["freeLength"].toDouble();
+        pileDiameter[nPile] = aPile["diameter"].toDouble();
+        E[nPile]            = aPile["YoungsModulus"].toDouble();
+        xOffset[nPile]      = aPile["xOffset"].toDouble();
+
+        nPile++;
+        if (nPile >= MAXPILES) break;
+    }
+
+    numPiles = nPile;
+
+    useToeResistance              = json["useToeResistance"].toBool();
+    assumeRigidPileHeadConnection = json["assumeRigidPileHeadConnection"].toBool();
+
+
+    /* read load information */
+    if (version == "1.0")
+    {
+        QJsonObject loadInfo = json["loads"].toObject();
+
+        P    = loadInfo["HForce"].toDouble();
+        PV   = loadInfo["VForce"].toDouble();
+        PMom = loadInfo["Moment"].toDouble();
+
+        HDisp = 0.0;
+        VDisp = 0.0;
+
+        surfaceDisp  = 0.0;
+        percentage12 = 100.;
+        percentage23 = 0.0;
+        percentageBase = 0.0;
+
+        loadControlType = LoadControlType::ForceControl;
+    }
+    else if (version == "1.99" || version == "2.0")
+    {
+        QJsonObject loadInfo = json["loads"].toObject();
+        QJsonObject forceControlObj = loadInfo["forceControl"].toObject();
+        QJsonObject pushOverObj     = loadInfo["pushOver"].toObject();
+        QJsonObject soilMotionObj   = loadInfo["soilMotion"].toObject();
+
+        QString loadType = loadInfo["loadControlType"].toString();
+
+        if (loadType.toLower() == "forcecontrol")
+            { loadControlType = LoadControlType::ForceControl; }
+        else if (loadType.toLower() == "pushover")
+            { loadControlType = LoadControlType::PushOver; }
+        else if (loadType.toLower() == "soilmotion")
+            { loadControlType = LoadControlType::SoilMotion; }
+        else
+            { loadControlType = LoadControlType::ForceControl; }
+
+        P    = forceControlObj["HForce"].toDouble();
+        PV   = forceControlObj["VForce"].toDouble();
+        PMom = forceControlObj["Moment"].toDouble();
+
+        HDisp = pushOverObj["HDisp"].toDouble();
+        VDisp = pushOverObj["VDisp"].toDouble();
+
+        surfaceDisp    = soilMotionObj["surfaceDisp"].toDouble();
+        percentage12   = soilMotionObj["percentage12"].toDouble();
+        percentage23   = soilMotionObj["percentage23"].toDouble();
+        percentageBase = soilMotionObj["percentageBase"].toDouble();
+    }
+
+    /* FEA parameters */
+    QJsonObject FEAparameters = json["FEAparameters"].toObject();
+
+    minElementsPerLayer = FEAparameters["minElementsPerLayer"].toInt();
+    maxElementsPerLayer = FEAparameters["maxElementsPerLayer"].toInt();
+    numElementsInAir    = FEAparameters["numElementsInAir"].toInt();
+
+    if (minElementsPerLayer < MIN_ELEMENTS_PER_LAYER)   minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
+    if (maxElementsPerLayer > 3*MAX_ELEMENTS_PER_LAYER) maxElementsPerLayer = 3*MAX_ELEMENTS_PER_LAYER;
+    if (numElementsInAir < NUM_ELEMENTS_IN_AIR)         numElementsInAir = NUM_ELEMENTS_IN_AIR;
+    if (numElementsInAir > MAX_ELEMENTS_PER_LAYER)      numElementsInAir = MAX_ELEMENTS_PER_LAYER;
+
+    return true;
 }
 
-int MainWindow::WriteFile(QString s)
+bool MainWindow::WriteFile(QString s)
 {
-    int cnt = 0;
+    /* identify filename and location for saving */
+
+    QString path = QDir::homePath();
+    QDir d;
+    d.setPath(path);
+    QString filename = d.filePath("PileGroupTool.json");
+    QString theFilter = "Json file (*.json)";
+    QFileDialog dlg;
+
+    filename = dlg.getSaveFileName(this, "Save file", filename, theFilter );
+
+    // check if cancelled
+    if (filename.isEmpty()) return false;
 
     /* start a JSON object to represent the system */
     QJsonObject *json = new QJsonObject();
@@ -1882,7 +2048,7 @@ int MainWindow::WriteFile(QString s)
         aLayer.insert("gamma", mSoilLayers[lid].getLayerUnitWeight());
         aLayer.insert("gammaSaturated", mSoilLayers[lid].getLayerSatUnitWeight());
         aLayer.insert("phi", mSoilLayers[lid].getLayerFrictionAng());
-        aLayer.insert("cohesion", 0.0);
+        aLayer.insert("cohesion", mSoilLayers[lid].getLayerCohesion());
         aLayer.insert("Gmodulus", mSoilLayers[lid].getLayerStiffness());
 
         layerInfo->append(aLayer);
@@ -1911,12 +2077,47 @@ int MainWindow::WriteFile(QString s)
     json->insert("useToeResistance", useToeResistance);
     json->insert("assumeRigidPileHeadConnection", assumeRigidPileHeadConnection);
 
+
     /* write load information */
     QJsonObject *loadInfo = new QJsonObject();
 
-    loadInfo->insert("HForce", P);
-    loadInfo->insert("VForce", PV);
-    loadInfo->insert("Moment", PMom);
+    int selection = ui->forceTypeSelector->currentIndex();
+    QString loadType;
+
+    switch (selection)
+    {
+    case 0:
+        loadType = "forceControl";
+        break;
+    case 1:
+        loadType = "pushOver";
+        break;
+    case 2:
+        loadType = "soilMotion";
+        break;
+    default:
+        qWarning() << "cannot identify the loadControlType";
+    }
+
+    loadInfo->insert("loadControlType", loadType);
+
+    QJsonObject *forceControlObj = new QJsonObject();
+    forceControlObj->insert("HForce", P);
+    forceControlObj->insert("VForce", PV);
+    forceControlObj->insert("Moment", PMom);
+    loadInfo->insert("forceControl", *forceControlObj);
+
+    QJsonObject *pushOverObj     = new QJsonObject();
+    pushOverObj->insert("HDisp", HDisp);
+    pushOverObj->insert("VDisp", VDisp);
+    loadInfo->insert("pushOver", *pushOverObj);
+
+    QJsonObject *soilMotionObj   = new QJsonObject();
+    soilMotionObj->insert("surfaceDisp", surfaceDisp);
+    soilMotionObj->insert("percentage12", percentage12);
+    soilMotionObj->insert("percentage23", percentage23);
+    soilMotionObj->insert("percentageBase", percentageBase);
+    loadInfo->insert("soilMotion", *soilMotionObj);
 
     json->insert("loads", *loadInfo);
 
@@ -1933,7 +2134,7 @@ int MainWindow::WriteFile(QString s)
 
     /* write JSON object to file */
 
-    QFile saveFile( QStringLiteral("save.json") );
+    QFile saveFile( filename );
 
     if (!saveFile.open(QIODevice::WriteOnly)) {
         qWarning("Couldn't open save file.");
@@ -1947,9 +2148,12 @@ int MainWindow::WriteFile(QString s)
     delete layerInfo;
     delete pileInfo;
     delete loadInfo;
+    delete forceControlObj;
+    delete pushOverObj;
+    delete soilMotionObj;
     delete json;
 
-    return cnt;
+    return true;
 }
 
 
@@ -1959,3 +2163,254 @@ void MainWindow::replyFinished(QNetworkReply *pReply)
 }
 
 
+
+void MainWindow::on_forceTypeSelector_activated(int index)
+{
+    ui->loadTypesStack->setCurrentIndex(index);
+}
+
+
+/* ***** loading parameter changes ***** */
+
+void MainWindow::on_appliedHorizontalForce_editingFinished()
+{
+    P = ui->appliedHorizontalForce->value();
+
+    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->horizontalForceSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_horizontalForceSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    P = MAX_FORCE * sliderRatio;
+
+    ui->appliedHorizontalForce->setValue(P);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_appliedVerticalForce_editingFinished()
+{
+    PV = ui->appliedHorizontalForce->value();
+
+    int sliderPosition = nearbyint(100.*PV/MAX_FORCE);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->verticalForceSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_verticalForceSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    PV = MAX_FORCE * sliderRatio;
+
+    ui->appliedVerticalForce->setValue(PV);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_appliedMoment_editingFinished()
+{
+    PMom = ui->appliedMoment->value();
+
+    int sliderPosition = nearbyint(100.*PMom/MAX_MOMENT);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->momentSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_momentSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    PMom = MAX_MOMENT * sliderRatio;
+
+    ui->appliedMoment->setValue(PMom);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+
+
+
+
+void MainWindow::on_pushoverDisplacement_editingFinished()
+{
+    HDisp = ui->pushoverDisplacement->value();
+
+    int sliderPosition = nearbyint(100.*HDisp/MAX_DISP);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->pushoverDisplacementSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_pushoverDisplacementSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    HDisp = MAX_DISP * sliderRatio;
+
+    ui->pushoverDisplacement->setValue(HDisp);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_pulloutDisplacement_editingFinished()
+{
+    VDisp = ui->pulloutDisplacement->value();
+
+    int sliderPosition = nearbyint(100.*VDisp/MAX_DISP);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->pulloutDisplacementSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_pulloutDisplacementSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    VDisp = MAX_DISP * sliderRatio;
+
+    ui->pulloutDisplacement->setValue(VDisp);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+
+
+
+
+
+void MainWindow::on_surfaceDisplacement_editingFinished()
+{
+    surfaceDisp = ui->surfaceDisplacement->value();
+
+    int sliderPosition = nearbyint(100.*surfaceDisp/MAX_DISP);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->surfaceDisplacementSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_surfaceDisplacementSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    surfaceDisp = MAX_DISP * sliderRatio;
+
+    ui->surfaceDisplacement->setValue(surfaceDisp);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_Interface12_editingFinished()
+{
+    percentage12 = ui->Interface12->value();
+
+    int sliderPosition = nearbyint(percentage12);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->Interface12Slider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_Interface12Slider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    percentage12 = sliderRatio;
+
+    ui->Interface12->setValue(percentage12);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_Interface23_editingFinished()
+{
+    percentage23 = ui->Interface23->value();
+
+    int sliderPosition = nearbyint(percentage23);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->Interface23Slider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_Interface23Slider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    percentage23 = sliderRatio;
+
+    ui->Interface23->setValue(percentage23);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}
+
+void MainWindow::on_BaseDisplacement_editingFinished()
+{
+    percentageBase = ui->BaseDisplacement->value();
+
+    int sliderPosition = nearbyint(percentageBase);
+    if (sliderPosition >  100) sliderPosition= 100;
+    if (sliderPosition < -100) sliderPosition=-100;
+
+    ui->BaseDisplacementSlider->setSliderPosition(sliderPosition);
+}
+
+void MainWindow::on_BaseDisplacementSlider_valueChanged(int value)
+{
+    double sliderRatio;
+
+    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
+    sliderRatio = double(value)/100.0;
+
+    percentageBase = sliderRatio;
+
+    ui->BaseDisplacement->setValue(percentageBase);
+
+    this->doAnalysis();
+    this->updateSystemPlot();
+}

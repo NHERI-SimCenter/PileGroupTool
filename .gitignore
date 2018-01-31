@@ -6,6 +6,7 @@
 
 # Qt created files
 moc*
+ui_*.h
 
 # Compiled Object files
 *.slo
@@ -41,3 +42,8 @@ moc*
 *.autosave
 
 mainwindow - Copy.ui
+*.stash
+qrc_qtpileresources.cpp
+Makefile
+ui_mainwindow.h
+ui_mainwindow.h

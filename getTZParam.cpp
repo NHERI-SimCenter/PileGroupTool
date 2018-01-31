@@ -6,6 +6,8 @@
 //                                                         //
 //   Created by:  Chris McGann                             //
 //                University of Washington                 //
+//   Updated by:  Peter Mackenzie-Helnwein                 //
+//                University of Washington                 //
 //                                                         //
 /////////////////////////////////////////////////////////////
 
@@ -41,7 +43,8 @@ getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, d
   
   // TzSimple1 material formulated with tult as force, not stress, multiply by tributary length of pile
   *tult = tu*pEleLength;
-  
+
+/*
   // Mosher (1984) provides recommended initial tangents based on friction angle
   // values are in units of psf/in
   double kf[7];
@@ -78,6 +81,10 @@ getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, d
   
   // need to convert kf to units of kN/m^3
   double kSIunits = k*1.885;
+*/
+
+  // better use a regression in kN/m^3 (Peter Mackenzie-Helnwein, 2018)
+  double kSIunits = 2304. * phi - 53408.;
   
   // based on a t-z curve of the shape recommended by Mosher (1984), z50 = tult/kf
   *z50 = *tult/kSIunits;

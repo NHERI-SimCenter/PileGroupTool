@@ -127,7 +127,7 @@ class Node : public DomainComponent
     virtual int recvSelf(int commitTag, Channel &theChannel, 
 			 FEM_ObjectBroker &theBroker);
     virtual void Print(OPS_Stream &s, int flag = 0);
-    virtual int displaySelf(Renderer &theRenderer, int displayMode, float fact);
+    virtual int displaySelf(Renderer &theRenderer, int displayMode, float fact, const char **displayModes=0, int numModes=0);
 
     // AddingSensitivity:BEGIN /////////////////////////////////////////
     int addInertiaLoadSensitivityToUnbalance(const Vector &accel, 
