@@ -16,6 +16,14 @@
         //
         plot = new QwtPlot(this);
 
+
+        // Create Background Grid for Plot
+        QwtPlotGrid *grid = new QwtPlotGrid();
+        grid->setMajorPen(QPen(Qt::lightGray, 0.8));
+        grid->attach( plot );
+
+
+        // Layout plot
         QGridLayout *lyt = new QGridLayout(this);
         lyt->addWidget(plot,0,0);
         lyt->setMargin(0);
@@ -147,7 +155,6 @@ void SystemPlotQwt::refresh()
 
     //     Legend not working properly yet...
     //plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
-
 
 
     // Temp data to check if legend is working
