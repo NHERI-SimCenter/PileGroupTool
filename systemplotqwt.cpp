@@ -7,6 +7,9 @@
 #include <qwt_plot_grid.h>
 #include <qwt_symbol.h>
 
+#include <QDebug>
+#include <QTime>
+
 
     SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
         SystemPlotSuper(parent)
@@ -67,6 +70,8 @@ SystemPlotQwt::~SystemPlotQwt()
 
 void SystemPlotQwt::refresh()
 {  
+    //qDebug() << "entering SystemPlotQwt::refresh()" << QTime::currentTime();
+
     for (int k=0; k<MAXPILES; k++) {
         headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
     }
@@ -452,6 +457,7 @@ void SystemPlotQwt::refresh()
 
     plot->xAxis->setScaleRatio(plot->yAxis);
     plot->rescaleAxes();
-    plot->replot();
 #endif
+    plot->replot();
+
 }
