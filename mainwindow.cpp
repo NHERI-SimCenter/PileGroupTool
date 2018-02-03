@@ -6,9 +6,14 @@
 #include "utilWindows/dialogabout.h"
 #include "utilWindows/dialogfuturefeature.h"
 #include "pilefeamodeler.h"
+
 #include "systemplotsuper.h"
 #include "systemplotqcp.h"
 #include "systemplotqwt.h"
+
+#include "resultplotsuper.h"
+#include "resultplotqcp.h"
+#include "resultplotqwt.h"
 
 #include <QApplication>
 #include <QtNetwork/QNetworkAccessManager>
@@ -87,13 +92,52 @@ MainWindow::MainWindow(QWidget *parent) :
     this->fetchSettings();
 
     if (useGraphicsLib == "Qwt")
-        { systemPlot = new SystemPlotQwt(ui->systemTab); }
+    {
+        systemPlot  = new SystemPlotQwt(ui->systemTab);
+
+        displPlot   = new ResultPlotQwt(ui->dispTab);
+        pullOutPlot = new ResultPlotQwt(ui->pulloutTab);
+        momentPlot  = new ResultPlotQwt(ui->momentTab);
+        shearPlot   = new ResultPlotQwt(ui->shearTab);
+        axialPlot   = new ResultPlotQwt(ui-> axialTab);
+        stressPlot  = new ResultPlotQwt(ui->stressTab);
+        pultPlot    = new ResultPlotQwt(ui->pultTab);
+        y50Plot     = new ResultPlotQwt(ui->y50Tab);
+    }
     else
-        { systemPlot = new SystemPlotQCP(ui->systemTab); }
+    {
+        systemPlot  = new SystemPlotQCP(ui->systemTab);
 
-    QLayout *lyt = ui->systemTab->layout();
-    lyt->addWidget(systemPlot);
+        displPlot   = new ResultPlotQCP(ui->dispTab);
+        pullOutPlot = new ResultPlotQCP(ui->pulloutTab);
+        momentPlot  = new ResultPlotQCP(ui->momentTab);
+        shearPlot   = new ResultPlotQCP(ui->shearTab);
+        axialPlot   = new ResultPlotQCP(ui->axialTab);
+        stressPlot  = new ResultPlotQCP(ui->stressTab);
+        pultPlot    = new ResultPlotQCP(ui->pultTab);
+        y50Plot     = new ResultPlotQCP(ui->y50Tab);
+    }
 
+    //
+    // place widgets into their respective layouts
+    //
+    QLayout *lyt;
+
+    lyt = ui->systemTab->layout();  lyt->addWidget(systemPlot);
+    lyt = ui->dispTab->layout();    lyt->addWidget(displPlot);
+    lyt = ui->pulloutTab->layout(); lyt->addWidget(pullOutPlot);
+    lyt = ui->momentTab->layout();  lyt->addWidget(momentPlot);
+    lyt = ui->shearTab->layout();   lyt->addWidget(shearPlot);
+    lyt = ui->axialTab->layout();   lyt->addWidget(axialPlot);
+    lyt = ui->stressTab->layout();  lyt->addWidget(stressPlot);
+    lyt = ui->pultTab->layout();    lyt->addWidget(pultPlot);
+    lyt = ui->y50Tab->layout();     lyt->addWidget(y50Plot);
+
+    ui->tabWidget->setCurrentWidget(ui->dispTab);
+
+    //
+    // general setup
+    //
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
     ui->appliedHorizontalForce->setMaximum(MAX_FORCE);
@@ -388,11 +432,16 @@ void MainWindow::doAnalysis(void)
 
     /* ******** done with sizing and adjustments ******** */
 
-    //this->updateSystemPlot();
+    QVector<QVector<double> *> locList;
+    QVector<QVector<double> *> pultList;
+    QVector<QVector<double> *> y50List;
 
-    QVector<QVector<double> > locList(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double> > pultList(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double> > y50List(MAXPILES, QVector<double>(numNodePiles,0.0));
+    for (int i=0; i<numPiles; i++)
+    {
+        locList.append(new QVector<double>(numNodePile[i],0.0));
+        pultList.append(new QVector<double>(numNodePile[i],0.0));
+        y50List.append(new QVector<double>(numNodePile[i],0.0));
+    }
 
     int ioffset  = numNodePiles;              // for p-y spring nodes
     int ioffset2 = ioffset + numNodePiles;    // for pile nodes
@@ -501,9 +550,9 @@ void MainWindow::doAnalysis(void)
             theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
         }
 
-        locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-        pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
-        y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+        (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+        (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
+        (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
 
         //
         // work the way up layer by layer
@@ -596,11 +645,11 @@ void MainWindow::doAnalysis(void)
                 theMat = new PySimple1(numNode, 0, 2, pult, y50, 0.0, 0.0);
                 OPS_addUniaxialMaterial(theMat);
 
-                locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+                (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
                 // pult is a nodal value for the p-y spring.
                 // It needs to be scaled by element length ito represent a line load
-                pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = pult/eleSize;
-                y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = y50;
+                (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = pult/eleSize;
+                (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = y50;
 
                 // t-z spring material
                 getTzParam(phi, pileDiameter[pileIdx],  sigV,  eleSize, &tult, &z50);
@@ -666,9 +715,15 @@ void MainWindow::doAnalysis(void)
                 theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
             }
 
-            locList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-            pultList[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
-            y50List[pileIdx][numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+            /*
+            (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
+            (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
+            (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
+            */
+
+            locList[pileIdx]->append(zCoord);
+            pultList[pileIdx]->append(0.001);
+            y50List[pileIdx]->append(0.00001);
 
             zCoord += eleSize;
         }
@@ -869,15 +924,39 @@ void MainWindow::doAnalysis(void)
     theAnalysis.analyze(20);
     theDomain.calculateNodalReactions(0);
 
-    QVector<QVector<double>> loc(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> disp(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> moment(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> shear(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double>> stress(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<double> zero(numNodePiles,0.0);
+    this->updateResultPlots();
 
-    double maxDisp   = 0.0;
-    double minDisp   = 0.0;
+
+
+
+
+
+
+    QVector<QVector<double> *> loc;
+    QVector<QVector<double> *> Hdisps;
+    QVector<QVector<double> *> Vdisps;
+    QVector<QVector<double> *> moment;
+    QVector<QVector<double> *> shear;
+    QVector<QVector<double> *> axial;
+    QVector<QVector<double> *> stress;
+
+    for (int i=0; i<numPiles; i++)
+    {
+        loc.append(new QVector<double>(numNodePile[i],0.0));
+        Hdisps.append(new QVector<double>(numNodePile[i],0.0));
+        Vdisps.append(new QVector<double>(numNodePile[i],0.0));
+        moment.append(new QVector<double>(numNodePile[i],0.0));
+        shear.append(new QVector<double>(numNodePile[i],0.0));
+        axial.append(new QVector<double>(numNodePile[i],0.0));
+        stress.append(new QVector<double>(numNodePile[i],0.0));
+    }
+
+    double maxHDisp  = 0.0;
+    double minHDisp  = 0.0;
+    double maxVDisp  = 0.0;
+    double minVDisp  = 0.0;
+    double maxAxial  = 0.0;
+    double minAxial  = 0.0;
     double maxShear  = 0.0;
     double minShear  = 0.0;
     double maxMoment = 0.0;
@@ -888,22 +967,22 @@ void MainWindow::doAnalysis(void)
     for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
         for (int i=1; i<=numNodePile[pileIdx]; i++) {
-            //zero[i-1] = 0.0;
-
-            //qDebug() << "getNode(" << i+nodeIDoffset[pileIdx] << ")";
 
             Node *theNode = theDomain.getNode(i+nodeIDoffset[pileIdx]);
             const Vector &nodeCoord = theNode->getCrds();
-            loc[pileIdx][i-1] = nodeCoord(2);
+            (*loc[pileIdx])[i-1] = nodeCoord(2);
             int iLayer;
             for (iLayer=0; iLayer<maxLayers[pileIdx]; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
-            stress[pileIdx][i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
+            (*stress[pileIdx])[i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
             //if (stress[pileIdx][i-1] > maxStress) maxStress = stress[pileIdx][i-1];
             //if (stress[pileIdx][i-1] < minStress) minStress = stress[pileIdx][i-1];
             const Vector &nodeDisp = theNode->getDisp();
-            disp[pileIdx][i-1] = nodeDisp(0);
-            if (disp[pileIdx][i-1] > maxDisp) maxDisp = disp[pileIdx][i-1];
-            if (disp[pileIdx][i-1] < minDisp) minDisp = disp[pileIdx][i-1];
+            (*Hdisps[pileIdx])[i-1] = nodeDisp(0);
+            if ((*Hdisps[pileIdx])[i-1] > maxHDisp) maxHDisp = Hdisps[pileIdx]->value(i-1);
+            if ((*Hdisps[pileIdx])[i-1] < minHDisp) minHDisp = Hdisps[pileIdx]->value(i-1);
+            (*Vdisps[pileIdx])[i-1] = nodeDisp(2);
+            if ((*Vdisps[pileIdx])[i-1] > maxVDisp) maxVDisp = Vdisps[pileIdx]->value(i-1);
+            if ((*Vdisps[pileIdx])[i-1] < minVDisp) minVDisp = Vdisps[pileIdx]->value(i-1);
         }
     }
 
@@ -911,21 +990,41 @@ void MainWindow::doAnalysis(void)
 
         //qDebug() << "= pile index: " << pileIdx ;
 
-        moment[pileIdx][0] = 0.0;
-        shear[pileIdx][0]  = 0.0;
+        (*moment[pileIdx])[0] = 0.0;
+        (*shear[pileIdx])[0]  = 0.0;
+        (*axial[pileIdx])[0]  = 0.0;
 
         for (int i=1; i<numNodePile[pileIdx]; i++) {
 
-            //qDebug() << "getElement(" << i+elemIDoffset[pileIdx] << ")";
+            /*
+             *  identify force components
+             *  components identified by *** will be shown in plots
+             *
+             * eleForces[0] ... Px on node 1 == in plane shear force
+             * eleForces[1] ... Py on node 1 == out of plane shear force
+             * eleForces[2] ... Pz on node 1 == axial force
+             * eleForces[3] ... Mx on node 1 == out of plane bending moment
+             * eleForces[4] ... My on node 1 == in plane bending moment
+             * eleForces[5] ... Mz on node 1 == torsion
+             * eleForces[6] ... Px on node 2 == in plane shear force        ***
+             * eleForces[7] ... Py on node 2 == out of plane shear force
+             * eleForces[8] ... Pz on node 2 == axial force                 ***
+             * eleForces[9] ... Mx on node 2 == out of plane bending moment
+             * eleForces[10] .. My on node 2 == in plane bending moment     ***
+             * eleForces[11] .. Mz on node 2 == torsion
+             */
 
             Element *theEle = theDomain.getElement(i+elemIDoffset[pileIdx]);
             const Vector &eleForces = theEle->getResistingForce();
-            moment[pileIdx][i] = eleForces(10);
-            if (moment[pileIdx][i] > maxMoment) maxMoment = moment[pileIdx][i];
-            if (moment[pileIdx][i] < minMoment) minMoment = moment[pileIdx][i];
-            shear[pileIdx][i] = eleForces(6);
-            if (shear[pileIdx][i] > maxShear) maxShear = shear[pileIdx][i];
-            if (shear[pileIdx][i] < minShear) minShear = shear[pileIdx][i];
+            (*moment[pileIdx])[i] = eleForces(10);
+            if ((*moment[pileIdx])[i] > maxMoment) maxMoment = moment[pileIdx]->value(i);
+            if ((*moment[pileIdx])[i] < minMoment) minMoment = moment[pileIdx]->value(i);
+            (*shear[pileIdx])[i] = eleForces(6);
+            if ((*shear[pileIdx])[i] > maxShear) maxShear = shear[pileIdx]->value(i);
+            if ((*shear[pileIdx])[i] < minShear) minShear = shear[pileIdx]->value(i);
+            (*axial[pileIdx])[i] = eleForces(8);
+            if ((*axial[pileIdx])[i] > maxAxial) maxAxial = axial[pileIdx]->value(i);
+            if ((*axial[pileIdx])[i] < minAxial) minAxial = axial[pileIdx]->value(i);
         }
     }
 
@@ -933,23 +1032,87 @@ void MainWindow::doAnalysis(void)
     // plot results
     //
 
-    // displacements
-    if (showDisplacements) { this->plotResults(ui->displPlot, zero, loc[0], disp, loc); }
+    //qDebug() << numNodePile[0] << numNodePile[1] << numNodePile[2] ;
+
+    // lateral displacements
+    if (showDisplacements) {
+        displPlot->plotResults(Hdisps, loc);
+    }
+
+    // axial displacements
+    if (showPullOut) {
+        pullOutPlot->plotResults(Vdisps, loc);
+    }
+
+    // axial
+    if (showAxial) {
+        axialPlot->plotResults(axial, loc);
+    }
 
     // shear
-    if (showShear) { this->plotResults(ui->shearPlot, zero, loc[0], shear, loc); }
+    if (showShear) {
+        shearPlot->plotResults(shear, loc);
+    }
 
     // moments
-    if (showMoments) { this->plotResults(ui->momentPlot, zero, loc[0], moment, loc); }
+    if (showMoments) {
+        momentPlot->plotResults(moment, loc);
+    }
 
     // vertical stress
-    if (showStress) { this->plotResults(ui->stressPlot, zero, loc[0], stress, loc); }
+    if (showStress) {
+        stressPlot->plotResults(stress, loc);
+    }
 
     // p_ultimate
-    if (showPultimate) { this->plotResults(ui->pultPlot, zero, loc[0], pultList, locList); }
+    if (showPultimate) {
+        pultPlot->plotResults(pultList, locList);
+    }
 
     // y_50
-    if (showY50) { this->plotResults(ui->y50Plot, zero, loc[0], y50List, locList); }
+    if (showY50) {
+        y50Plot->plotResults(y50List, locList);
+    }
+
+    for (int i=0; i<numPiles; i++)
+    {
+        if (loc[i]      != NULL) { delete loc[i];      loc[i]      = NULL; }
+        if (Hdisps[i]   != NULL) { delete Hdisps[i];   Hdisps[i]   = NULL; }
+        if (Vdisps[i]   != NULL) { delete Vdisps[i];   Vdisps[i]   = NULL; }
+        if (moment[i]   != NULL) { delete moment[i];   moment[i]   = NULL; }
+        if (shear[i]    != NULL) { delete shear[i];    shear[i]    = NULL; }
+        if (axial[i]    != NULL) { delete axial[i];    axial[i]    = NULL; }
+        if (stress[i]   != NULL) { delete stress[i];   stress[i]   = NULL; }
+
+        if (locList[i]  != NULL) { delete locList[i];  locList[i]  = NULL; }
+        if (pultList[i] != NULL) { delete pultList[i]; pultList[i] = NULL; }
+        if (y50List[i]  != NULL) { delete y50List[i];  y50List[i]  = NULL; }
+    }
+
+    /*
+     *
+    //
+    // the following lines will become necessary once those vectors become member variables
+    //
+    loc.clear();
+    Hdisps.clear();
+    Vdisps.clear();
+    moment.clear();
+    shear.clear();
+    axial.clear();
+    stress.clear();
+
+    locList.clear();
+    pultList.clear();
+    y50List.clear();
+    *
+    */
+
+}
+
+void MainWindow::updateResultPlots()
+{
+    // this should call the results update from th eanalysis modeler and the plot methods
 }
 
 void MainWindow::fetchSettings()
@@ -1040,56 +1203,56 @@ void MainWindow::updateLayerState()
 
 void MainWindow::updateUI()
 {
-    if (!showDisplacements && ui->tabWidget->indexOf(ui->displacement)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->displacement));
+    if (!showDisplacements && ui->tabWidget->indexOf(ui->dispTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->dispTab));
     }
-    if (!showPullOut && ui->tabWidget->indexOf(ui->pullout)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pullout));
+    if (!showPullOut && ui->tabWidget->indexOf(ui->pulloutTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pulloutTab));
     }
-    if (!showMoments && ui->tabWidget->indexOf(ui->moment)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->moment));
+    if (!showMoments && ui->tabWidget->indexOf(ui->momentTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->momentTab));
     }
-    if (!showShear && ui->tabWidget->indexOf(ui->shear)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->shear));
+    if (!showShear && ui->tabWidget->indexOf(ui->shearTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->shearTab));
     }
-    if (!showAxial && ui->tabWidget->indexOf(ui->axial)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->axial));
+    if (!showAxial && ui->tabWidget->indexOf(ui->axialTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->axialTab));
     }
-    if (!showStress && ui->tabWidget->indexOf(ui->stress)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->stress));
+    if (!showStress && ui->tabWidget->indexOf(ui->stressTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->stressTab));
     }
-    if (!showPultimate && ui->tabWidget->indexOf(ui->pult)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pult));
+    if (!showPultimate && ui->tabWidget->indexOf(ui->pultTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->pultTab));
     }
-    if (!showY50 && ui->tabWidget->indexOf(ui->y50)>=0 ) {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->y50));
+    if (!showY50 && ui->tabWidget->indexOf(ui->y50Tab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->y50Tab));
     }
 
     int numTabs = ui->tabWidget->count();
 
-    if (showDisplacements && ui->tabWidget->indexOf(ui->displacement) < 0 ) {
-        ui->tabWidget->addTab(ui->displacement,"Lateral Disp");
+    if (showDisplacements && ui->tabWidget->indexOf(ui->dispTab) < 0 ) {
+        ui->tabWidget->addTab(ui->dispTab,"Lateral Disp");
     }
-    if (showPullOut && ui->tabWidget->indexOf(ui->pullout) < 0 ) {
-        ui->tabWidget->addTab(ui->pullout,"Axial Disp");
+    if (showPullOut && ui->tabWidget->indexOf(ui->pulloutTab) < 0 ) {
+        ui->tabWidget->addTab(ui->pulloutTab,"Axial Disp");
     }
-    if (showMoments && ui->tabWidget->indexOf(ui->moment) < 0 ) {
-        ui->tabWidget->addTab(ui->moment,"Moment");
+    if (showMoments && ui->tabWidget->indexOf(ui->momentTab) < 0 ) {
+        ui->tabWidget->addTab(ui->momentTab,"Moment");
     }
-    if (showShear && ui->tabWidget->indexOf(ui->shear) < 0 ) {
-        ui->tabWidget->addTab(ui->shear,"Shear");
+    if (showShear && ui->tabWidget->indexOf(ui->shearTab) < 0 ) {
+        ui->tabWidget->addTab(ui->shearTab,"Shear");
     }
-    if (showAxial && ui->tabWidget->indexOf(ui->axial) < 0 ) {
-        ui->tabWidget->addTab(ui->axial,"Axial");
+    if (showAxial && ui->tabWidget->indexOf(ui->axialTab) < 0 ) {
+        ui->tabWidget->addTab(ui->axialTab,"Axial");
     }
-    if (showStress && ui->tabWidget->indexOf(ui->stress) < 0 ) {
-        ui->tabWidget->addTab(ui->stress,"Stress");
+    if (showStress && ui->tabWidget->indexOf(ui->stressTab) < 0 ) {
+        ui->tabWidget->addTab(ui->stressTab,"Stress");
     }
-    if (showPultimate && ui->tabWidget->indexOf(ui->pult) < 0 ) {
-        ui->tabWidget->addTab(ui->pult,"p_ult");
+    if (showPultimate && ui->tabWidget->indexOf(ui->pultTab) < 0 ) {
+        ui->tabWidget->addTab(ui->pultTab,"p_ult");
     }
-    if (showY50 && ui->tabWidget->indexOf(ui->y50) < 0) {
-        ui->tabWidget->addTab(ui->y50,"y50");
+    if (showY50 && ui->tabWidget->indexOf(ui->y50Tab) < 0) {
+        ui->tabWidget->addTab(ui->y50Tab,"y50");
     }
 }
 
@@ -1507,38 +1670,6 @@ int  MainWindow::adjustLayersToPiles()
 {
     return 0;
 }
-
-//
-// plotter functions
-//
-void MainWindow::plotResults(QCustomPlot *qcp, QVector<double> z, QVector<double> xOffset, \
-                             QVector<QVector<double> > x, QVector<QVector<double> > y)
-{
-    qcp->clearPlottables();
-
-    qcp->autoAddPlottableToLegend();
-    qcp->legend->setVisible(true);
-
-    qcp->addGraph();
-    qcp->graph(0)->setData(z,xOffset);
-    qcp->graph(0)->setPen(QPen(Qt::black));
-    qcp->graph(0)->removeFromLegend();
-
-    for (int ii=0; ii<numPiles; ii++) {
-        QCPCurve *mCurve = new QCPCurve(qcp->xAxis, qcp->yAxis);
-        mCurve->setData(x[ii].mid(0,numNodePile[ii]),y[ii].mid(0,numNodePile[ii]));
-        mCurve->setPen(QPen(LINE_COLOR[ii], 3));
-        mCurve->setName(QString("Pile #%1").arg(ii+1));
-        //qcp->addPlottable(mCurve);
-    }
-
-    qcp->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    qcp->axisRect()->autoMargins();
-    qcp->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignLeft|Qt::AlignBottom);
-    qcp->rescaleAxes();
-    qcp->replot();
-}
-
 
 void MainWindow::on_properties_currentChanged(int index)
 {

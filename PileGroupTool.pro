@@ -21,8 +21,11 @@ PRODUCT_NAME = 'PileGroupTool'
 #DEFINES += APPLICATION_VERSION=\"\\\"$$M_VERSION$$member(M_REV, 1)\\\"\"
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
-include( $${PWD}/qwtconfig.pri )
-include ( $${PWD}/qwt.prf )
+#include( $${PWD}/qwtconfig.pri )
+#include ( $${PWD}/qwt.prf )
+
+include( /usr/local/qwt-6.2.0-svn/features/qwtconfig.pri )
+include( /usr/local/qwt-6.2.0-svn/features/qwt.prf )
 
 #win32: INCLUDES += "./ops"
 #win32: LIBS += -llapack -lblas
@@ -51,7 +54,10 @@ SOURCES += main.cpp\
     pilefeamodeler.cpp \
     systemplotqwt.cpp \
     systemplotsuper.cpp \
-    systemplotqcp.cpp
+    systemplotqcp.cpp \
+    resultplotsuper.cpp \
+    resultplotqcp.cpp \
+    resultplotqwt.cpp
         
 HEADERS  += mainwindow.h \
         qcustomplot.h \
@@ -68,7 +74,10 @@ HEADERS  += mainwindow.h \
     pilegrouptool_parameters.h \
     systemplotqwt.h \
     systemplotsuper.h \
-    systemplotqcp.h
+    systemplotqcp.h \
+    resultplotsuper.h \
+    resultplotqcp.h \
+    resultplotqwt.h
 
 FORMS    += mainwindow.ui \
         materialdbinterface.ui \

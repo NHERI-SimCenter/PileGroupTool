@@ -1,7 +1,7 @@
 #ifndef PILEGROUPTOOL_PARAMETERS_H
 #define PILEGROUPTOOL_PARAMETERS_H
 
-#include <QColor>;
+#include <QColor>
 
 // fixed parameters (limits for piles and soil layers)
 #define MAXPILES 3
