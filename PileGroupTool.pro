@@ -21,15 +21,13 @@ PRODUCT_NAME = 'PileGroupTool'
 #DEFINES += APPLICATION_VERSION=\"\\\"$$M_VERSION$$member(M_REV, 1)\\\"\"
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
-#include( $${PWD}/qwtconfig.pri )
-#include ( $${PWD}/qwt.prf )
-
-include( /usr/local/qwt-6.2.0-svn/features/qwtconfig.pri )
-include( /usr/local/qwt-6.2.0-svn/features/qwt.prf )
+include( ./qwt-6.2/qwtconfig.pri )
+include( ./qwt-6.2/qwt.prf )
 
 #win32: INCLUDES += "./ops"
 #win32: LIBS += -llapack -lblas
 unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable -std=c++11
+#unix:  QMAKE_CXXFLAGS_SHLIB = -L./qwt-6.2/lib/qwt.framework/Versions/6 -lqwt
 win32: QMAKE_CXXFLAGS += /Y-
 
 include(OPS_includes.pro)
