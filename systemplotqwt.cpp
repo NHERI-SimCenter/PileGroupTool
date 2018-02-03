@@ -2,21 +2,33 @@
 #include "systemplotsuper.h"
 
 #include <qwt_plot.h>
+#include <qwt_legend.h>
+#include <qwt_plot_curve.h>
+#include <qwt_plot_grid.h>
+#include <qwt_symbol.h>
 
 
-SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
-    SystemPlotSuper(parent)
-{
+    SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
+        SystemPlotSuper(parent)
+    {
+        //
+        // create a QwtPlot
+        //
+        plot = new QwtPlot(this);
 
-    //
-    // create a Qwt
-    //
-    plot = new QwtPlot(this);
 
-    QGridLayout *lyt = new QGridLayout(this);
-    lyt->addWidget(plot,0,0);
-    lyt->setMargin(0);
-    this->setLayout(lyt);
+        // Create Background Grid for Plot
+        QwtPlotGrid *grid = new QwtPlotGrid();
+        grid->setMajorPen(QPen(Qt::lightGray, 0.8));
+        grid->attach( plot );
+
+
+        // Layout plot
+        QGridLayout *lyt = new QGridLayout(this);
+        lyt->addWidget(plot,0,0);
+        lyt->setMargin(0);
+        this->setLayout(lyt);
+
 
 #if 0
     //
@@ -141,8 +153,58 @@ void SystemPlotQwt::refresh()
     // HERE IS WHERE TO START ...
     //
 
-#if 0
+    //     Legend not working properly yet...
+    //plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
 
+
+    // Temp data to check if legend is working
+    QwtPlotCurve *curve = new QwtPlotCurve();
+    curve->setTitle( "Random Points" );
+    curve->setPen( LINE_COLOR[3], 2 );
+    curve->setBrush( GROUND_WATER_BLUE );
+
+    QPolygonF points;
+    points << QPointF( 2, 5 ) << QPointF( 2, 7 )
+        << QPointF( 4, 7 ) << QPointF( 4, 5 )
+        << QPointF( 2, 5 );
+
+    curve->setSamples( points);
+    curve->attach( plot );
+    // End Temp data
+
+
+
+    // Ground Layers
+    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
+
+        QVector<double> x(5,0.0);
+        QVector<double> y(5,0.0);
+
+        x[0] = xbar - W/2.; y[0] = -depthOfLayer[iLayer];
+        x[1] = x[0];        y[1] = -depthOfLayer[iLayer+1];
+        x[2] = xbar + W/2.; y[2] = y[1];
+        x[3] = x[2];        y[3] = y[0];
+        x[4] = x[0];        y[4] = y[0];
+
+        QwtPlotCurve *layerII = new QwtPlotCurve();
+        layerII->setSamples(x,y);
+        layerII->setTitle(QString("Layer #%1").arg(iLayer+1));
+
+        if (iLayer == activeLayerIdx) {
+            layerII->setPen(QPen(Qt::red, 2));
+            layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
+        }
+        else {
+            layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
+            layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
+        }
+
+        layerII->attach( plot );
+    }
+
+
+
+#if 0
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
         QVector<double> x(5,0.0);
@@ -167,34 +229,37 @@ void SystemPlotQwt::refresh()
             layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
         }
     }
+
 #endif
 
-#if 0
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
+    // ground water table
+
+    // plot->setCurrentLayer("groundwater");
+
+    if (gwtDepth < (H-L1)) {
         QVector<double> x(5,0.0);
         QVector<double> y(5,0.0);
 
-        x[0] = xbar - W/2.; y[0] = -depthOfLayer[iLayer];
-        x[1] = x[0];        y[1] = -depthOfLayer[iLayer+1];
+        x[0] = xbar - W/2.; y[0] = -gwtDepth;
+        x[1] = x[0];        y[1] = -(H - L1);
         x[2] = xbar + W/2.; y[2] = y[1];
         x[3] = x[2];        y[3] = y[0];
         x[4] = x[0];        y[4] = y[0];
 
-        QCPCurve *layerII = new QCPCurve(plot->xAxis, plot->yAxis);
-        layerII->setData(x,y);
-        layerII->setName(QString("Layer #%1").arg(iLayer+1));
+        QwtPlotCurve *water = new QwtPlotCurve();
+        water->setSamples(x,y);
 
-        if (iLayer == activeLayerIdx) {
-            layerII->setPen(QPen(Qt::red, 2));
-            layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
-        }
-        else {
-            layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
-            layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
-        }
+        water->setPen(QPen(Qt::blue, 2));
+        water->setBrush(QBrush(GROUND_WATER_BLUE));
+
+        water->setTitle(QString("groundwater"));
+        water->attach( plot);
     }
 
+
+
+#if 0
     // ground water table
 
     plot->setCurrentLayer("groundwater");
@@ -217,7 +282,59 @@ void SystemPlotQwt::refresh()
 
         water->setName(QString("groundwater"));
     }
+#endif
 
+    // plot the pile cap
+
+    //plot->setCurrentLayer("piles");
+
+    QVector<double> x(5,0.0);
+    QVector<double> y(5,0.0);
+
+    x[0] = minX0 - maxD/2.; y[0] = L1 + maxH;
+    x[1] = x[0];            y[1] = L1 - maxH;
+    x[2] = maxX0 + maxD/2.; y[2] = y[1];
+    x[3] = x[2];            y[3] = y[0];
+    x[4] = x[0];            y[4] = y[0];
+
+    QwtPlotCurve *pileCap = new QwtPlotCurve();
+    pileCap->setSamples(x,y);
+    pileCap->setPen(QPen(Qt::black, 1));
+    pileCap->setBrush(QBrush(Qt::gray));
+    pileCap->attach( plot );
+    //pileCap->removeFromLegend();
+
+
+
+    // plot the piles
+    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
+
+        QVector<double> x(5,0.0);
+        QVector<double> y(5,0.0);
+
+        double D = pileDiameter[pileIdx];
+
+        x[0] = xOffset[pileIdx] - D/2.; y[0] = L1;
+        x[1] = x[0];                    y[1] = -L2[pileIdx];
+        x[2] = xOffset[pileIdx] + D/2.; y[2] = y[1];
+        x[3] = x[2];                    y[3] = y[0];
+        x[4] = x[0];                    y[4] = y[0];
+
+        QwtPlotCurve *pileII = new QwtPlotCurve();
+        pileII->setSamples(x,y);
+        if (pileIdx == activePileIdx) {
+            pileII->setPen(QPen(Qt::red, 2));
+            pileII->setBrush(QBrush(BRUSH_COLOR[9+pileIdx]));
+        }
+        else {
+            pileII->setPen(QPen(Qt::black, 1));
+            pileII->setBrush(QBrush(BRUSH_COLOR[6+pileIdx]));
+        }
+        pileII->setTitle(QString("Pile #%1").arg(pileIdx+1));
+        pileII->attach( plot);
+    }
+
+#if 0
     // plot the pile cap
 
     plot->setCurrentLayer("piles");
@@ -263,7 +380,46 @@ void SystemPlotQwt::refresh()
         }
         pileII->setName(QString("Pile #%1").arg(pileIdx+1));
     }
+#endif
 
+
+    // Drawing the force arrow
+    QwtSymbol *arrow = new QwtSymbol();
+
+    QPen pen( Qt::black, 2 );
+    pen.setJoinStyle( Qt::MiterJoin );
+
+    arrow->setPen( pen );
+    arrow->setBrush( Qt::red );
+
+    QPainterPath path;
+    path.moveTo( -3, 20 );
+    path.lineTo( 3, 20 );
+    path.lineTo( 3, 5 );
+    path.lineTo( 7, 5 );
+    path.lineTo( 0, 0 );
+    path.lineTo( -7, 5 );
+    path.lineTo( -3, 5 );
+    path.lineTo( -3, 20 );
+
+    QTransform transform;
+    transform.rotate( -90.0 );
+    path = transform.map( path );
+
+    arrow->setPath( path );
+    arrow->setPinPoint( QPointF( 0.0, 0.0 ) );
+    arrow->setSize( 50, 10 );
+
+    QwtPlotCurve *forceArrow = new QwtPlotCurve();
+    QVector<QPointF> forceLocations = { QPointF(xbar, L1) };
+
+    forceArrow->setSamples( forceLocations );
+    forceArrow->setSymbol( arrow );
+    forceArrow->attach( plot );
+
+
+
+#if 0
     // add force to the plot
 
     if (ABS(P) > 0.0) {
