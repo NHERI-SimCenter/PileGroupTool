@@ -6,7 +6,8 @@
 #include "systemplotsuper.h"
 
 class QwtPlot;
-
+class QwtPlotGrid;
+class QwtPlotItem;
 
 namespace Ui {
 class SystemPlotQwt;
@@ -31,6 +32,9 @@ signals:
 
 protected:
     QwtPlot *plot;
+    QwtPlotGrid *grid;
+
+    QList<QwtPlotItem *> plotItemList;
 
 };
 
