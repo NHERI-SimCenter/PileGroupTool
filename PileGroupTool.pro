@@ -21,18 +21,21 @@ PRODUCT_NAME = 'PileGroupTool'
 #DEFINES += APPLICATION_VERSION=\"\\\"$$M_VERSION$$member(M_REV, 1)\\\"\"
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
-include( ./qwt-6.2/qwtconfig.pri )
-include( ./qwt-6.2/qwt.prf )
+#include( ./qwt-6.2/qwtconfig.pri )
+#include( ./qwt-6.2/qwt.prf )
 
 #win32: INCLUDES += "./ops"
 #win32: LIBS += -llapack -lblas
 unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable -std=c++11
-#unix:  QMAKE_CXXFLAGS_SHLIB = -L./qwt-6.2/lib/qwt.framework/Versions/6 -lqwt
 win32: QMAKE_CXXFLAGS += /Y-
 
 include(OPS_includes.pro)
 
 #INCLUDEPATH += "$(HOME)/OpenSees/DEVELOPER/core"
+INCLUDEPATH += ./qwt-6.2/src
+LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
+LIBS += -L"$(HOME)/Documents/QitHub/PileGroupTool/qwt-6.2/lib"
+LIBS += -lqwt
 
 SOURCES += main.cpp\
         mainwindow.cpp \

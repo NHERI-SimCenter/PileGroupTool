@@ -58,3 +58,4 @@ build-qwt-Desktop_Qt_5_10_0_clang_64bit-Debug/lib/libqwt.prl
 build-qwt-Desktop_Qt_5_10_0_clang_64bit-Debug/lib/libqwtmathml.prl
 qwt-6.2/textengines/mathml/qwt-6.2.0/features/qwtmathml.prf
 qwt-6.2/textengines/mathml/qwt-6.2.0/include/qwt_mathml_text_engine.h
+Makefile
