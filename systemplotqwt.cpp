@@ -18,13 +18,12 @@
         // create a QwtPlot
         //
         plot = new QwtPlot(this);
-
+        plotItemList.clear();
 
         // Create Background Grid for Plot
-        QwtPlotGrid *grid = new QwtPlotGrid();
+        grid = new QwtPlotGrid();
         grid->setMajorPen(QPen(Qt::lightGray, 0.8));
         grid->attach( plot );
-
 
         // Layout plot
         QGridLayout *lyt = new QGridLayout(this);
@@ -71,6 +70,11 @@ SystemPlotQwt::~SystemPlotQwt()
 void SystemPlotQwt::refresh()
 {  
     //qDebug() << "entering SystemPlotQwt::refresh()" << QTime::currentTime();
+    foreach (QwtPlotItem *item, plotItemList) {
+        item->detach();
+        delete item;
+    }
+    plotItemList.clear();
 
     for (int k=0; k<MAXPILES; k++) {
         headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
@@ -175,9 +179,8 @@ void SystemPlotQwt::refresh()
 
     curve->setSamples( points);
     curve->attach( plot );
+    plotItemList.append(curve);
     // End Temp data
-
-
 
     // Ground Layers
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
@@ -205,9 +208,8 @@ void SystemPlotQwt::refresh()
         }
 
         layerII->attach( plot );
+        plotItemList.append(layerII);
     }
-
-
 
 #if 0
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
@@ -260,6 +262,7 @@ void SystemPlotQwt::refresh()
 
         water->setTitle(QString("groundwater"));
         water->attach( plot);
+        plotItemList.append(water);
     }
 
 
@@ -307,7 +310,9 @@ void SystemPlotQwt::refresh()
     pileCap->setPen(QPen(Qt::black, 1));
     pileCap->setBrush(QBrush(Qt::gray));
     pileCap->attach( plot );
-    //pileCap->removeFromLegend();
+    plotItemList.append(pileCap);
+
+    pileCap->setItemAttribute(QwtPlotItem::Legend, false);
 
 
 
@@ -337,6 +342,7 @@ void SystemPlotQwt::refresh()
         }
         pileII->setTitle(QString("Pile #%1").arg(pileIdx+1));
         pileII->attach( plot);
+        plotItemList.append(pileII);
     }
 
 #if 0
@@ -421,6 +427,7 @@ void SystemPlotQwt::refresh()
     forceArrow->setSamples( forceLocations );
     forceArrow->setSymbol( arrow );
     forceArrow->attach( plot );
+    plotItemList.append(forceArrow);
 
 
 
