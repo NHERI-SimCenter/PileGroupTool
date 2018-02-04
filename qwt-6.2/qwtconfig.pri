@@ -19,12 +19,14 @@ QWT_VERSION      = $${QWT_VER_MAJ}.$${QWT_VER_MIN}.$${QWT_VER_PAT}
 QWT_INSTALL_PREFIX = $$[QT_INSTALL_PREFIX]
 
 unix {
-    QWT_INSTALL_PREFIX    = /usr/local/qwt-$$QWT_VERSION-svn
+    # QWT_INSTALL_PREFIX    = /usr/local/qwt-$$QWT_VERSION-svn
+    QWT_INSTALL_PREFIX    = ./qwt-$$QWT_VERSION
     # QWT_INSTALL_PREFIX = /usr/local/qwt-$$QWT_VERSION-svn-qt-$$QT_VERSION
 }
 
 win32 {
-    QWT_INSTALL_PREFIX    = C:/Qwt-$$QWT_VERSION-svn
+    #QWT_INSTALL_PREFIX    = C:/Qwt-$$QWT_VERSION-svn
+    QWT_INSTALL_PREFIX    = ./Qwt-$$QWT_VERSION
     # QWT_INSTALL_PREFIX = C:/Qwt-$$QWT_VERSION-svn-qt-$$QT_VERSION
 }
 
@@ -42,7 +44,7 @@ QWT_INSTALL_LIBS      = $${QWT_INSTALL_PREFIX}/lib
 # runtime environment of designer/creator.
 ######################################################################
 
-QWT_INSTALL_PLUGINS   = $${QWT_INSTALL_PREFIX}/plugins/designer
+#QWT_INSTALL_PLUGINS   = $${QWT_INSTALL_PREFIX}/plugins/designer
 
 # linux distributors often organize the Qt installation
 # their way and QT_INSTALL_PREFIX doesn't offer a good
@@ -118,7 +120,7 @@ QWT_CONFIG     += QwtMathML
 # Otherwise you have to build it from the designer directory.
 ######################################################################
 
-QWT_CONFIG     += QwtDesigner
+#QWT_CONFIG     += QwtDesigner
 
 ######################################################################
 # Compile all Qwt classes into the designer plugin instead
@@ -132,16 +134,16 @@ QWT_CONFIG     += QwtDesigner
 # environment of the designer/creator.
 ######################################################################
 
-win32 {
-    QWT_CONFIG     += QwtDesignerSelfContained
-}
+#win32 {
+    #QWT_CONFIG     += QwtDesignerSelfContained
+#}
 
 ######################################################################
 # If you want to auto build the examples, enable the line below
 # Otherwise you have to build them from the examples directory.
 ######################################################################
 
-QWT_CONFIG     += QwtExamples
+#QWT_CONFIG     += QwtExamples
 
 ######################################################################
 # The playground is primarily intended for the Qwt development 
