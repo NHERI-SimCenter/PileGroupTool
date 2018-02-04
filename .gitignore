@@ -50,3 +50,7 @@ ui_mainwindow.h
 *.pc
 qwt-6.2/lib/qwt.framework/*
 qwt-6.2/lib/qwtmathml.framework/*
+qwt-6.2/lib/libqwt.prl
+Makefile
+qwt-6.2/lib/libqwtmathml.prl
+Makefile
