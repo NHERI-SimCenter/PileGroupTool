@@ -6,6 +6,7 @@
 #include <qwt_plot_curve.h>
 #include <qwt_plot_grid.h>
 #include <qwt_symbol.h>
+#include <qwt_plot_shapeitem.h>
 
 #include <QDebug>
 #include <QTime>
@@ -122,6 +123,7 @@ void SystemPlotQwt::refresh()
     maxH = maxD;
     if (maxH > L1/2.) maxH = L1/2.;
 
+
 #if 0
     // setup system plot
     plot->clearPlottables();
@@ -163,7 +165,7 @@ void SystemPlotQwt::refresh()
     //
 
     //     Legend not working properly yet...
-    //plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
+    plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
 
 
     // Temp data to check if legend is working
@@ -210,6 +212,13 @@ void SystemPlotQwt::refresh()
         layerII->attach( plot );
         plotItemList.append(layerII);
     }
+
+
+    // Adjust x-axis to match Ground Layer Width
+    plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
+
+
+
 
 #if 0
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
@@ -310,6 +319,7 @@ void SystemPlotQwt::refresh()
     pileCap->setPen(QPen(Qt::black, 1));
     pileCap->setBrush(QBrush(Qt::gray));
     pileCap->attach( plot );
+    pileCap->setZ(1);
     plotItemList.append(pileCap);
 
     pileCap->setItemAttribute(QwtPlotItem::Legend, false);
@@ -394,8 +404,49 @@ void SystemPlotQwt::refresh()
 #endif
 
 
+    // Drawing Horizontal Force Arrow using QwtPlotShapeItem
+    QwtPlotShapeItem *arrow = new QwtPlotShapeItem();
+
+    double forceArrowRatio = -P/MAX_FORCE;
+
+    if (( forceArrowRatio < 0.3 ) && (forceArrowRatio > 0)) {
+        forceArrowRatio = 0.3;
+    }
+    else if (( forceArrowRatio > -0.3 ) && (forceArrowRatio < 0)) {
+        forceArrowRatio = -0.3;
+    }
+
+    QPen pen( Qt::black, 2 );
+    pen.setJoinStyle( Qt::MiterJoin );
+    arrow->setPen( pen );
+    arrow->setBrush( Qt::red );
+
+    QPainterPath path;
+    path.moveTo( minX0, L1 + maxH );
+    path.lineTo( forceArrowRatio*(minX0 + 1.5), L1 + maxH + 0.5 );
+    path.lineTo( forceArrowRatio*(minX0 + 1.5), L1 + maxH + 0.2 );
+    path.lineTo( forceArrowRatio*( W/2 ), L1 + maxH + 0.2 );
+    path.lineTo( forceArrowRatio*( W/2 ), L1 + maxH - 0.2 );
+    path.lineTo( forceArrowRatio*(minX0 + 1.5), L1 + maxH - 0.2 );
+    path.lineTo( forceArrowRatio*(minX0 + 1.5), L1 + maxH - 0.5 );
+    path.lineTo( minX0, L1 + maxH );
+    arrow->setShape( path );
+    arrow->setZ	( 2 );
+
+    if (forceArrowRatio != 0){
+    arrow->attach( plot );
+    plotItemList.append(arrow);
+    }
+
+    //
+    // QwtPlotShapeItem version end
+
+
+
+    // QwtSymbol version
+    //
     // Drawing the force arrow
-    QwtSymbol *arrow = new QwtSymbol();
+    /*QwtSymbol *arrow = new QwtSymbol();
 
     QPen pen( Qt::black, 2 );
     pen.setJoinStyle( Qt::MiterJoin );
@@ -419,7 +470,9 @@ void SystemPlotQwt::refresh()
 
     arrow->setPath( path );
     arrow->setPinPoint( QPointF( 0.0, 0.0 ) );
-    arrow->setSize( 50, 10 );
+    //arrow->setSize( 50, 10 );
+    double force = 0.45*W*P/MAX_FORCE;
+    arrow->setSize(100*force, 100* force/5);
 
     QwtPlotCurve *forceArrow = new QwtPlotCurve();
     QVector<QPointF> forceLocations = { QPointF(xbar, L1) };
@@ -427,7 +480,9 @@ void SystemPlotQwt::refresh()
     forceArrow->setSamples( forceLocations );
     forceArrow->setSymbol( arrow );
     forceArrow->attach( plot );
-    plotItemList.append(forceArrow);
+    plotItemList.append(forceArrow);*/
+    //
+    // QwtSymbol ends here
 
 
 
