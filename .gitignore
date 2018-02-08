@@ -47,3 +47,6 @@ qrc_qtpileresources.cpp
 Makefile
 ui_mainwindow.h
 ui_mainwindow.h
+*.prl
+build-qwt-Desktop_Qt_5_10_0_clang_64bit-Debug/lib/pkgconfig/Qt5Qwt6.pc
+build-qwt-Desktop_Qt_5_10_0_clang_64bit-Debug/lib/qwtmathml.pc
