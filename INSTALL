@@ -1,0 +1,16 @@
+This release of SimCenter's PileGroup Tool includes a copy of the Qwt library (version 6.2.0).  That library is distributed under LGPL that permits redistribution.  We honor this license and acknowledge its use through dynamically linking it to our executable.
+
+In order to compile and PileGroup Tool with Qwt, you need to firs compile the Qwt library in ./qwt-6.2.  In order to do so, please follow these simple steps:
+
+1) cd qwt-6.2
+
+Identify your version of Qt (in ~/Qt) and substitute 5.xx by your version number.
+Identify the target system compiler tree in ~/Qt/5.xx/. This depends on the system.  On a mac, compiler = clang_64.  On windows, you'll find either a version of mingw or msvc, on linux it can be mingw or g++.  On a windows system, you may need to replace make by make.exe
+
+2) ~/Qt/5.xx/compiler/bin/qmake qwt.pro
+
+3) make
+
+You are ready to compile PileGroup Tool after this procedure.
+
+You do not need to install that library on your system to compile and run the PileGroup Tool.  However, you will need to include it if you want to distribute the executable.
