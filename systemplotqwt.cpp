@@ -168,7 +168,7 @@ void SystemPlotQwt::refresh()
     plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
 
 
-    // Temp data to check if legend is working
+    /* Temp data to check if legend is working
     QwtPlotCurve *curve = new QwtPlotCurve();
     curve->setTitle( "Random Points" );
     curve->setPen( LINE_COLOR[3], 2 );
@@ -182,7 +182,7 @@ void SystemPlotQwt::refresh()
     curve->setSamples( points);
     curve->attach( plot );
     plotItemList.append(curve);
-    // End Temp data
+    // End Temp data*/
 
     // Ground Layers
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
@@ -269,7 +269,7 @@ void SystemPlotQwt::refresh()
         water->setPen(QPen(Qt::blue, 2));
         water->setBrush(QBrush(GROUND_WATER_BLUE));
 
-        water->setTitle(QString("groundwater"));
+        water->setTitle(QString("Groundwater"));
         water->attach( plot);
         plotItemList.append(water);
     }
@@ -318,8 +318,9 @@ void SystemPlotQwt::refresh()
     pileCap->setSamples(x,y);
     pileCap->setPen(QPen(Qt::black, 1));
     pileCap->setBrush(QBrush(Qt::gray));
+    pileCap->setTitle(QString("Pile Cap"));
     pileCap->attach( plot );
-    pileCap->setZ(1);
+    pileCap->setZ(3);
     plotItemList.append(pileCap);
 
     pileCap->setItemAttribute(QwtPlotItem::Legend, false);
@@ -352,6 +353,7 @@ void SystemPlotQwt::refresh()
         }
         pileII->setTitle(QString("Pile #%1").arg(pileIdx+1));
         pileII->attach( plot);
+        pileII -> setZ(2);
         plotItemList.append(pileII);
     }
 
@@ -409,6 +411,7 @@ void SystemPlotQwt::refresh()
 
     double forceArrowRatio = -P/MAX_FORCE;
 
+    // Defining minimum size of the horizontal force arrow
     if (( forceArrowRatio < 0.3 ) && (forceArrowRatio > 0)) {
         forceArrowRatio = 0.3;
     }
@@ -421,17 +424,19 @@ void SystemPlotQwt::refresh()
     arrow->setPen( pen );
     arrow->setBrush( Qt::red );
 
+    double pileCapCenter = 0.5 * (minX0 + maxX0);
+
     QPainterPath path;
-    path.moveTo( minX0, L1 + maxH );
-    path.lineTo( forceArrowRatio*(minX0 + 1.5), L1 + maxH + 0.5 );
-    path.lineTo( forceArrowRatio*(minX0 + 1.5), L1 + maxH + 0.2 );
-    path.lineTo( forceArrowRatio*( W/2 ), L1 + maxH + 0.2 );
-    path.lineTo( forceArrowRatio*( W/2 ), L1 + maxH - 0.2 );
-    path.lineTo( forceArrowRatio*(minX0 + 1.5), L1 + maxH - 0.2 );
-    path.lineTo( forceArrowRatio*(minX0 + 1.5), L1 + maxH - 0.5 );
-    path.lineTo( minX0, L1 + maxH );
+    path.moveTo( pileCapCenter, L1 + maxH );
+    path.lineTo( pileCapCenter + forceArrowRatio*( W/6 ), L1 + maxH + 0.5 );
+    path.lineTo( pileCapCenter + forceArrowRatio*( W/6 ), L1 + maxH + 0.2 );
+    path.lineTo( pileCapCenter + forceArrowRatio*( W/2 ), L1 + maxH + 0.2 );
+    path.lineTo( pileCapCenter + forceArrowRatio*( W/2 ), L1 + maxH - 0.2 );
+    path.lineTo( pileCapCenter + forceArrowRatio*( W/6 ), L1 + maxH - 0.2 );
+    path.lineTo( pileCapCenter + forceArrowRatio*( W/6 ), L1 + maxH - 0.5 );
+    path.lineTo( pileCapCenter, L1 + maxH );
     arrow->setShape( path );
-    arrow->setZ	( 2 );
+    arrow->setZ	( 4 );
 
     if (forceArrowRatio != 0){
     arrow->attach( plot );
@@ -441,6 +446,42 @@ void SystemPlotQwt::refresh()
     //
     // QwtPlotShapeItem version end
 
+    // Drawing Vertical Force Arrow using QwtPlotShapeItem
+
+    /*
+    QwtPlotShapeItem *arrowV = new QwtPlotShapeItem();
+
+    double forceArrowRatioV = PV/MAX_FORCE;
+
+    if (( forceArrowRatioV < 0.3 ) && (forceArrowRatioV > 0)) {
+        forceArrowRatio = 0.3;
+    }
+    else if (( forceArrowRatioV > -0.3 ) && (forceArrowRatioV < 0)) {
+        forceArrowRatioV = -0.3;
+    }
+
+    //QPen pen( Qt::black, 2 );
+    //pen.setJoinStyle( Qt::MiterJoin );
+    arrowV->setPen( pen );
+    arrowV->setBrush( Qt::red );
+
+    QPainterPath pathV;
+    pathV.moveTo( pileCapCenter, L1 + maxH );
+    pathV.lineTo( pileCapCenter - 1, L1 + maxH + 1 );
+    pathV.lineTo( pileCapCenter - 0.25, L1 + maxH + 1 );
+    pathV.lineTo( pileCapCenter - 0.25, L1 + maxH + 5 );
+    pathV.lineTo( pileCapCenter + 0.25, L1 + maxH + 5 );
+    pathV.lineTo( pileCapCenter + 0.25, L1 + maxH + 1 );
+    pathV.lineTo( pileCapCenter + 1, L1 + maxH + 1 );
+    pathV.lineTo( pileCapCenter, L1 + maxH );
+    arrowV->setShape( path );
+    arrowV->setZ	( 3 );
+
+    if (forceArrowRatioV != 0){
+    arrowV->attach( plot );
+    plotItemList.append(arrow);
+    }
+    */
 
 
     // QwtSymbol version
