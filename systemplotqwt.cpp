@@ -12,25 +12,25 @@
 #include <QTime>
 
 
-    SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
-        SystemPlotSuper(parent)
-    {
-        //
-        // create a QwtPlot
-        //
-        plot = new QwtPlot(this);
-        plotItemList.clear();
+SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
+    SystemPlotSuper(parent)
+{
+    //
+    // create a QwtPlot
+    //
+    plot = new QwtPlot(this);
+    plotItemList.clear();
 
-        // Create Background Grid for Plot
-        grid = new QwtPlotGrid();
-        grid->setMajorPen(QPen(Qt::lightGray, 0.8));
-        grid->attach( plot );
+    // Create Background Grid for Plot
+    grid = new QwtPlotGrid();
+    grid->setMajorPen(QPen(Qt::lightGray, 0.8));
+    grid->attach( plot );
 
-        // Layout plot
-        QGridLayout *lyt = new QGridLayout(this);
-        lyt->addWidget(plot,0,0);
-        lyt->setMargin(0);
-        this->setLayout(lyt);
+    // Layout plot
+    QGridLayout *lyt = new QGridLayout(this);
+    lyt->addWidget(plot,0,0);
+    lyt->setMargin(0);
+    this->setLayout(lyt);
 
 
 #if 0
@@ -164,7 +164,7 @@ void SystemPlotQwt::refresh()
     // HERE IS WHERE TO START ...
     //
 
-    //     Legend not working properly yet...
+    // Legend
     plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
 
 
@@ -320,7 +320,7 @@ void SystemPlotQwt::refresh()
     pileCap->setBrush(QBrush(Qt::gray));
     pileCap->setTitle(QString("Pile Cap"));
     pileCap->attach( plot );
-    pileCap->setZ(3);
+    //pileCap->setZ(3);
     plotItemList.append(pileCap);
 
     pileCap->setItemAttribute(QwtPlotItem::Legend, false);
@@ -353,7 +353,7 @@ void SystemPlotQwt::refresh()
         }
         pileII->setTitle(QString("Pile #%1").arg(pileIdx+1));
         pileII->attach( plot);
-        pileII -> setZ(2);
+        //pileII -> setZ(2);
         plotItemList.append(pileII);
     }
 
@@ -407,16 +407,18 @@ void SystemPlotQwt::refresh()
 
 
     // Drawing Horizontal Force Arrow using QwtPlotShapeItem
+    //
     QwtPlotShapeItem *arrow = new QwtPlotShapeItem();
 
     double forceArrowRatio = -P/MAX_FORCE;
 
     // Defining minimum size of the horizontal force arrow
-    if (( forceArrowRatio < 0.3 ) && (forceArrowRatio > 0)) {
-        forceArrowRatio = 0.3;
+    double forceArrowMin = 0.03;
+    if (( forceArrowRatio < forceArrowMin ) && (forceArrowRatio > 0)) {
+        forceArrowRatio = forceArrowMin;
     }
-    else if (( forceArrowRatio > -0.3 ) && (forceArrowRatio < 0)) {
-        forceArrowRatio = -0.3;
+    else if (( forceArrowRatio > -forceArrowMin ) && (forceArrowRatio < 0)) {
+        forceArrowRatio = -forceArrowMin;
     }
 
     QPen pen( Qt::black, 2 );
@@ -425,18 +427,21 @@ void SystemPlotQwt::refresh()
     arrow->setBrush( Qt::red );
 
     double pileCapCenter = 0.5 * (minX0 + maxX0);
+    double arrowThickness = 0.1, arrowHead = 0.4, arrowHeadLength = 0.5;
+
+    if (forceArrowRatio < 0) {arrowHeadLength = -arrowHeadLength;}
 
     QPainterPath path;
     path.moveTo( pileCapCenter, L1 + maxH );
-    path.lineTo( pileCapCenter + forceArrowRatio*( W/6 ), L1 + maxH + 0.5 );
-    path.lineTo( pileCapCenter + forceArrowRatio*( W/6 ), L1 + maxH + 0.2 );
-    path.lineTo( pileCapCenter + forceArrowRatio*( W/2 ), L1 + maxH + 0.2 );
-    path.lineTo( pileCapCenter + forceArrowRatio*( W/2 ), L1 + maxH - 0.2 );
-    path.lineTo( pileCapCenter + forceArrowRatio*( W/6 ), L1 + maxH - 0.2 );
-    path.lineTo( pileCapCenter + forceArrowRatio*( W/6 ), L1 + maxH - 0.5 );
+    path.lineTo( pileCapCenter + arrowHeadLength, L1 + maxH + arrowHead );
+    path.lineTo( pileCapCenter + arrowHeadLength, L1 + maxH + arrowThickness );
+    path.lineTo( pileCapCenter + arrowHeadLength + forceArrowRatio*( W/2 ), L1 + maxH + arrowThickness );
+    path.lineTo( pileCapCenter + arrowHeadLength + forceArrowRatio*( W/2 ), L1 + maxH - arrowThickness );
+    path.lineTo( pileCapCenter + arrowHeadLength, L1 + maxH - arrowThickness );
+    path.lineTo( pileCapCenter + arrowHeadLength, L1 + maxH - arrowHead );
     path.lineTo( pileCapCenter, L1 + maxH );
     arrow->setShape( path );
-    arrow->setZ	( 4 );
+    //arrow->setZ	( 4 );
 
     if (forceArrowRatio != 0){
     arrow->attach( plot );
@@ -445,6 +450,7 @@ void SystemPlotQwt::refresh()
 
     //
     // QwtPlotShapeItem version end
+
 
     // Drawing Vertical Force Arrow using QwtPlotShapeItem
 
@@ -482,50 +488,6 @@ void SystemPlotQwt::refresh()
     plotItemList.append(arrow);
     }
     */
-
-
-    // QwtSymbol version
-    //
-    // Drawing the force arrow
-    /*QwtSymbol *arrow = new QwtSymbol();
-
-    QPen pen( Qt::black, 2 );
-    pen.setJoinStyle( Qt::MiterJoin );
-
-    arrow->setPen( pen );
-    arrow->setBrush( Qt::red );
-
-    QPainterPath path;
-    path.moveTo( -3, 20 );
-    path.lineTo( 3, 20 );
-    path.lineTo( 3, 5 );
-    path.lineTo( 7, 5 );
-    path.lineTo( 0, 0 );
-    path.lineTo( -7, 5 );
-    path.lineTo( -3, 5 );
-    path.lineTo( -3, 20 );
-
-    QTransform transform;
-    transform.rotate( -90.0 );
-    path = transform.map( path );
-
-    arrow->setPath( path );
-    arrow->setPinPoint( QPointF( 0.0, 0.0 ) );
-    //arrow->setSize( 50, 10 );
-    double force = 0.45*W*P/MAX_FORCE;
-    arrow->setSize(100*force, 100* force/5);
-
-    QwtPlotCurve *forceArrow = new QwtPlotCurve();
-    QVector<QPointF> forceLocations = { QPointF(xbar, L1) };
-
-    forceArrow->setSamples( forceLocations );
-    forceArrow->setSymbol( arrow );
-    forceArrow->attach( plot );
-    plotItemList.append(forceArrow);*/
-    //
-    // QwtSymbol ends here
-
-
 
 #if 0
     // add force to the plot
