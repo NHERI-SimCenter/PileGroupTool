@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include "pilegrouptool_parameters.h"
-#include "qcustomplot.h"
+#include "qcp/qcustomplot.h"
 
 namespace Ui {
 class SystemPlotSuper;

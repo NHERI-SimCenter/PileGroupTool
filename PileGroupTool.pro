@@ -34,61 +34,66 @@ include(OPS_includes.pro)
 #INCLUDEPATH += "$(HOME)/OpenSees/DEVELOPER/core"
 INCLUDEPATH += ./qwt-6.2/src
 LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
-LIBS += -L"$(HOME)/Documents/QitHub/PileGroupTool/qwt-6.2/lib"
+#LIBS += -L"$(HOME)/Documents/GitHub/PileGroupTool/qwt-6.2/lib"
 LIBS += -lqwt
 
+INCLUDEPATH += includes
+INCLUDEPATH += plots
+INCLUDEPATH += FEA
+
 SOURCES += main.cpp\
-        mainwindow.cpp \
-        getPyParam.cpp \
-        getQzParam.cpp \
-        getTZParam.cpp \
-        qcustomplot.cpp \
-        materialdbinterface.cpp \
-        surveysplashscreen.cpp \
-        soilmat.cpp \
+        mainWindow/mainwindow.cpp \
+        qcp/qcustomplot.cpp \
+        FEA/getPyParam.cpp \
+        FEA/getQzParam.cpp \
+        FEA/getTZParam.cpp \
+        FEA/soilmat.cpp \
+        FEA/pilefeamodeler.cpp \
+        dialogs/materialdbinterface.cpp \
+        dialogs/surveysplashscreen.cpp \
         utilWindows/copyrightdialog.cpp \
         utilWindows/dialogabout.cpp \
         utilWindows/dialogpreferences.cpp \
         utilWindows/dialogfuturefeature.cpp \
-    ../widgets/Common/FooterWidget.cpp \
-    ../widgets/Common/HeaderWidget.cpp \
-    pilefeamodeler.cpp \
-    systemplotqwt.cpp \
-    systemplotsuper.cpp \
-    systemplotqcp.cpp \
-    resultplotsuper.cpp \
-    resultplotqcp.cpp \
-    resultplotqwt.cpp
+        plots/systemplotsuper.cpp \
+        plots/systemplotqcp.cpp \
+        plots/systemplotqwt.cpp \
+        plots/resultplotsuper.cpp \
+        plots/resultplotqcp.cpp \
+        plots/resultplotqwt.cpp \
+        ../widgets/Common/FooterWidget.cpp \
+        ../widgets/Common/HeaderWidget.cpp
         
-HEADERS  += mainwindow.h \
-        qcustomplot.h \
-        materialdbinterface.h \
-        surveysplashscreen.h \
-        soilmat.h \
+HEADERS  += \
+        mainWindow/mainwindow.h \
+        includes/pilegrouptool_parameters.h \
+        qcp/qcustomplot.h \
+        FEA/soilmat.h \
+        FEA/pilefeamodeler.h \
+        dialogs/materialdbinterface.h \
+        dialogs/surveysplashscreen.h \
         utilWindows/copyrightdialog.h \
         utilWindows/dialogabout.h \
         utilWindows/dialogpreferences.h \
         utilWindows/dialogfuturefeature.h \
-    ../widgets/Common/FooterWidget.h \
-    ../widgets/Common/HeaderWidget.h \
-    pilefeamodeler.h \
-    pilegrouptool_parameters.h \
-    systemplotqwt.h \
-    systemplotsuper.h \
-    systemplotqcp.h \
-    resultplotsuper.h \
-    resultplotqcp.h \
-    resultplotqwt.h
+        plots/systemplotsuper.h \
+        plots/systemplotqcp.h \
+        plots/systemplotqwt.h \
+        plots/resultplotsuper.h \
+        plots/resultplotqcp.h \
+        plots/resultplotqwt.h \
+        ../widgets/Common/FooterWidget.h \
+        ../widgets/Common/HeaderWidget.h
 
-FORMS    += mainwindow.ui \
-        materialdbinterface.ui \
-        surveysplashscreen.ui \
+FORMS    += mainWindow/mainwindow.ui \
+        dialogs/materialdbinterface.ui \
+        dialogs/surveysplashscreen.ui \
         utilWindows/copyrightdialog.ui \
         utilWindows/dialogabout.ui \
         utilWindows/dialogpreferences.ui \
         utilWindows/dialogfuturefeature.ui
 
 RESOURCES += \
-    qtpileresources.qrc
+	qtpileresources.qrc
 
 DISTFILES +=

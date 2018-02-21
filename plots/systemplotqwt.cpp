@@ -11,25 +11,25 @@
 #include <QTime>
 
 
-    SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
-        SystemPlotSuper(parent)
-    {
-        //
-        // create a QwtPlot
-        //
-        plot = new QwtPlot(this);
-        plotItemList.clear();
+SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
+    SystemPlotSuper(parent)
+{
+    //
+    // create a QwtPlot
+    //
+    plot = new QwtPlot(this);
+    plotItemList.clear();
 
-        // Create Background Grid for Plot
-        grid = new QwtPlotGrid();
-        grid->setMajorPen(QPen(Qt::lightGray, 0.8));
-        grid->attach( plot );
+    // Create Background Grid for Plot
+    grid = new QwtPlotGrid();
+    grid->setMajorPen(QPen(Qt::lightGray, 0.8));
+    grid->attach( plot );
 
-        // Layout plot
-        QGridLayout *lyt = new QGridLayout(this);
-        lyt->addWidget(plot,0,0);
-        lyt->setMargin(0);
-        this->setLayout(lyt);
+    // Layout plot
+    QGridLayout *lyt = new QGridLayout(this);
+    lyt->addWidget(plot,0,0);
+    lyt->setMargin(0);
+    this->setLayout(lyt);
 
 
 #if 0
