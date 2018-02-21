@@ -1,5 +1,5 @@
 #include "resultplotqcp.h"
-#include "qcustomplot.h"
+#include "qcp/qcustomplot.h"
 
 ResultPlotQCP::ResultPlotQCP(QWidget *parent) :
     ResultPlotSuper(parent)
