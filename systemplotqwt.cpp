@@ -24,6 +24,7 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     // Create Background Grid for Plot
     grid = new QwtPlotGrid();
     grid->setMajorPen(QPen(Qt::lightGray, 0.8));
+    grid->setZ(1);
     grid->attach( plot );
 
     // Layout plot
@@ -314,13 +315,21 @@ void SystemPlotQwt::refresh()
     x[3] = x[2];            y[3] = y[0];
     x[4] = x[0];            y[4] = y[0];
 
-    QwtPlotCurve *pileCap = new QwtPlotCurve();
+    /*QwtPlotCurve *pileCap = new QwtPlotCurve();
     pileCap->setSamples(x,y);
     pileCap->setPen(QPen(Qt::black, 1));
     pileCap->setBrush(QBrush(Qt::gray));
     pileCap->setTitle(QString("Pile Cap"));
     pileCap->attach( plot );
-    //pileCap->setZ(3);
+    */
+    QRectF capCorners(QPointF(minX0 - maxD/2, L1 + maxH), QSizeF(maxX0 + maxD - minX0, -maxH));
+
+    QwtPlotShapeItem *pileCap = new QwtPlotShapeItem();
+    pileCap->setRect(capCorners);
+    pileCap->setPen(QPen(Qt::black, 1));
+    pileCap->setBrush(QBrush(Qt::gray));
+    pileCap->attach( plot );
+
     plotItemList.append(pileCap);
 
     pileCap->setItemAttribute(QwtPlotItem::Legend, false);
