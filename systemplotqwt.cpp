@@ -8,6 +8,12 @@
 #include <qwt_symbol.h>
 #include <qwt_plot_shapeitem.h>
 
+#include "qwt_picker.h"
+#include "qwt_plot_picker.h"
+#include "qwt_plot_item.h"
+#include "qwt_plot_shapeitem.h"
+#include "qwt_picker_machine.h"
+
 #include <QDebug>
 #include <QTime>
 
@@ -32,7 +38,6 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     lyt->addWidget(plot,0,0);
     lyt->setMargin(0);
     this->setLayout(lyt);
-
 
 #if 0
     //
@@ -188,6 +193,36 @@ void SystemPlotQwt::refresh()
     // Ground Layers
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
+        QPolygonF groundCorners;
+        groundCorners << QPointF(xbar - W/2, -depthOfLayer[iLayer])
+                      << QPointF(xbar - W/2, -depthOfLayer[iLayer+1])
+                      << QPointF(xbar + W/2, -depthOfLayer[iLayer+1])
+                      << QPointF(xbar + W/2, -depthOfLayer[iLayer])
+                      << QPointF(xbar - W/2, -depthOfLayer[iLayer]);
+
+        QwtPlotShapeItem *layerII = new QwtPlotShapeItem();
+
+        layerII->setPolygon(groundCorners);
+        layerII->setTitle(QString("Layer #%1").arg(iLayer+1));
+
+        if (iLayer == activeLayerIdx) {
+            layerII->setPen(QPen(Qt::red, 2));
+            layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
+        }
+        else {
+            layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
+            layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
+        }
+
+        layerII->attach( plot );
+        layerII->setItemAttribute(QwtPlotItem::Legend, true);
+        plotItemList.append(layerII);
+    }
+
+#if 0
+    // Ground Layers using curves
+    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
+
         QVector<double> x(5,0.0);
         QVector<double> y(5,0.0);
 
@@ -213,47 +248,40 @@ void SystemPlotQwt::refresh()
         layerII->attach( plot );
         plotItemList.append(layerII);
     }
+#endif
 
 
     // Adjust x-axis to match Ground Layer Width
     plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
 
 
-
-
-#if 0
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
-
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        x[0] = xbar - W/2.; y[0] = -depthOfLayer[iLayer];
-        x[1] = x[0];        y[1] = -depthOfLayer[iLayer+1];
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
-
-        QCPCurve *layerII = new QCPCurve(plot->xAxis, plot->yAxis);
-        layerII->setData(x,y);
-        layerII->setName(QString("Layer #%1").arg(iLayer+1));
-
-        if (iLayer == activeLayerIdx) {
-            layerII->setPen(QPen(Qt::red, 2));
-            layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
-        }
-        else {
-            layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
-            layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
-        }
-    }
-
-#endif
-
-
     // ground water table
-
+    //
     // plot->setCurrentLayer("groundwater");
 
+    if (gwtDepth < (H-L1)) {
+        QVector<double> x(5,0.0);
+        QVector<double> y(5,0.0);
+        QPolygonF(groundwaterCorners);
+        groundwaterCorners << QPointF(xbar - W/2, -gwtDepth)
+                           << QPointF(xbar - W/2, -(H - L1))
+                           << QPointF(xbar + W/2, -(H - L1))
+                           << QPointF(xbar + W/2, -gwtDepth)
+                           << QPointF(xbar - W/2, -gwtDepth);
+
+        QwtPlotShapeItem *water = new QwtPlotShapeItem();
+        water->setPolygon(groundwaterCorners);
+
+        water->setPen(QPen(Qt::blue, 2));
+        water->setBrush(QBrush(GROUND_WATER_BLUE));
+
+        water->setTitle(QString("Groundwater"));
+        water->attach( plot );
+        water->setItemAttribute(QwtPlotItem::Legend, true);
+        plotItemList.append(water);
+    }
+
+#if 0
     if (gwtDepth < (H-L1)) {
         QVector<double> x(5,0.0);
         QVector<double> y(5,0.0);
@@ -274,7 +302,7 @@ void SystemPlotQwt::refresh()
         water->attach( plot);
         plotItemList.append(water);
     }
-
+#endif
 
 
 #if 0
@@ -306,7 +334,7 @@ void SystemPlotQwt::refresh()
 
     //plot->setCurrentLayer("piles");
 
-    QVector<double> x(5,0.0);
+    /*QVector<double> x(5,0.0);
     QVector<double> y(5,0.0);
 
     x[0] = minX0 - maxD/2.; y[0] = L1 + maxH;
@@ -315,13 +343,14 @@ void SystemPlotQwt::refresh()
     x[3] = x[2];            y[3] = y[0];
     x[4] = x[0];            y[4] = y[0];
 
-    /*QwtPlotCurve *pileCap = new QwtPlotCurve();
+    QwtPlotCurve *pileCap = new QwtPlotCurve();
     pileCap->setSamples(x,y);
     pileCap->setPen(QPen(Qt::black, 1));
     pileCap->setBrush(QBrush(Qt::gray));
     pileCap->setTitle(QString("Pile Cap"));
     pileCap->attach( plot );
     */
+
     QRectF capCorners(QPointF(minX0 - maxD/2, L1 + maxH), QSizeF(maxX0 + maxD - minX0, -maxH));
 
     QwtPlotShapeItem *pileCap = new QwtPlotShapeItem();
@@ -331,12 +360,39 @@ void SystemPlotQwt::refresh()
     pileCap->attach( plot );
 
     plotItemList.append(pileCap);
-
     pileCap->setItemAttribute(QwtPlotItem::Legend, false);
 
 
 
     // plot the piles
+    //
+    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
+
+        double D = pileDiameter[pileIdx];
+        QPolygonF(pileCorners);
+        pileCorners << QPointF(xOffset[pileIdx] - D/2, L1)
+                    << QPointF(xOffset[pileIdx] - D/2, -L2[pileIdx])
+                    << QPointF(xOffset[pileIdx] + D/2, -L2[pileIdx])
+                    << QPointF(xOffset[pileIdx] + D/2, L1)
+                    << QPointF(xOffset[pileIdx] - D/2, L1);
+
+        QwtPlotShapeItem *pileII = new QwtPlotShapeItem();
+        pileII->setPolygon(pileCorners);
+        if (pileIdx == activePileIdx) {
+            pileII->setPen(QPen(Qt::red, 2));
+            pileII->setBrush(QBrush(BRUSH_COLOR[9+pileIdx]));
+        }
+        else {
+            pileII->setPen(QPen(Qt::black, 1));
+            pileII->setBrush(QBrush(BRUSH_COLOR[6+pileIdx]));
+        }
+        pileII->setTitle(QString("Pile #%1").arg(pileIdx+1));
+        pileII->attach( plot);
+        pileII->setItemAttribute(QwtPlotItem::Legend, true);
+        plotItemList.append(pileII);
+    }
+
+#if 0
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
         QVector<double> x(5,0.0);
@@ -365,6 +421,7 @@ void SystemPlotQwt::refresh()
         //pileII -> setZ(2);
         plotItemList.append(pileII);
     }
+#endif
 
 #if 0
     // plot the pile cap
@@ -450,19 +507,15 @@ void SystemPlotQwt::refresh()
     path.lineTo( pileCapCenter + arrowHeadLength, L1 + maxH - arrowHead );
     path.lineTo( pileCapCenter, L1 + maxH );
     arrow->setShape( path );
-    //arrow->setZ	( 4 );
 
     if (forceArrowRatio != 0){
     arrow->attach( plot );
     plotItemList.append(arrow);
     }
 
-    //
-    // QwtPlotShapeItem version end
 
 
     // Drawing Vertical Force Arrow using QwtPlotShapeItem
-
     /*
     QwtPlotShapeItem *arrowV = new QwtPlotShapeItem();
 

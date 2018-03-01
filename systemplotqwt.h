@@ -8,6 +8,7 @@
 class QwtPlot;
 class QwtPlotGrid;
 class QwtPlotItem;
+class QwtPlotShapeItem;
 
 namespace Ui {
 class SystemPlotQwt;
