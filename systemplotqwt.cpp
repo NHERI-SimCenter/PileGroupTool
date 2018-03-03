@@ -39,6 +39,20 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     lyt->setMargin(0);
     this->setLayout(lyt);
 
+    //Picker
+    QwtPicker *picker = new QwtPicker(plot -> canvas());
+    picker->setStateMachine(new QwtPickerClickPointMachine);
+    picker->setTrackerMode(QwtPicker::AlwaysOn);
+    picker->setRubberBand(QwtPicker::RectRubberBand);
+
+    connect(picker, SIGNAL(activated(bool)), this, SLOT(on_picker_activated(bool)));
+    connect(picker, SIGNAL(selected(const QPolygon &)), this, SLOT(on_picker_selected(const QPolygon &)));
+    connect(picker, SIGNAL(appended(const QPoint &)), this, SLOT(on_picker_appended(const QPoint &)));
+    connect(picker, SIGNAL(moved(const QPoint &)), this, SLOT(on_picker_moved(const QPoint &)));
+    connect(picker, SIGNAL(removed(const QPoint &)), this, SLOT(on_picker_removed(const QPoint &)));
+    connect(picker, SIGNAL(changed(const QPolygon &)), this, SLOT(on_picker_changed(const QPolygon &)));
+
+
 #if 0
     //
     // add legend
@@ -74,12 +88,155 @@ SystemPlotQwt::~SystemPlotQwt()
     delete plot;
 }
 
+//# if 0
+// Experiment
+
+PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
+{
+    PLOTOBJECT emptyObj;
+    emptyObj.itemPtr = NULL;
+    emptyObj.type    = PLType::NONE;
+    emptyObj.index   = -1;
+
+    if ( plot == NULL )
+        return emptyObj;
+
+    // translate pos into the plot coordinates
+    double coords[ QwtPlot::axisCnt ];
+    coords[ QwtPlot::xBottom ] = plot->canvasMap( QwtPlot::xBottom ).invTransform( pos.x() );
+    coords[ QwtPlot::xTop ]    = plot->canvasMap( QwtPlot::xTop ).invTransform( pos.x() );
+    coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft ).invTransform( pos.y() );
+    coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight ).invTransform( pos.y() );
+
+    for ( int i = plotItemList.size() - 1; i >= 0; i-- )
+    {
+        PLOTOBJECT obj = plotItemList[i];
+        QwtPlotItem *item = obj.itemPtr;
+        if ( item->isVisible() && item->rtti() == QwtPlotItem::Rtti_PlotCurve )
+        {
+            double dist;
+
+            QwtPlotCurve *curveItem = static_cast<QwtPlotCurve *>( item );
+            const QPointF p( coords[ item->xAxis() ], coords[ item->yAxis() ] );
+
+            if ( curveItem->boundingRect().contains( p ) || true )
+            {
+                // trace curves ...
+                dist = 1000.;
+                for (size_t line=0; line < curveItem->dataSize() - 1; line++)
+                {
+                    QPointF pnt;
+                    double x, y;
+
+                    pnt = curveItem->sample(line);
+                    x = plot->canvasMap( QwtPlot::xBottom ).transform( pnt.x() );
+                    y = plot->canvasMap( QwtPlot::yLeft ).transform( pnt.y() );
+                    QPointF x0(x,y);
+
+                    pnt = curveItem->sample(line+1);
+                    x = plot->canvasMap( QwtPlot::xBottom ).transform( pnt.x() );
+                    y = plot->canvasMap( QwtPlot::yLeft ).transform( pnt.y() );
+                    QPointF x1(x,y);
+
+                    QPointF r  = pos - x0;
+                    QPointF s  = x1 - x0;
+                    double s2  = QPointF::dotProduct(s,s);
+
+                    if (s2 > 1e-6)
+                    {
+                        double xi  = QPointF::dotProduct(r,s) / s2;
+
+                        if ( 0.0 <= xi && xi <= 1.0 )
+                        {
+                            QPointF t(-s.y()/sqrt(s2), s.x()/sqrt(s2));
+                            double d1 = QPointF::dotProduct(r,t);
+                            if ( d1 < 0.0 )  { d1 = -d1; }
+                            if ( d1 < dist ) { dist = d1;}
+                        }
+                    }
+                    else
+                    {
+                        dist = sqrt(QPointF::dotProduct(r,r));
+                        QPointF r2 = pos - x1;
+                        double d2  = sqrt(QPointF::dotProduct(r,r));
+                        if ( d2 < dist ) { dist = d2; }
+                    }
+                }
+
+                qWarning() << "curve dist =" << dist;
+
+                if ( dist <= 5 ) return obj;
+            }
+        }
+        if ( item->isVisible() && item->rtti() == QwtPlotItem::Rtti_PlotShape )
+        {
+            QwtPlotShapeItem *shapeItem = static_cast<QwtPlotShapeItem *>( item );
+            const QPointF p( coords[ item->xAxis() ], coords[ item->yAxis() ] );
+
+            if ( shapeItem->boundingRect().contains( p ) && shapeItem->shape().contains( p ) )
+            {
+                return obj;
+            }
+        }
+    }
+
+    return emptyObj;
+}
+
+void SystemPlotQwt::on_picker_appended (const QPoint &pos)
+{
+    qWarning() << "picker appended " << pos;
+
+    //this->reset();
+    SystemPlotQwt::refresh();
+
+    double coords[ QwtPlot::axisCnt ];
+    coords[ QwtPlot::xBottom ] = plot->canvasMap( QwtPlot::xBottom ).invTransform( pos.x() );
+    coords[ QwtPlot::xTop ]    = plot->canvasMap( QwtPlot::xTop ).invTransform( pos.x() );
+    coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft ).invTransform( pos.y() );
+    coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight ).invTransform( pos.y() );
+
+    PLOTOBJECT obj = itemAt(pos);
+    QwtPlotItem *item = obj.itemPtr;
+
+    if ( item )
+    {
+        if ( item->rtti() == QwtPlotItem::Rtti_PlotShape )
+        {
+            QwtPlotShapeItem *theShape = static_cast<QwtPlotShapeItem *>(item);
+            theShape->setPen(Qt::red, 3);
+            QBrush brush = theShape->brush();
+            QColor color = brush.color();
+            color.setAlpha(64);
+            brush.setColor(color);
+            theShape->setBrush(brush);
+        }
+
+        plot->replot();
+
+        switch (obj.type) {
+        case PLType::PILE:
+            emit on_pileSelected(obj.index);
+            break;
+        case PLType::SOIL:
+            emit on_soilLayerSelected(obj.index);
+            break;
+        case PLType::WATER:
+            emit on_groundWaterSelected();
+            break;
+        }
+    }
+}
+// Experiment
+//#endif
+
 void SystemPlotQwt::refresh()
 {  
     //qDebug() << "entering SystemPlotQwt::refresh()" << QTime::currentTime();
-    foreach (QwtPlotItem *item, plotItemList) {
-        item->detach();
-        delete item;
+    foreach (PLOTOBJECT item, plotItemList) {
+        item.itemPtr->detach();
+        delete item.itemPtr;
+        //item.itemPtr = NULL;
     }
     plotItemList.clear();
 
@@ -173,6 +330,9 @@ void SystemPlotQwt::refresh()
     // Legend
     plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
 
+    // Adjust x-axis to match Ground Layer Width
+    plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
+
 
     /* Temp data to check if legend is working
     QwtPlotCurve *curve = new QwtPlotCurve();
@@ -189,6 +349,38 @@ void SystemPlotQwt::refresh()
     curve->attach( plot );
     plotItemList.append(curve);
     // End Temp data*/
+
+
+    // ground water table
+    //
+    // plot->setCurrentLayer("groundwater");
+
+    if (gwtDepth < (H-L1)) {
+        QVector<double> x(5,0.0);
+        QVector<double> y(5,0.0);
+        QPolygonF(groundwaterCorners);
+        groundwaterCorners << QPointF(xbar - W/2, -gwtDepth)
+                           << QPointF(xbar - W/2, -(H - L1))
+                           << QPointF(xbar + W/2, -(H - L1))
+                           << QPointF(xbar + W/2, -gwtDepth)
+                           << QPointF(xbar - W/2, -gwtDepth);
+
+        QwtPlotShapeItem *water = new QwtPlotShapeItem();
+        water->setPolygon(groundwaterCorners);
+
+        water->setPen(QPen(Qt::blue, 2));
+        water->setBrush(QBrush(GROUND_WATER_BLUE));
+
+        water->setTitle(QString("Groundwater"));
+        water->attach( plot );
+        water->setItemAttribute(QwtPlotItem::Legend, true);
+
+        PLOTOBJECT var;
+        var.itemPtr = water;
+        var.type    = PLType::WATER;
+        var.index   = -1;
+        plotItemList.append(var);
+    }
 
     // Ground Layers
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
@@ -216,7 +408,12 @@ void SystemPlotQwt::refresh()
 
         layerII->attach( plot );
         layerII->setItemAttribute(QwtPlotItem::Legend, true);
-        plotItemList.append(layerII);
+
+        PLOTOBJECT var;
+        var.itemPtr = layerII;
+        var.type    = PLType::SOIL;
+        var.index   = iLayer;
+        plotItemList.append(var);
     }
 
 #if 0
@@ -250,36 +447,6 @@ void SystemPlotQwt::refresh()
     }
 #endif
 
-
-    // Adjust x-axis to match Ground Layer Width
-    plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
-
-
-    // ground water table
-    //
-    // plot->setCurrentLayer("groundwater");
-
-    if (gwtDepth < (H-L1)) {
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-        QPolygonF(groundwaterCorners);
-        groundwaterCorners << QPointF(xbar - W/2, -gwtDepth)
-                           << QPointF(xbar - W/2, -(H - L1))
-                           << QPointF(xbar + W/2, -(H - L1))
-                           << QPointF(xbar + W/2, -gwtDepth)
-                           << QPointF(xbar - W/2, -gwtDepth);
-
-        QwtPlotShapeItem *water = new QwtPlotShapeItem();
-        water->setPolygon(groundwaterCorners);
-
-        water->setPen(QPen(Qt::blue, 2));
-        water->setBrush(QBrush(GROUND_WATER_BLUE));
-
-        water->setTitle(QString("Groundwater"));
-        water->attach( plot );
-        water->setItemAttribute(QwtPlotItem::Legend, true);
-        plotItemList.append(water);
-    }
 
 #if 0
     if (gwtDepth < (H-L1)) {
@@ -359,7 +526,12 @@ void SystemPlotQwt::refresh()
     pileCap->setBrush(QBrush(Qt::gray));
     pileCap->attach( plot );
 
-    plotItemList.append(pileCap);
+    PLOTOBJECT var;
+    var.itemPtr = pileCap;
+    var.type    = PLType::CAP;
+    var.index   = -1;
+    plotItemList.append(var);
+
     pileCap->setItemAttribute(QwtPlotItem::Legend, false);
 
 
@@ -389,7 +561,12 @@ void SystemPlotQwt::refresh()
         pileII->setTitle(QString("Pile #%1").arg(pileIdx+1));
         pileII->attach( plot);
         pileII->setItemAttribute(QwtPlotItem::Legend, true);
-        plotItemList.append(pileII);
+
+        PLOTOBJECT var;
+        var.itemPtr = pileII;
+        var.type    = PLType::PILE;
+        var.index   = pileIdx;
+        plotItemList.append(var);
     }
 
 #if 0
@@ -510,7 +687,12 @@ void SystemPlotQwt::refresh()
 
     if (forceArrowRatio != 0){
     arrow->attach( plot );
-    plotItemList.append(arrow);
+
+    PLOTOBJECT var;
+    var.itemPtr = arrow;
+    var.type    = PLType::LOAD;
+    var.index   = 0;
+    plotItemList.append(var);
     }
 
 
