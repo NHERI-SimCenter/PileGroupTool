@@ -15,7 +15,7 @@ enum class PLType { PILE, SOIL, WATER, CAP, LOAD, OTHER, NONE };
 struct PLOTOBJECT {
     QwtPlotItem *itemPtr;   // pointer to the PlotItem
     PLType       type;      // object type identifier
-    int          index;      // pile index OR layer index
+    int          index;     // pile index OR layer index
 };
 
 namespace Ui {
@@ -50,7 +50,7 @@ protected:
     QwtPlot *plot;
     QwtPlotGrid *grid;
 
-    QList<PLOTOBJECT > plotItemList;
+    QList<PLOTOBJECT> plotItemList;
 
 };
 

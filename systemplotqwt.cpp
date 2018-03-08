@@ -22,7 +22,7 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     SystemPlotSuper(parent)
 {
     //
-    // create a QwtPlot
+    // Create a QwtPlot
     //
     plot = new QwtPlot(this);
     plotItemList.clear();
@@ -33,7 +33,7 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     grid->setZ(1);
     grid->attach( plot );
 
-    // Layout plot
+    // Layout Plot
     QGridLayout *lyt = new QGridLayout(this);
     lyt->addWidget(plot,0,0);
     lyt->setMargin(0);
@@ -45,12 +45,12 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     picker->setTrackerMode(QwtPicker::AlwaysOn);
     picker->setRubberBand(QwtPicker::RectRubberBand);
 
-    connect(picker, SIGNAL(activated(bool)), this, SLOT(on_picker_activated(bool)));
-    connect(picker, SIGNAL(selected(const QPolygon &)), this, SLOT(on_picker_selected(const QPolygon &)));
+    //connect(picker, SIGNAL(activated(bool)), this, SLOT(on_picker_activated(bool)));
+    //connect(picker, SIGNAL(selected(const QPolygon &)), this, SLOT(on_picker_selected(const QPolygon &)));
     connect(picker, SIGNAL(appended(const QPoint &)), this, SLOT(on_picker_appended(const QPoint &)));
-    connect(picker, SIGNAL(moved(const QPoint &)), this, SLOT(on_picker_moved(const QPoint &)));
-    connect(picker, SIGNAL(removed(const QPoint &)), this, SLOT(on_picker_removed(const QPoint &)));
-    connect(picker, SIGNAL(changed(const QPolygon &)), this, SLOT(on_picker_changed(const QPolygon &)));
+    //connect(picker, SIGNAL(moved(const QPoint &)), this, SLOT(on_picker_moved(const QPoint &)));
+    //connect(picker, SIGNAL(removed(const QPoint &)), this, SLOT(on_picker_removed(const QPoint &)));
+    //connect(picker, SIGNAL(changed(const QPolygon &)), this, SLOT(on_picker_changed(const QPolygon &)));
 
 
 #if 0
@@ -79,7 +79,7 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     //
     // default plot selection settings
     //
-    activePileIdx = 0;
+    activePileIdx  = 0;
     activeLayerIdx = -1;
 }
 
@@ -88,8 +88,6 @@ SystemPlotQwt::~SystemPlotQwt()
     delete plot;
 }
 
-//# if 0
-// Experiment
 
 PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
 {
@@ -187,7 +185,6 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 {
     qWarning() << "picker appended " << pos;
 
-    //this->reset();
     SystemPlotQwt::refresh();
 
     double coords[ QwtPlot::axisCnt ];
@@ -196,12 +193,12 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
     coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft ).invTransform( pos.y() );
     coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight ).invTransform( pos.y() );
 
-    PLOTOBJECT obj = itemAt(pos);
+    PLOTOBJECT    obj = itemAt(pos);
     QwtPlotItem *item = obj.itemPtr;
 
     if ( item )
     {
-        if ( item->rtti() == QwtPlotItem::Rtti_PlotShape )
+        /*if ( item->rtti() == QwtPlotItem::Rtti_PlotShape )
         {
             QwtPlotShapeItem *theShape = static_cast<QwtPlotShapeItem *>(item);
             theShape->setPen(Qt::red, 3);
@@ -210,7 +207,7 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
             color.setAlpha(64);
             brush.setColor(color);
             theShape->setBrush(brush);
-        }
+        }*/
 
         plot->replot();
 
@@ -227,8 +224,7 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
         }
     }
 }
-// Experiment
-//#endif
+
 
 void SystemPlotQwt::refresh()
 {  
@@ -287,77 +283,29 @@ void SystemPlotQwt::refresh()
     if (maxH > L1/2.) maxH = L1/2.;
 
 
-#if 0
-    // setup system plot
-    plot->clearPlottables();
-    plot->clearGraphs();
-    plot->clearItems();
-
-    if (!plot->layer("groundwater"))
-        { plot->addLayer("groundwater", plot->layer("grid"), QCustomPlot::limAbove); }
-    if (!plot->layer("soil"))
-        { plot->addLayer("soil", plot->layer("groundwater"), QCustomPlot::limAbove); }
-    if (!plot->layer("piles"))
-        { plot->addLayer("piles", plot->layer("soil"), QCustomPlot::limAbove); }
-#endif
-
-#if 0
-    plot->autoAddPlottableToLegend();
-    plot->legend->setVisible(true);
-#endif
-
-#if 0
-
-    QVector<double> zero(2,xbar-0.5*W);
-    QVector<double> loc(2,0.0);
-    loc[0] = -(H-L1); loc[1] = L1;
-
-    plot->addGraph();
-    plot->graph(0)->setData(zero,loc);
-    plot->graph(0)->setPen(QPen(Qt::black,1));
-    plot->graph(0)->removeFromLegend();
-
-    // create layers
-
-    plot->setCurrentLayer("soil");
-
-#endif
-
     //
     // HERE IS WHERE TO START ...
     //
 
-    // Legend
+    //
+    // Plot Legend
+    //
     plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
 
     // Adjust x-axis to match Ground Layer Width
     plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
+    // Adjust y-axis to match Ground Layer Depth and slightly above pilecap
+    double heightAbovePileCap = 1;
+    plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + maxH + heightAbovePileCap );
 
 
-    /* Temp data to check if legend is working
-    QwtPlotCurve *curve = new QwtPlotCurve();
-    curve->setTitle( "Random Points" );
-    curve->setPen( LINE_COLOR[3], 2 );
-    curve->setBrush( GROUND_WATER_BLUE );
-
-    QPolygonF points;
-    points << QPointF( 2, 5 ) << QPointF( 2, 7 )
-        << QPointF( 4, 7 ) << QPointF( 4, 5 )
-        << QPointF( 2, 5 );
-
-    curve->setSamples( points);
-    curve->attach( plot );
-    plotItemList.append(curve);
-    // End Temp data*/
-
-
-    // ground water table
     //
-    // plot->setCurrentLayer("groundwater");
+    // Plot Ground Water Table
+    //
+
+    //plot->setCurrentLayer("groundwater");
 
     if (gwtDepth < (H-L1)) {
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
         QPolygonF(groundwaterCorners);
         groundwaterCorners << QPointF(xbar - W/2, -gwtDepth)
                            << QPointF(xbar - W/2, -(H - L1))
@@ -382,7 +330,9 @@ void SystemPlotQwt::refresh()
         plotItemList.append(var);
     }
 
-    // Ground Layers
+    //
+    // Plot Ground Layers
+    //
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
         QPolygonF groundCorners;
@@ -416,108 +366,9 @@ void SystemPlotQwt::refresh()
         plotItemList.append(var);
     }
 
-#if 0
-    // Ground Layers using curves
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
-
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        x[0] = xbar - W/2.; y[0] = -depthOfLayer[iLayer];
-        x[1] = x[0];        y[1] = -depthOfLayer[iLayer+1];
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
-
-        QwtPlotCurve *layerII = new QwtPlotCurve();
-        layerII->setSamples(x,y);
-        layerII->setTitle(QString("Layer #%1").arg(iLayer+1));
-
-        if (iLayer == activeLayerIdx) {
-            layerII->setPen(QPen(Qt::red, 2));
-            layerII->setBrush(QBrush(BRUSH_COLOR[3+iLayer]));
-        }
-        else {
-            layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
-            layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
-        }
-
-        layerII->attach( plot );
-        plotItemList.append(layerII);
-    }
-#endif
-
-
-#if 0
-    if (gwtDepth < (H-L1)) {
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        x[0] = xbar - W/2.; y[0] = -gwtDepth;
-        x[1] = x[0];        y[1] = -(H - L1);
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
-
-        QwtPlotCurve *water = new QwtPlotCurve();
-        water->setSamples(x,y);
-
-        water->setPen(QPen(Qt::blue, 2));
-        water->setBrush(QBrush(GROUND_WATER_BLUE));
-
-        water->setTitle(QString("Groundwater"));
-        water->attach( plot);
-        plotItemList.append(water);
-    }
-#endif
-
-
-#if 0
-    // ground water table
-
-    plot->setCurrentLayer("groundwater");
-
-    if (gwtDepth < (H-L1)) {
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        x[0] = xbar - W/2.; y[0] = -gwtDepth;
-        x[1] = x[0];        y[1] = -(H - L1);
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
-
-        QCPCurve *water = new QCPCurve(plot->xAxis, plot->yAxis);
-        water->setData(x,y);
-
-        water->setPen(QPen(Qt::blue, 2));
-        water->setBrush(QBrush(GROUND_WATER_BLUE));
-
-        water->setName(QString("groundwater"));
-    }
-#endif
-
-    // plot the pile cap
-
-    //plot->setCurrentLayer("piles");
-
-    /*QVector<double> x(5,0.0);
-    QVector<double> y(5,0.0);
-
-    x[0] = minX0 - maxD/2.; y[0] = L1 + maxH;
-    x[1] = x[0];            y[1] = L1 - maxH;
-    x[2] = maxX0 + maxD/2.; y[2] = y[1];
-    x[3] = x[2];            y[3] = y[0];
-    x[4] = x[0];            y[4] = y[0];
-
-    QwtPlotCurve *pileCap = new QwtPlotCurve();
-    pileCap->setSamples(x,y);
-    pileCap->setPen(QPen(Qt::black, 1));
-    pileCap->setBrush(QBrush(Qt::gray));
-    pileCap->setTitle(QString("Pile Cap"));
-    pileCap->attach( plot );
-    */
-
+    //
+    // Plot PileCaps
+    //
     QRectF capCorners(QPointF(minX0 - maxD/2, L1 + maxH), QSizeF(maxX0 + maxD - minX0, -maxH));
 
     QwtPlotShapeItem *pileCap = new QwtPlotShapeItem();
@@ -535,8 +386,8 @@ void SystemPlotQwt::refresh()
     pileCap->setItemAttribute(QwtPlotItem::Legend, false);
 
 
-
-    // plot the piles
+    //
+    // Plot Piles
     //
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
@@ -569,36 +420,7 @@ void SystemPlotQwt::refresh()
         plotItemList.append(var);
     }
 
-#if 0
-    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        double D = pileDiameter[pileIdx];
-
-        x[0] = xOffset[pileIdx] - D/2.; y[0] = L1;
-        x[1] = x[0];                    y[1] = -L2[pileIdx];
-        x[2] = xOffset[pileIdx] + D/2.; y[2] = y[1];
-        x[3] = x[2];                    y[3] = y[0];
-        x[4] = x[0];                    y[4] = y[0];
-
-        QwtPlotCurve *pileII = new QwtPlotCurve();
-        pileII->setSamples(x,y);
-        if (pileIdx == activePileIdx) {
-            pileII->setPen(QPen(Qt::red, 2));
-            pileII->setBrush(QBrush(BRUSH_COLOR[9+pileIdx]));
-        }
-        else {
-            pileII->setPen(QPen(Qt::black, 1));
-            pileII->setBrush(QBrush(BRUSH_COLOR[6+pileIdx]));
-        }
-        pileII->setTitle(QString("Pile #%1").arg(pileIdx+1));
-        pileII->attach( plot);
-        //pileII -> setZ(2);
-        plotItemList.append(pileII);
-    }
-#endif
 
 #if 0
     // plot the pile cap
@@ -652,7 +474,6 @@ void SystemPlotQwt::refresh()
     // Drawing Horizontal Force Arrow using QwtPlotShapeItem
     //
     QwtPlotShapeItem *arrow = new QwtPlotShapeItem();
-
     double forceArrowRatio = -P/MAX_FORCE;
 
     // Defining minimum size of the horizontal force arrow
@@ -664,29 +485,31 @@ void SystemPlotQwt::refresh()
         forceArrowRatio = -forceArrowMin;
     }
 
-    QPen pen( Qt::black, 2 );
+    QPen pen( Qt::black, 1 );
     pen.setJoinStyle( Qt::MiterJoin );
     arrow->setPen( pen );
     arrow->setBrush( Qt::red );
 
-    double pileCapCenter = 0.5 * (minX0 + maxX0);
-    double arrowThickness = 0.1, arrowHead = 0.4, arrowHeadLength = 0.5;
+    double pileCapCenter  = 0.5 * (minX0 + maxX0),
+           arrowThickness = 0.1,
+           arrowHead = 0.4,
+           arrowHeadLength = 0.5;
 
     if (forceArrowRatio < 0) {arrowHeadLength = -arrowHeadLength;}
 
     QPainterPath path;
-    path.moveTo( pileCapCenter, L1 + maxH );
-    path.lineTo( pileCapCenter + arrowHeadLength, L1 + maxH + arrowHead );
-    path.lineTo( pileCapCenter + arrowHeadLength, L1 + maxH + arrowThickness );
+    path.moveTo( pileCapCenter                                            , L1 + maxH                  );
+    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH + arrowHead      );
+    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH + arrowThickness );
     path.lineTo( pileCapCenter + arrowHeadLength + forceArrowRatio*( W/2 ), L1 + maxH + arrowThickness );
     path.lineTo( pileCapCenter + arrowHeadLength + forceArrowRatio*( W/2 ), L1 + maxH - arrowThickness );
-    path.lineTo( pileCapCenter + arrowHeadLength, L1 + maxH - arrowThickness );
-    path.lineTo( pileCapCenter + arrowHeadLength, L1 + maxH - arrowHead );
-    path.lineTo( pileCapCenter, L1 + maxH );
+    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH - arrowThickness );
+    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH - arrowHead      );
+    path.lineTo( pileCapCenter                                            , L1 + maxH                  );
     arrow->setShape( path );
 
     if (forceArrowRatio != 0){
-    arrow->attach( plot );
+        arrow->attach( plot );
 
     PLOTOBJECT var;
     var.itemPtr = arrow;
@@ -733,40 +556,6 @@ void SystemPlotQwt::refresh()
     }
     */
 
-#if 0
-    // add force to the plot
-
-    if (ABS(P) > 0.0) {
-        double force = 0.45*W*P/MAX_FORCE;
-
-        // add the arrow:
-        QCPItemLine *arrow = new QCPItemLine(plot);
-        //plot->addItem(arrow);
-        arrow->setPen(QPen(Qt::red, 3));
-        arrow->start->setCoords(xbar, L1);
-        arrow->end->setCoords(xbar + force, L1);
-        arrow->setHead(QCPLineEnding::esSpikeArrow);
-    }
-
-    if (ABS(PV) > 0.0) {
-        double force = 0.45*W*PV/MAX_FORCE;
-
-        // add the arrow:
-        QCPItemLine *arrow = new QCPItemLine(plot);
-        //plot->addItem(arrow);
-        arrow->setPen(QPen(Qt::red, 3));
-        arrow->start->setCoords(xbar, L1 - force);
-        arrow->end->setCoords(xbar, L1);
-        arrow->setHead(QCPLineEnding::esSpikeArrow);
-    }
-
-    // plot scaling options
-
-    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
-    plot->xAxis->setScaleRatio(plot->yAxis);
-    plot->rescaleAxes();
-#endif
     plot->replot();
 
 }
