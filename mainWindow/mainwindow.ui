@@ -732,7 +732,7 @@
           <item>
            <widget class="QStackedWidget" name="loadTypesStack">
             <property name="currentIndex">
-             <number>0</number>
+             <number>2</number>
             </property>
             <widget class="QWidget" name="page_forceControl">
              <layout class="QGridLayout" name="gridLayout_16">
@@ -1023,7 +1023,7 @@ displacement</string>
                <number>0</number>
               </property>
               <item row="0" column="0">
-               <widget class="QFrame" name="frame">
+               <widget class="QFrame" name="soilMotionFrame">
                 <property name="frameShape">
                  <enum>QFrame::StyledPanel</enum>
                 </property>
