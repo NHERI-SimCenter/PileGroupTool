@@ -1,0 +1,13 @@
+prefix=/Users/pmackenz/Qt/5.10.0/clang_64
+exec_prefix=${prefix}
+libdir=./qwt-6.2.0/lib
+includedir=./qwt-6.2.0/include
+
+
+Name: qwtmathml
+Description: Qwt MathML renderer
+Version: 6.2.0
+Libs: -L${libdir} -lqwtmathml 
+Cflags: -I${includedir}
+Requires: Qt5Gui Qt5Widgets Qt5Xml
+
