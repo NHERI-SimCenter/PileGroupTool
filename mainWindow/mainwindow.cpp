@@ -2339,9 +2339,9 @@ void MainWindow::on_surfaceDisplacementSlider_valueChanged(int value)
 
 void MainWindow::on_Interface12_editingFinished()
 {
-    percentage12 = ui->Interface12->value();
+    percentage12 = ui->Interface12->value()/100.00;
 
-    int sliderPosition = nearbyint(percentage12);
+    int sliderPosition = nearbyint(percentage12*100.0);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -2357,7 +2357,7 @@ void MainWindow::on_Interface12Slider_valueChanged(int value)
 
     percentage12 = sliderRatio;
 
-    ui->Interface12->setValue(percentage12);
+    ui->Interface12->setValue(percentage12*100.0);
 
     this->doAnalysis();
     this->updateSystemPlot();
@@ -2365,9 +2365,9 @@ void MainWindow::on_Interface12Slider_valueChanged(int value)
 
 void MainWindow::on_Interface23_editingFinished()
 {
-    percentage23 = ui->Interface23->value();
+    percentage23 = ui->Interface23->value()/100.0;
 
-    int sliderPosition = nearbyint(percentage23);
+    int sliderPosition = nearbyint(percentage23*100.0);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -2383,7 +2383,7 @@ void MainWindow::on_Interface23Slider_valueChanged(int value)
 
     percentage23 = sliderRatio;
 
-    ui->Interface23->setValue(percentage23);
+    ui->Interface23->setValue(percentage23*100.0);
 
     this->doAnalysis();
     this->updateSystemPlot();
@@ -2391,9 +2391,9 @@ void MainWindow::on_Interface23Slider_valueChanged(int value)
 
 void MainWindow::on_BaseDisplacement_editingFinished()
 {
-    percentageBase = ui->BaseDisplacement->value();
+    percentageBase = ui->BaseDisplacement->value()/100.0;
 
-    int sliderPosition = nearbyint(percentageBase);
+    int sliderPosition = nearbyint(percentageBase*100.0);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -2409,7 +2409,7 @@ void MainWindow::on_BaseDisplacementSlider_valueChanged(int value)
 
     percentageBase = sliderRatio;
 
-    ui->BaseDisplacement->setValue(percentageBase);
+    ui->BaseDisplacement->setValue(percentageBase*100.0);
 
     this->doAnalysis();
     this->updateSystemPlot();

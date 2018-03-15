@@ -63,10 +63,6 @@ private slots:
     void on_chkBox_include_toe_resistance_clicked(bool checked);
 
     // geometry parameters entered/changed
-    void on_horizontalForceSlider_valueChanged(int value);
-    void on_verticalForceSlider_valueChanged(int value);
-    void on_momentSlider_valueChanged(int value);
-
     void on_pileDiameter_valueChanged(double arg1);
     void on_embeddedLength_valueChanged(double arg1);
     void on_freeLength_valueChanged(double arg1);
@@ -79,6 +75,10 @@ private slots:
     void on_btn_newPile_clicked();
 
     // material table slots
+    void on_horizontalForceSlider_valueChanged(int value);
+    void on_verticalForceSlider_valueChanged(int value);
+    void on_momentSlider_valueChanged(int value);
+
     void on_appliedHorizontalForce_editingFinished();
     void on_appliedVerticalForce_editingFinished();
     void on_appliedMoment_editingFinished();
