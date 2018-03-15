@@ -256,4 +256,9 @@ QFrame#soilMotionFrame {
     border:none;
 }
 
+QFrame#loadSelectionFrame {
+    background-color: #FFFFFF;
+    border:none;
+}
+
 
