@@ -213,9 +213,13 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 
         switch (obj.type) {
         case PLType::PILE:
+            setActiveLayer(-1);
+            setActivePile(obj.index);
             emit on_pileSelected(obj.index);
             break;
         case PLType::SOIL:
+            setActivePile(-1);
+            setActiveLayer(obj.index);
             emit on_soilLayerSelected(obj.index);
             break;
         case PLType::WATER:
