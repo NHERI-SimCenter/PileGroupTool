@@ -75,6 +75,7 @@
 #include <FE_Datastore.h>
 #include <FEM_ObjectBroker.h>
 
+
 //
 // global variables
 //
@@ -449,7 +450,6 @@ Domain::addElement(Element *element)
 
   return result;
 }
-
 
 
 // void addNode(Node *);

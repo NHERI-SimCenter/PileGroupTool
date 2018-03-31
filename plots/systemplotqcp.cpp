@@ -220,7 +220,7 @@ void SystemPlotQCP::refresh()
     // add force to the plot
 
     if (ABS(P) > 0.0) {
-        double force = 0.45*W*P/MAX_FORCE;
+        double force = 0.45*W*P/MAX_H_FORCE;
 
         // add the arrow:
         QCPItemLine *arrow = new QCPItemLine(plot);
@@ -232,7 +232,7 @@ void SystemPlotQCP::refresh()
     }
 
     if (ABS(PV) > 0.0) {
-        double force = 0.45*W*PV/MAX_FORCE;
+        double force = 0.45*W*PV/MAX_V_FORCE;
 
         // add the arrow:
         QCPItemLine *arrow = new QCPItemLine(plot);

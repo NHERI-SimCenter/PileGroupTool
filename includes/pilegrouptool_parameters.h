@@ -14,8 +14,9 @@
 #define NUM_ELEMENTS_IN_AIR       4
 
 // #define MAX_FORCE 5000.0
-#define MAX_FORCE  10000.0
-#define MAX_MOMENT 25000.0
+#define MAX_H_FORCE  1000.0
+#define MAX_V_FORCE 10000.0
+#define MAX_MOMENT 2500.0
 #define MAX_DISP   1.0
 
 // global constants

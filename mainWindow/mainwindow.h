@@ -210,20 +210,6 @@ private:
     double E[MAXPILES];             // pile modulus of elasticity
     double xOffset[MAXPILES];       // x-offset of pile
 
-    int numNodePiles;
-    int numNodePile[MAXPILES];
-    int maxLayers[MAXPILES];
-    int nodeIDoffset[MAXPILES];
-    int elemIDoffset[MAXPILES];
-
-    // pile head parameters
-    double EI = 1.;
-    double EA = 1.;
-    double GJ = 1.0e12;
-
-    // others
-    QVector<HEAD_NODE_TYPE> headNodeList = QVector<HEAD_NODE_TYPE>(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
-
     int activePileIdx;
     int activeLayerIdx;
 

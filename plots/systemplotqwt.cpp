@@ -474,7 +474,7 @@ void SystemPlotQwt::refresh()
     // Drawing Horizontal Force Arrow using QwtPlotShapeItem
     //
     QwtPlotShapeItem *arrow = new QwtPlotShapeItem();
-    double forceArrowRatio = -P/MAX_FORCE;
+    double forceArrowRatio = -P/MAX_H_FORCE;
 
     // Defining minimum size of the horizontal force arrow
     double forceArrowMin = 0.03;
@@ -524,7 +524,7 @@ void SystemPlotQwt::refresh()
     /*
     QwtPlotShapeItem *arrowV = new QwtPlotShapeItem();
 
-    double forceArrowRatioV = PV/MAX_FORCE;
+    double forceArrowRatioV = PV/MAX_V_FORCE;
 
     if (( forceArrowRatioV < 0.3 ) && (forceArrowRatioV > 0)) {
         forceArrowRatio = 0.3;

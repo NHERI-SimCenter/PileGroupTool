@@ -63,7 +63,7 @@ public:
     QList<QVector<QVector<double> *> *> getZ50();
 
 private:
-    void extractPlotData();
+    int extractPlotData();
     void clearPlotBuffers();
 
 protected:
@@ -110,9 +110,6 @@ protected:
     double pult, y50;     // lateral resistance
     double tult, z50;     // shaft friction
     double qult, z50q;    // toe resistance
-
-    // setup switch
-    bool inSetupState = true;
 
     // viewer settings
     bool showDisplacements;

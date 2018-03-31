@@ -88,7 +88,8 @@ PileFEAmodeler::PileFEAmodeler()
 
 PileFEAmodeler::~PileFEAmodeler()
 {
-
+    delete theDomain;
+    theDomain = NULL;
 }
 
 
@@ -141,9 +142,6 @@ void PileFEAmodeler::setDefaultParameters(void)
     // toe resistance
     qult = 9999.;
     z50q = 1.0;
-
-    // setup switch
-    inSetupState = true;
 
     // viewer settings
     showDisplacements = true;
@@ -209,6 +207,9 @@ void PileFEAmodeler::updatePiles(QVector<PILE_INFO> &newPileInfo)
     }
 
     DISABLE_STATE("meshValid");
+    DISABLE_STATE("solutionValid");
+    DISABLE_STATE("solutionAvailable");
+    DISABLE_STATE("dataExtracted");
 }
 
 void PileFEAmodeler::setLoadType(LoadControlType type)
@@ -281,21 +282,42 @@ void PileFEAmodeler::setAnalysisType(QString)
 
 void PileFEAmodeler::doAnalysis()
 {
-    if (!CHECK_STATE("meshValid")) this->buildMesh();
-    if (!CHECK_STATE("loadValid")) this->buildLoad();
-    if (!CHECK_STATE("analysisValid")) this->buildAnalysis();
+    if (!CHECK_STATE("meshValid"))
+    {
+        this->buildMesh();
+        DISABLE_STATE("analysisValid");
+    }
+    if (!CHECK_STATE("loadValid"))
+    {
+        this->buildLoad();
+        DISABLE_STATE("analysisValid");
+    }
+    if (!CHECK_STATE("analysisValid"))
+    {
+        DISABLE_STATE("dataExtracted");
+        DISABLE_STATE("solutionValid");
+        this->buildAnalysis();
+    }
 
-    DISABLE_STATE("dataExtracted");
-    DISABLE_STATE("solutionValid");
     DISABLE_STATE("solutionAvailable");
 
     //
     //analyze & get results
     //
-    theAnalysis->analyze(20);
+    int converged = theAnalysis->analyze(20);
     theDomain->calculateNodalReactions(0);
 
+    // the solution exists, but it may or may not be valid !
     ENABLE_STATE("solutionAvailable");
+
+    if (converged < 0)
+    {
+        DISABLE_STATE("solutionValid");
+    }
+    else
+    {
+        ENABLE_STATE("solutionValid");
+    }
 }
 
 void PileFEAmodeler::buildMesh()
@@ -305,8 +327,6 @@ void PileFEAmodeler::buildMesh()
     for (int k=0; k<MAXPILES; k++) {
         headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
     }
-
-    if (inSetupState) return;
 
     // clear existing model
     theDomain->clearAll();
@@ -393,9 +413,9 @@ void PileFEAmodeler::buildMesh()
 
     //this->updateSystemPlot();
 
-    QVector<QVector<double> > locList(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double> > pultList(MAXPILES, QVector<double>(numNodePiles,0.0));
-    QVector<QVector<double> > y50List(MAXPILES, QVector<double>(numNodePiles,0.0));
+    QVector<QVector<double> > locList(MAXPILES, QVector<double>(numNodePiles,0.0));  // need these as member variables
+    QVector<QVector<double> > pultList(MAXPILES, QVector<double>(numNodePiles,0.0)); // need these as member variables
+    QVector<QVector<double> > y50List(MAXPILES, QVector<double>(numNodePiles,0.0));  // need these as member variables
 
     int ioffset  = numNodePiles;              // for p-y spring nodes
     int ioffset2 = ioffset + numNodePiles;    // for pile nodes
@@ -484,10 +504,6 @@ void PileFEAmodeler::buildMesh()
         //
         // add toe resistance (if requested)
         //
-    /*
-     *  CHECK IN WITH FRANK:
-     *     how to properly implement a Q-z spring at the end WITHOUT the p-y spring.
-     */
 
         if (useToeResistance) {
             Node *theNode = 0;
@@ -831,6 +847,7 @@ void PileFEAmodeler::buildMesh()
     }
 
     ENABLE_STATE("meshValid");
+    DISABLE_STATE("solutionAvailable");
 
 }
 
@@ -843,12 +860,22 @@ void PileFEAmodeler::buildLoad()
     LinearSeries *theTimeSeries = new LinearSeries(1, 1.0);
     LoadPattern *theLoadPattern = new LoadPattern(1);
     theLoadPattern->setTimeSeries(theTimeSeries);
-    static Vector load(6); load.Zero(); load(0) = P;
-    NodalLoad *theLoad = new NodalLoad(0, numLoadedNode, load);
-    theLoadPattern->addNodalLoad(theLoad);
-    theDomain->addLoadPattern(theLoadPattern);
+    static Vector load(6);
+    load.Zero();
+    load(0) = P;
+    load(2) = PV;
+    load(4) = PMom;
 
-    ENABLE_STATE("loadValid");
+    if (numLoadedNode >= 0)
+    {
+        NodalLoad *theLoad = new NodalLoad(0, numLoadedNode, load);
+        theLoadPattern->addNodalLoad(theLoad);
+        theDomain->addLoadPattern(theLoadPattern);
+
+        ENABLE_STATE("loadValid");
+        DISABLE_STATE("solutionAvailable");
+        DISABLE_STATE("solutionValid");
+    }
 }
 
 void PileFEAmodeler::buildAnalysis()
@@ -884,7 +911,6 @@ void PileFEAmodeler::buildAnalysis()
     ENABLE_STATE("analysisValid");
 }
 
-
 void PileFEAmodeler::clearPlotBuffers()
 {
     foreach (QVector<double> *ptr, locList) { if (ptr != NULL) delete ptr; }
@@ -905,6 +931,9 @@ void PileFEAmodeler::clearPlotBuffers()
     foreach (QVector<double> *ptr, AxialList) { if (ptr != NULL) delete ptr; }
     AxialList.clear();
 
+    foreach (QVector<double> *ptr, StressList) { if (ptr != NULL) delete ptr; }
+    StressList.clear();
+
     foreach (QVector<double> *ptr, pultList) { if (ptr != NULL) delete ptr; }
     pultList.clear();
 
@@ -918,11 +947,13 @@ void PileFEAmodeler::clearPlotBuffers()
     z50List.clear();
 }
 
-void PileFEAmodeler::extractPlotData()
+int PileFEAmodeler::extractPlotData()
 {
-    if ( CHECK_STATE("dataExtracted")) return;
+    if ( CHECK_STATE("dataExtracted")) return 0;
 
     if (!CHECK_STATE("solutionAvailable")) this->doAnalysis();
+
+    if (!CHECK_STATE("solutionValid")) return -1;
 
     this->clearPlotBuffers();
 
@@ -964,7 +995,7 @@ void PileFEAmodeler::extractPlotData()
         // collect nodal results
         //
         for (int i=0; i<pileInfo[pileIdx].numNodePile; i++) {
-            Node *theNode = theDomain->getNode(i+pileInfo[pileIdx].nodeIDoffset);
+            Node *theNode = theDomain->getNode(i+pileInfo[pileIdx].nodeIDoffset+1);
             const Vector &nodeCoord = theNode->getCrds();
             (*locList[pileIdx])[i] = nodeCoord(2);
             int iLayer;
@@ -984,8 +1015,28 @@ void PileFEAmodeler::extractPlotData()
             //if ((*axialDispList[pileIdx])[i] < minVDisp) minVDisp = (*axialDispList[pileIdx])[i];
         }
 
-        (*MomentList[pileIdx])[0] = 0.0;
-        (*ShearList[pileIdx])[0]  = 0.0;
+        /* during initialization, the list can contain zero elements and the next 2 lines will crash */
+
+        /*
+         *  identify force components
+         *  components identified by *** will be shown in plots
+         *
+         * eleForces[0] ... Px on node 1 == in plane shear force
+         * eleForces[1] ... Py on node 1 == out of plane shear force
+         * eleForces[2] ... Pz on node 1 == axial force
+         * eleForces[3] ... Mx on node 1 == out of plane bending moment
+         * eleForces[4] ... My on node 1 == in plane bending moment
+         * eleForces[5] ... Mz on node 1 == torsion
+         * eleForces[6] ... Px on node 2 == in plane shear force        ***
+         * eleForces[7] ... Py on node 2 == out of plane shear force
+         * eleForces[8] ... Pz on node 2 == axial force                 ***
+         * eleForces[9] ... Mx on node 2 == out of plane bending moment
+         * eleForces[10] .. My on node 2 == in plane bending moment     ***
+         * eleForces[11] .. Mz on node 2 == torsion
+         */
+
+        //(*MomentList[pileIdx])[0] = 0.0;
+        //(*ShearList[pileIdx])[0]  = 0.0;
 
         for (int i=1; i<pileInfo[pileIdx].numNodePile; i++) {
 
@@ -999,6 +1050,10 @@ void PileFEAmodeler::extractPlotData()
             (*ShearList[pileIdx])[i] = eleForces(6);
             //if ((*ShearList[pileIdx])[i] > maxShear) maxShear = (*ShearList[pileIdx])[i];
             //if ((*ShearList[pileIdx])[i] < minShear) minShear = (*ShearList[pileIdx])[i];
+
+            (*AxialList[pileIdx])[i] = eleForces(8);
+            //if ((*AxialList[pileIdx])[i] > maxAxial) maxAxial = (*AxialList[pileIdx])[i];
+            //if ((*AxialList[pileIdx])[i] < minAxial) minAxial = (*AxialList[pileIdx])[i];
         }
     }
 
@@ -1024,91 +1079,121 @@ int  PileFEAmodeler::getExitStatus()
 
 QList<QVector<QVector<double> *> *> PileFEAmodeler::getLateralDisplacements()
 {
-    this->extractPlotData();
     QList<QVector<QVector<double> *> *> list;
-    list.append(&locList);
-    list.append(&lateralDispList);
+
+    if (this->extractPlotData() >= 0)
+    {
+        list.append(&locList);
+        list.append(&lateralDispList);
+    }
     return list;
 }
 
 QList<QVector<QVector<double> *> *> PileFEAmodeler::getAxialDisplacements()
 {
-    this->extractPlotData();
     QList<QVector<QVector<double> *> *> list;
-    list.append(&locList);
-    list.append(&axialDispList);
+
+    if (this->extractPlotData() >= 0)
+    {
+        list.append(&locList);
+        list.append(&axialDispList);
+    }
     return list;
 }
 
 QList<QVector<QVector<double> *> *> PileFEAmodeler::getMoment()
 {
-    this->extractPlotData();
     QList<QVector<QVector<double> *> *> list;
-    list.append(&locList);
-    list.append(&MomentList);
+
+    if (this->extractPlotData() >= 0)
+    {
+        list.append(&locList);
+        list.append(&MomentList);
+    }
     return list;
 }
 
 QList<QVector<QVector<double> *> *> PileFEAmodeler::getShear()
 {
-    this->extractPlotData();
     QList<QVector<QVector<double> *> *> list;
-    list.append(&locList);
-    list.append(&ShearList);
+
+    if (this->extractPlotData() >= 0)
+    {
+        list.append(&locList);
+        list.append(&ShearList);
+    }
     return list;
 }
 
 QList<QVector<QVector<double> *> *> PileFEAmodeler::getForce()
 {
-    this->extractPlotData();
     QList<QVector<QVector<double> *> *> list;
-    list.append(&locList);
-    list.append(&AxialList);
+
+    if (this->extractPlotData() >= 0)
+    {
+        list.append(&locList);
+        list.append(&AxialList);
+    }
     return list;
 }
 
 QList<QVector<QVector<double> *> *> PileFEAmodeler::getStress()
 {
-    this->extractPlotData();
     QList<QVector<QVector<double> *> *> list;
-    list.append(&locList);
-    list.append(&StressList);
+
+    if (this->extractPlotData() >= 0)
+    {
+        list.append(&locList);
+        list.append(&StressList);
+    }
     return list;
 }
 
 QList<QVector<QVector<double> *> *> PileFEAmodeler::getPult()
 {
-    this->extractPlotData();
     QList<QVector<QVector<double> *> *> list;
-    list.append(&locList);
-    list.append(&pultList);
+
+    if (this->extractPlotData() >= 0)
+    {
+        list.append(&locList);
+        list.append(&pultList);
+    }
     return list;
 }
 
 QList<QVector<QVector<double> *> *> PileFEAmodeler::getY50()
 {
-    this->extractPlotData();
     QList<QVector<QVector<double> *> *> list;
-    list.append(&locList);
-    list.append(&y50List);
+
+    if (this->extractPlotData() >= 0)
+    {
+        list.append(&locList);
+        list.append(&y50List);
+    }
     return list;
 }
 
 QList<QVector<QVector<double> *> *> PileFEAmodeler::getTult()
 {
-    this->extractPlotData();
     QList<QVector<QVector<double> *> *> list;
-    list.append(&locList);
-    list.append(&tultList);
+
+    if (this->extractPlotData() >= 0)
+    {
+        list.append(&locList);
+        list.append(&tultList);
+    }
     return list;
 }
 
 QList<QVector<QVector<double> *> *> PileFEAmodeler::getZ50()
 {
-    this->extractPlotData();
     QList<QVector<QVector<double> *> *> list;
-    list.append(&locList);
-    list.append(&z50List);
+
+    if (this->extractPlotData() >= 0)
+    {
+        list.append(&locList);
+        list.append(&z50List);
+    }
     return list;
 }
 
