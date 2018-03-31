@@ -577,11 +577,17 @@ void PileFEAmodeler::buildMesh()
                 theNode = new Node(numNode+ioffset, 3, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
 
                 SP_Constraint *theSP = 0;
+                //
+                // this is the node connected to the soil -- needs to feel the moving soil
+                //
                 theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain->addSP_Constraint(theSP);
                 theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain->addSP_Constraint(theSP);
                 theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain->addSP_Constraint(theSP);
+                //
+                // this is the node connecting to the pile.
+                // -- We need to fix the out of plane movement here for the MP constraint won't link that direction
+                //
                 theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain->addSP_Constraint(theSP);
-                //theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain->addSP_Constraint(theSP);
 
                 //
                 // pile nodes
@@ -613,8 +619,6 @@ void PileFEAmodeler::buildMesh()
                 kSwitch   = 1;  // API
 
                 gwtSwitch = (gwtDepth > -zCoord)?1:2;
-
-                int dummy = iLayer;
 
                 double depthInLayer = -zCoord - depthOfLayer[iLayer];
                 sigV = mSoilLayers[iLayer].getEffectiveStress(depthInLayer);
