@@ -35,6 +35,7 @@ public:
     ~PileFEAmodeler();
 
     void updatePiles(QVector<PILE_INFO> &);
+    void updateSwitches(bool useToe, bool assumeRigidHead);
     void setLoadType(LoadControlType);
     void updateLoad(double, double, double);
     void updateSoil(QVector<soilLayer> &);
@@ -91,7 +92,7 @@ protected:
 
     // states
     bool assumeRigidPileHeadConnection = false;
-    bool useToeResistance    = false;
+    bool useToeResistance    = true;
     int  puSwitch;
     int  kSwitch;
     int  gwtSwitch;

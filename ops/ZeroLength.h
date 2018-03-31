@@ -89,7 +89,7 @@ class ZeroLength : public Element
 	     int n1dMat,
 	     UniaxialMaterial** theMaterial,  
 	     const ID& direction,
-	     int doRaylieghDamping = 0);
+         int doRayleighDamping = 0);
 
   // Constructor for a multiple 1d material models
   ZeroLength(int tag, 			      
@@ -101,7 +101,7 @@ class ZeroLength : public Element
 	     UniaxialMaterial** theMaterial,  
 	     UniaxialMaterial** theDampMaterial,  
 	     const ID& direction,
-	     int doRaylieghDamping = 0);
+         int doRayleighDamping = 0);
 
     ZeroLength();    
     ~ZeroLength();

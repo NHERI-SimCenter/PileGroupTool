@@ -212,6 +212,27 @@ void PileFEAmodeler::updatePiles(QVector<PILE_INFO> &newPileInfo)
     DISABLE_STATE("dataExtracted");
 }
 
+void PileFEAmodeler::updateSwitches(bool useToe, bool assumeRigidHead)
+{
+    if (useToeResistance != useToe)
+    {
+        useToeResistance = useToe;
+        DISABLE_STATE("meshValid");
+        DISABLE_STATE("solutionValid");
+        DISABLE_STATE("solutionAvailable");
+        DISABLE_STATE("dataExtracted");
+    }
+
+    if (assumeRigidPileHeadConnection != assumeRigidHead)
+    {
+        assumeRigidPileHeadConnection = assumeRigidHead;
+        DISABLE_STATE("meshValid");
+        DISABLE_STATE("solutionValid");
+        DISABLE_STATE("solutionAvailable");
+        DISABLE_STATE("dataExtracted");
+    }
+}
+
 void PileFEAmodeler::setLoadType(LoadControlType type)
 {
     if (loadControlType != type)
@@ -560,7 +581,7 @@ void PileFEAmodeler::buildMesh()
                 theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain->addSP_Constraint(theSP);
                 theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain->addSP_Constraint(theSP);
                 theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain->addSP_Constraint(theSP);
-                theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain->addSP_Constraint(theSP);
+                //theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain->addSP_Constraint(theSP);
 
                 //
                 // pile nodes
@@ -624,7 +645,7 @@ void PileFEAmodeler::buildMesh()
                 // t-z spring material
                 getTzParam(phi, pileInfo[pileIdx].pileDiameter,  sigV,  eleSize, &tult, &z50);
 
-                if(tult <= 0.0 || z50 <= 0.0) {
+                if (tult <= 0.0 || z50 <= 0.0) {
                     qDebug() << "WARNING -- only accepts positive nonzero tult and z50";
                     qDebug() << "*** iLayer: " << iLayer << "   pile number" << pileIdx+1
                              << "   depth: " << -zCoord << "   sigV: "  << sigV
@@ -657,6 +678,7 @@ void PileFEAmodeler::buildMesh()
         if (ABS(zCoord) > 1.0e-2) {
             qDebug() << "ERROR in node generation: surface reached at " << zCoord << endln;
         }
+
         //
         // add elements above ground
         //

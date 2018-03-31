@@ -28,19 +28,6 @@
 #include <QJsonObject>
 #include <QJsonValue>
 
-extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
-extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
-extern int getPyParam(double pyDepth,
-                      double gamma,
-                      double phiDegree,
-                      double b,
-                      double pEleLength,
-                      int puSwitch,
-                      int kSwitch,
-                      int gwtSwitch,
-                      double *pult,
-                      double *y50);
-
 // OpenSees include files
 #include <Node.h>
 #include <ID.h>
@@ -182,7 +169,7 @@ MainWindow::MainWindow(QWidget *parent) :
     gwtSwitch= 1;
 
      // set initial state of check boxes
-    useToeResistance    = false;
+    useToeResistance              = true;
     assumeRigidPileHeadConnection = false;
 
     // set up initial values before activating live analysis (= connecting the slots)
@@ -287,7 +274,6 @@ void MainWindow::doAnalysis(void)
     QVector<PILE_INFO> pileInfo;
 
     pileInfo.clear();
-
     for (int i=0; i<numPiles; i++)
     {
         PILE_INFO thisPile;
@@ -299,6 +285,11 @@ void MainWindow::doAnalysis(void)
         pileInfo.append(thisPile);
     }
     pileFEAmodel->updatePiles(pileInfo);
+
+    //
+    // switches
+    //
+    pileFEAmodel->updateSwitches(useToeResistance, assumeRigidPileHeadConnection);
 
     //
     // set the soil layer information
