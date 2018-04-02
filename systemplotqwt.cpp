@@ -42,7 +42,7 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     //Picker
     QwtPicker *picker = new QwtPicker(plot -> canvas());
     picker->setStateMachine(new QwtPickerClickPointMachine);
-    picker->setTrackerMode(QwtPicker::AlwaysOn);
+    picker->setTrackerMode(QwtPicker::AlwaysOff);
     picker->setRubberBand(QwtPicker::RectRubberBand);
 
     //connect(picker, SIGNAL(activated(bool)), this, SLOT(on_picker_activated(bool)));
