@@ -34,7 +34,7 @@ include(OPS_includes.pro)
 #INCLUDEPATH += "$(HOME)/OpenSees/DEVELOPER/core"
 INCLUDEPATH += ./qwt-6.2/src
 LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
-#LIBS += -L"$(HOME)/Documents/GitHub/PileGroupTool/qwt-6.2/lib"
+LIBS += -L"$(HOME)/Documents/GitHub/PileGroupTool/qwt-6.2/lib"
 LIBS += -lqwt
 
 INCLUDEPATH += includes
