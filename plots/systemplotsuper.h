@@ -21,7 +21,8 @@ public:
     virtual void updateSoil(QVector<double> &);
     virtual void updateGWtable(double);
     virtual void updateDisplacement(double ux=0.0, double uy=0.0);
-    virtual void updateDispProfile(QVector<double> &);
+    virtual void updateDispProfile(double surfaceDisp, double percentage12, double percentage23, double percentageBase);
+
     virtual void updatePileDeformation(QVector<double> &, QVector<QVector<double> > &);
 
     virtual void setActivePile(int index) {activePileIdx = index;}
