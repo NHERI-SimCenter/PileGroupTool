@@ -123,16 +123,22 @@ void SystemPlotQCP::refresh()
 
     plot->setCurrentLayer("soil");
 
+    QVector<double> layerShift(MAXLAYERS+1, 0.0);
+    layerShift[0] = surfaceDisp;
+    if (MAXLAYERS>0)    layerShift[1] = surfaceDisp*percentage12;
+    if (MAXLAYERS>1)    layerShift[2] = surfaceDisp*percentage23;
+    if (MAXLAYERS>2)    layerShift[3] = surfaceDisp*percentageBase;
+
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
         QVector<double> x(5,0.0);
         QVector<double> y(5,0.0);
 
-        x[0] = xbar - W/2.; y[0] = -depthOfLayer[iLayer];
-        x[1] = x[0];        y[1] = -depthOfLayer[iLayer+1];
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
+        x[0] = xbar - W/2.-layerShift[iLayer];   y[0] = -depthOfLayer[iLayer];
+        x[1] = xbar - W/2.-layerShift[iLayer+1]; y[1] = -depthOfLayer[iLayer+1];
+        x[2] = xbar + W/2.-layerShift[iLayer+1]; y[2] = y[1];
+        x[3] = xbar + W/2.-layerShift[iLayer];   y[3] = y[0];
+        x[4] = x[0];                             y[4] = y[0];
 
         QCPCurve *layerII = new QCPCurve(plot->xAxis, plot->yAxis);
         layerII->setData(x,y);
