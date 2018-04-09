@@ -370,6 +370,28 @@ void SystemPlotQwt::refresh()
         plotItemList.append(var);
     }
 
+    // Testing percentage12 for deformation
+    QPolygonF testCorners;
+    testCorners   << QPointF(0,0)
+                  << QPointF(0,1)
+                  << QPointF(100*percentage12,1)
+                  << QPointF(100*percentage12,0)
+                  << QPointF(0,0);
+    QwtPlotShapeItem *testObject = new QwtPlotShapeItem();
+    testObject->setPolygon(testCorners);
+    testObject->setPen(QPen(Qt::black, 1));
+    testObject->setBrush(QBrush(Qt::blue));
+    testObject->setZ(10);
+    testObject->attach( plot );
+
+    qWarning() << "surfaceDisp = " + QString::number(surfaceDisp);
+    qWarning() << "percentageBase = " + QString::number(percentageBase);
+    qWarning() << "percentage12 = " + QString::number(percentage12);
+    qWarning() << "percentage23 = " + QString::number(percentage23);
+    qWarning() << "P = " + QString::number(P);
+
+    // Test end
+
     //
     // Plot PileCaps
     //
