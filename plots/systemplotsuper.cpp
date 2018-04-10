@@ -148,28 +148,31 @@ void SystemPlotSuper::updateDisplacement(double ux, double uy)
     if (!upToDate)  this->refresh();
 }
 
-void SystemPlotSuper::updateDispProfile(QVector<double> &profile)
+void SystemPlotSuper::updateDispProfile(double new_surfaceDisp,
+                                        double new_percentage12,
+                                        double new_percentage23,
+                                        double new_percentageBase)
 {
     bool upToDate = true;
 
-    if (surfaceDisp != profile[0])
+    if (surfaceDisp != new_surfaceDisp)
     {
-        surfaceDisp = profile[0];
+        surfaceDisp = new_surfaceDisp;
         upToDate = false;
     }
-    if (percentage12 != profile[1])
+    if (percentage12 != new_percentage12)
     {
-        percentage12 = profile[1];
+        percentage12 = new_percentage12;
         upToDate = false;
     }
-    if (percentage23 != profile[2])
+    if (percentage23 != new_percentage23)
     {
-        percentage23 = profile[2];
+        percentage23 = new_percentage23;
         upToDate = false;
     }
-    if (percentageBase != profile[3])
+    if (percentageBase != new_percentageBase)
     {
-        percentageBase = profile[3];
+        percentageBase = new_percentageBase;
         upToDate = false;
     }
     if (!upToDate)  this->refresh();
