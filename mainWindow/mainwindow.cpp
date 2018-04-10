@@ -1028,22 +1028,30 @@ void MainWindow::updateSystemPlot()
     //
     // update the load control data
     //
+    double pltSurfaceDisp    = 0.0;
+    double HPush  = 0.0;
+    double VPush  = 0.0;
+    double FHorz  = 0.0;
+    double FVert  = 0.0;
+    double Moment = 0.0;
+
     switch (loadControlType) {
     case LoadControlType::ForceControl:
-        systemPlot->updateLoad(P, PV, PMom);
+        FHorz  = P;
+        FVert  = PV;
+        Moment = PMom;
         break;
     case LoadControlType::PushOver:
-        systemPlot->updateDisplacement(HDisp, VDisp);
+        HPush = HDisp;
+        VPush = VDisp;
         break;
     case LoadControlType::SoilMotion:
-        QVector<double> profile;
-        profile.append(surfaceDisp);
-        profile.append(percentage12);
-        profile.append(percentage23);
-        profile.append(percentageBase);
-        systemPlot->updateDispProfile(profile);
+        pltSurfaceDisp = surfaceDisp;
         break;
     }
+    systemPlot->updateLoad(FHorz, FVert, Moment);
+    systemPlot->updateDisplacement(HPush, VPush);
+    systemPlot->updateDispProfile(pltSurfaceDisp, percentage12, percentage23, percentageBase);
 
     //
     // refresh the plot
@@ -1454,6 +1462,12 @@ void MainWindow::replyFinished(QNetworkReply *pReply)
 void MainWindow::on_forceTypeSelector_activated(int index)
 {
     ui->loadTypesStack->setCurrentIndex(index);
+
+    if (index == 0) { loadControlType = LoadControlType::ForceControl; }
+    if (index == 1) { loadControlType = LoadControlType::PushOver;     }
+    if (index == 2) { loadControlType = LoadControlType::SoilMotion;   }
+
+    systemPlot->setLoadType(loadControlType);
 }
 
 
@@ -1563,6 +1577,8 @@ void MainWindow::on_pushoverDisplacementSlider_valueChanged(int value)
 
     ui->pushoverDisplacement->setValue(HDisp);
 
+    systemPlot->updateDisplacement(HDisp, VDisp);
+
     this->doAnalysis();
     this->updateSystemPlot();
 }
@@ -1589,14 +1605,11 @@ void MainWindow::on_pulloutDisplacementSlider_valueChanged(int value)
 
     ui->pulloutDisplacement->setValue(VDisp);
 
+    systemPlot->updateDisplacement(HDisp, VDisp);
+
     this->doAnalysis();
     this->updateSystemPlot();
 }
-
-
-
-
-
 
 void MainWindow::on_surfaceDisplacement_editingFinished()
 {
@@ -1619,6 +1632,8 @@ void MainWindow::on_surfaceDisplacementSlider_valueChanged(int value)
     surfaceDisp = MAX_DISP * sliderRatio;
 
     ui->surfaceDisplacement->setValue(surfaceDisp);
+
+    systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
 
     this->doAnalysis();
     this->updateSystemPlot();
@@ -1646,6 +1661,8 @@ void MainWindow::on_Interface12Slider_valueChanged(int value)
 
     ui->Interface12->setValue(percentage12*100.0);
 
+    systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
+
     this->doAnalysis();
     this->updateSystemPlot();
 }
@@ -1672,6 +1689,8 @@ void MainWindow::on_Interface23Slider_valueChanged(int value)
 
     ui->Interface23->setValue(percentage23*100.0);
 
+    systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
+
     this->doAnalysis();
     this->updateSystemPlot();
 }
@@ -1697,6 +1716,8 @@ void MainWindow::on_BaseDisplacementSlider_valueChanged(int value)
     percentageBase = sliderRatio;
 
     ui->BaseDisplacement->setValue(percentageBase*100.0);
+
+    systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
 
     this->doAnalysis();
     this->updateSystemPlot();
