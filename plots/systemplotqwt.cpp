@@ -371,6 +371,7 @@ void SystemPlotQwt::refresh()
     }
 
     // Testing percentage12 for deformation
+    /*
     QPolygonF testCorners;
     testCorners   << QPointF(0,0)
                   << QPointF(0,1)
@@ -383,12 +384,14 @@ void SystemPlotQwt::refresh()
     testObject->setBrush(QBrush(Qt::blue));
     testObject->setZ(10);
     testObject->attach( plot );
+    */
 
-    qWarning() << "surfaceDisp = " + QString::number(surfaceDisp);
+    qWarning() << "surfaceDisp = "    + QString::number(surfaceDisp);
     qWarning() << "percentageBase = " + QString::number(percentageBase);
-    qWarning() << "percentage12 = " + QString::number(percentage12);
-    qWarning() << "percentage23 = " + QString::number(percentage23);
-    qWarning() << "P = " + QString::number(P);
+    qWarning() << "percentage12 = "   + QString::number(percentage12);
+    qWarning() << "percentage23 = "   + QString::number(percentage23);
+    qWarning() << "P = "              + QString::number(P);
+    qWarning() << "PV = "             + QString::number(PV);
 
     // Test end
 
@@ -517,9 +520,9 @@ void SystemPlotQwt::refresh()
     arrow->setBrush( Qt::red );
 
     double pileCapCenter  = 0.5 * (minX0 + maxX0),
-           arrowThickness = 0.1,
-           arrowHead = 0.4,
-           arrowHeadLength = 0.5;
+           arrowThickness = 0.07,
+           arrowHead = 0.3,
+           arrowHeadLength = 0.8;
 
     if (forceArrowRatio < 0) {arrowHeadLength = -arrowHeadLength;}
 
@@ -547,10 +550,13 @@ void SystemPlotQwt::refresh()
 
 
     // Drawing Vertical Force Arrow using QwtPlotShapeItem
-    /*
+
     QwtPlotShapeItem *arrowV = new QwtPlotShapeItem();
 
-    double forceArrowRatioV = PV/MAX_V_FORCE;
+    double forceArrowRatioV = PV/MAX_V_FORCE,
+           arrowHeadLengthV = 0.3,
+           arrowHeadV       = 1.5,
+           arrowThicknessV  = 0.5;
 
     if (( forceArrowRatioV < 0.3 ) && (forceArrowRatioV > 0)) {
         forceArrowRatio = 0.3;
@@ -559,28 +565,36 @@ void SystemPlotQwt::refresh()
         forceArrowRatioV = -0.3;
     }
 
+
     //QPen pen( Qt::black, 2 );
     //pen.setJoinStyle( Qt::MiterJoin );
     arrowV->setPen( pen );
     arrowV->setBrush( Qt::red );
 
+    if (forceArrowRatioV < 0) {arrowHeadLengthV = -arrowHeadLengthV;}
+
     QPainterPath pathV;
-    pathV.moveTo( pileCapCenter, L1 + maxH );
-    pathV.lineTo( pileCapCenter - 1, L1 + maxH + 1 );
-    pathV.lineTo( pileCapCenter - 0.25, L1 + maxH + 1 );
-    pathV.lineTo( pileCapCenter - 0.25, L1 + maxH + 5 );
-    pathV.lineTo( pileCapCenter + 0.25, L1 + maxH + 5 );
-    pathV.lineTo( pileCapCenter + 0.25, L1 + maxH + 1 );
-    pathV.lineTo( pileCapCenter + 1, L1 + maxH + 1 );
-    pathV.lineTo( pileCapCenter, L1 + maxH );
-    arrowV->setShape( path );
-    arrowV->setZ	( 3 );
+    pathV.moveTo( pileCapCenter                  , L1 + maxH                       );
+    pathV.lineTo( pileCapCenter - arrowHeadV     , L1 + maxH + arrowHeadLengthV    );
+    pathV.lineTo( pileCapCenter - arrowThicknessV, L1 + maxH + arrowHeadLengthV    );
+    pathV.lineTo( pileCapCenter - arrowThicknessV, L1 + maxH + forceArrowRatioV    );
+    pathV.lineTo( pileCapCenter + arrowThicknessV, L1 + maxH + forceArrowRatioV    );
+    pathV.lineTo( pileCapCenter + arrowThicknessV, L1 + maxH + arrowHeadLengthV    );
+    pathV.lineTo( pileCapCenter + arrowHeadV     , L1 + maxH + arrowHeadLengthV    );
+    pathV.lineTo( pileCapCenter                  , L1 + maxH                       );
+    arrowV->setShape( pathV );
+    //arrowV->setZ	( 3 );
 
     if (forceArrowRatioV != 0){
     arrowV->attach( plot );
-    plotItemList.append(arrow);
+
+    PLOTOBJECT var2;
+    var2.itemPtr = arrowV;
+    var2.type    = PLType::LOAD;
+    var2.index   = 1;
+    plotItemList.append(var2);
     }
-    */
+
 
     plot->replot();
 
