@@ -68,19 +68,12 @@ PileFEAmodeler::PileFEAmodeler()
 
     numLoadedNode = -1;
 
-    /*
-    locList.clear();
-    lateralDispList.clear();
-    axialDispList.clear();
-    MomentList.clear();
-    ShearList.clear();
-    AxialList.clear();
-    StressList.clear();
-    pultList.clear();
-    y50List.clear();
-    tultList.clear();
-    z50List.clear();
-    */
+    SOIL_MOTION_DATA data;
+    data.delta0 = 0.0;
+    data.delta1 = 0.0;
+    data.zmax   = 0.0;
+
+    motionData = QVector<SOIL_MOTION_DATA>(MAXLAYERS, data);
 
     /* set default parameters */
     this->setDefaultParameters();
@@ -1221,5 +1214,44 @@ QList<QVector<QVector<double> *> *> PileFEAmodeler::getZ50()
         list.append(&z50List);
     }
     return list;
+}
+
+double PileFEAmodeler::shift(double z)
+{
+    double s = soilMotion.last();
+
+    QVectorIterator<SOIL_MOTION_DATA> itr(motionData);
+
+    while (itr.hasNext())
+    {
+        SOIL_MOTION_DATA info = itr.next();
+
+        if (info.zmax >= z)
+        {
+            s = info.delta0 + z * info.delta1;
+            break;
+        }
+    }
+
+    return s;
+}
+
+void PileFEAmodeler::updateMotionData(void)
+{
+    SOIL_MOTION_DATA info;
+
+    for (int i=0; i<MAXLAYERS; i++)
+    {
+        double si = soilMotion[i];
+        double sj = soilMotion[i+1];
+        double zi = depthOfLayer[i];
+        double zj = depthOfLayer[i+1];
+
+        info.delta1 = (sj - si)/(zj - zi);
+        info.delta0 = si - zi * info.delta1;
+        info.zmax   = zj;
+
+        motionData[i] = info;
+    }
 }
 

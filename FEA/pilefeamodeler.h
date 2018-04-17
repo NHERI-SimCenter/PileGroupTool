@@ -34,6 +34,12 @@ public:
     PileFEAmodeler();
     ~PileFEAmodeler();
 
+    struct SOIL_MOTION_DATA {
+        double  delta0;
+        double  delta1;
+        double  zmax;
+    };
+
     void updatePiles(QVector<PILE_INFO> &);
     void updateSwitches(bool useToe, bool assumeRigidHead);
     void setLoadType(LoadControlType);
@@ -51,6 +57,9 @@ public:
     void buildMesh();
     void buildLoad();
     void buildAnalysis();
+
+    void updateMotionData(void);
+    double shift(double z);
 
     QList<QVector<QVector<double> *> *> getLateralDisplacements();
     QList<QVector<QVector<double> *> *> getAxialDisplacements();
@@ -84,6 +93,9 @@ protected:
     double percentage12;   // percentage of surface displacement at 1st layer interface
     double percentage23;   // percentage of surface displacement at 2nd layer interface
     double percentageBase; // percentage of surface displacement at base of soil column
+
+    QVector<double> soilMotion = QVector<double>(MAXLAYERS+1, 0.0);
+    QVector<SOIL_MOTION_DATA> motionData = QVector<SOIL_MOTION_DATA>(MAXLAYERS);
 
     // get parameters
     double gwtDepth;  // depth of ground water table below the surface
