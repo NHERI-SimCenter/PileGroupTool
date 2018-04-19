@@ -371,25 +371,32 @@ void SystemPlotQwt::refresh()
     }
 
     // Testing percentage12 for deformation
-    /*
+    double percentage12temp(P/MAX_H_FORCE);
     QPolygonF testCorners;
-    testCorners   << QPointF(0,0)
-                  << QPointF(0,1)
-                  << QPointF(100*percentage12,1)
-                  << QPointF(100*percentage12,0)
-                  << QPointF(0,0);
+    testCorners   << QPointF(-2, -5)
+                  << QPointF(-2+ 0.75*percentage12temp,-4)
+                  << QPointF( 2+ 0.75*percentage12temp,-4)
+                  << QPointF( 2,-5)
+                  << QPointF(-2,-5);
     QwtPlotShapeItem *testObject = new QwtPlotShapeItem();
     testObject->setPolygon(testCorners);
     testObject->setPen(QPen(Qt::black, 1));
     testObject->setBrush(QBrush(Qt::blue));
     testObject->setZ(10);
     testObject->attach( plot );
-    */
+
+    PLOTOBJECT testsq;
+    testsq.itemPtr = testObject;
+    testsq.type    = PLType::OTHER;
+    testsq.index   = -1;
+    plotItemList.append(testsq);
+
 
     qWarning() << "surfaceDisp = "    + QString::number(surfaceDisp);
     qWarning() << "percentageBase = " + QString::number(percentageBase);
     qWarning() << "percentage12 = "   + QString::number(percentage12);
     qWarning() << "percentage23 = "   + QString::number(percentage23);
+    qWarning() << "percentage12temp = "   + QString::number(percentage12temp);
     qWarning() << "P = "              + QString::number(P);
     qWarning() << "PV = "             + QString::number(PV);
 
