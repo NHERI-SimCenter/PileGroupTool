@@ -14,7 +14,12 @@
 SystemPlotSuper::SystemPlotSuper(QWidget *parent) :
     QWidget(parent)
 {
+    SOIL_MOTION_DATA data;
+    data.delta0 = 0.0;
+    data.delta1 = 0.0;
+    data.zmax   = 0.0;
 
+    motionData = QVector<SOIL_MOTION_DATA>(MAXLAYERS, data);
 }
 
 SystemPlotSuper::~SystemPlotSuper()
@@ -175,12 +180,60 @@ void SystemPlotSuper::updateDispProfile(double new_surfaceDisp,
         percentageBase = new_percentageBase;
         upToDate = false;
     }
-    if (!upToDate)  this->refresh();
+    if (!upToDate)
+    {
+        soilMotion[0] = surfaceDisp;
+        soilMotion[1] = surfaceDisp*percentage12;
+        soilMotion[2] = surfaceDisp*percentage23;
+        soilMotion[3] = surfaceDisp*percentageBase;
+
+        this->updateMotionData();
+        this->refresh();
+    }
 }
 
 void SystemPlotSuper::updatePileDeformation(QVector<double> &, QVector<QVector<double> > &)
 {
     this->refresh();
+}
+
+double SystemPlotSuper::shift(double z)
+{
+    double s = soilMotion.last();
+
+    QVectorIterator<SOIL_MOTION_DATA> itr(motionData);
+
+    while (itr.hasNext())
+    {
+        SOIL_MOTION_DATA info = itr.next();
+
+        if (info.zmax >= z)
+        {
+            s = info.delta0 + z * info.delta1;
+            break;
+        }
+    }
+
+    return s;
+}
+
+void SystemPlotSuper::updateMotionData(void)
+{
+    SOIL_MOTION_DATA info;
+
+    for (int i=0; i<MAXLAYERS; i++)
+    {
+        double si = soilMotion[i];
+        double sj = soilMotion[i+1];
+        double zi = depthOfLayer[i];
+        double zj = depthOfLayer[i+1];
+
+        info.delta1 = (sj - si)/(zj - zi);
+        info.delta0 = si - zi * info.delta1;
+        info.zmax   = zj;
+
+        motionData[i] = info;
+    }
 }
 
 QList<QCPAbstractPlottable *> SystemPlotSuper::selectedPlottables()
