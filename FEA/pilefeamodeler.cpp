@@ -354,6 +354,17 @@ void PileFEAmodeler::buildMesh()
         headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
     }
 
+    if (dumpFEMinput)
+    {
+        out << "#----------------------------------------------------------" << endl;
+        out << "#   file created by PileGroup Tool                         " << endl;
+        out << "#                                                          " << endl;
+        out << "#   author:      Peter Mackenzie-Helnwein                  " << endl;
+        out << "#   affiliation: University of Washington                  " << endl;
+        out << "#----------------------------------------------------------" << endl;
+        out << endl;
+    }
+
     // clear existing model
     theDomain->clearAll();
     OPS_clearAllUniaxialMaterial();
@@ -451,6 +462,14 @@ void PileFEAmodeler::buildMesh()
 
     /* ******** build the finite element mesh ******** */
 
+    if (dumpFEMinput)
+    {
+        out << endl;
+        out << "#----------------------------------------------------------" << endl;
+        out << "#   creating the FE model                                  " << endl;
+        out << "#----------------------------------------------------------" << endl;
+    }
+
     //
     // matrix used to constrain spring and pile nodes with equalDOF (identity constraints)
     //
@@ -487,9 +506,13 @@ void PileFEAmodeler::buildMesh()
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
-        //qDebug() << "+ pile index: " << pileIdx;
-
-        if (dumpFEMinput)  out << "model BasicBuilder -ndm 3 -ndf 6 " << endl;
+        if (dumpFEMinput)
+        {
+            out << endl;
+            out << endl;
+            out << "##   SOIL SPRINGS FOR PILE " << pileIdx+1 << endl;
+            out << endl;
+        }
 
         //
         // compute pile properties (compute once; used for all pile elements)
@@ -834,6 +857,19 @@ void PileFEAmodeler::buildMesh()
         static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
         CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
 
+        if (dumpFEMinput)
+        {
+            out << endl;
+            out << endl;
+            out << "## BUILDING PILE " << pileIdx+1 << endl;
+            out << endl;
+            out << "# create coordinate-transformation object" << endl;
+            out << "geomTransf Linear  " << pileIdx+1;
+            for (int k=0; k<crdV.Size(); k++) { out << " " << crdV(k); }
+            out << endl;
+            out << "model BasicBuilder -ndm 3 -ndf 6 " << endl;
+        }
+
         for (int i=0; i<pileInfo[pileIdx].numNodePile-1; i++) {
             numElem++;
             BeamIntegration *theIntegration = new LegendreBeamIntegration();
@@ -890,6 +926,22 @@ void PileFEAmodeler::buildMesh()
             // pile toe
             Element *theEle = new ZeroLength(1+pileIdx+ioffset4, 3, 1, 1+ioffset, x, y, 1, &theMat, Onedirection);
             theDomain->addElement(theEle);
+
+            if (dumpFEMinput)
+            {
+                out << "uniaxialMaterial QzSimple1 " << 1+ioffset << " "
+                    << 2 << " " << qult << " " << z50q << " 0.0, 0.0 " << endl;
+
+                out << "element zeroLength "
+                    << 1+pileIdx+ioffset4 << " " << 1 << " " << 1+ioffset
+                    << " -mat " << 1+ioffset
+                    << " -dir ";
+                for (int k=0; k<Onedirection.Size(); k++) { out << Onedirection(k) << " "; }
+                out << " -orient ";
+                for (int k=0; k<x.Size(); k++) { out << x(k) << " "; }
+                for (int k=0; k<y.Size(); k++) { out << y(k) << " "; }
+                out << endl;
+            }
         }
     }
 
@@ -910,6 +962,19 @@ void PileFEAmodeler::buildMesh()
 
         static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
         CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
+
+        if (dumpFEMinput)
+        {
+            out << endl;
+            out << endl;
+            out << "## BUILDING PILE CAP" << endl;
+            out << endl;
+            out << "# create coordinate-transformation object" << endl;
+            out << "geomTransf Linear  " << MAXPILES+1;
+            for (int k=0; k<crdV.Size(); k++) { out << " " << crdV(k); }
+            out << endl;
+            out << "model BasicBuilder -ndm 3 -ndf 6 " << endl;
+        }
 
         // define beam element integration and cross sections
 
@@ -965,6 +1030,13 @@ void PileFEAmodeler::buildMesh()
 
                 MP_Constraint *theMP = new MP_Constraint(nodeTag, headNodeList[pileIdx].nodeIdx, Chr, hcDof, hcDof);
                 theDomain->addMP_Constraint(theMP);
+
+                if (dumpFEMinput)
+                {
+                    out << "equalDOF " << nodeTag << " " << headNodeList[pileIdx].nodeIdx << " ";
+                    for (int k=0; k<hcDof.Size(); k++) { out << hcDof(k) << " "; }
+                    out << endl;
+                }
             }
             else {
                 // constrain spring and pile nodes with equalDOF (identity constraints)
@@ -978,6 +1050,13 @@ void PileFEAmodeler::buildMesh()
 
                 MP_Constraint *theMP = new MP_Constraint(nodeTag, headNodeList[pileIdx].nodeIdx, Chl, hlDof, hlDof);
                 theDomain->addMP_Constraint(theMP);
+
+                if (dumpFEMinput)
+                {
+                    out << "equalDOF " << nodeTag << " " << headNodeList[pileIdx].nodeIdx << " ";
+                    for (int k=0; k<hlDof.Size(); k++) { out << hlDof(k) << " "; }
+                    out << endl;
+                }
             }
 
             // create beams for pile head
@@ -1016,6 +1095,11 @@ void PileFEAmodeler::buildMesh()
 
         SP_Constraint *theSP = 0;
         theSP = new SP_Constraint(nodeTag, 4, 0., true); theDomain->addSP_Constraint(theSP);
+
+        if (dumpFEMinput)
+        {
+            out << "fix  " << nodeTag << "  0 0 0 0 1 0" << endl;
+        }
     }
 
     numLoadedNode = headNodeList[0].nodeIdx;
@@ -1073,7 +1157,6 @@ void PileFEAmodeler::buildAnalysis()
     CTestNormDispIncr *theTest       = new CTestNormDispIncr(1.0e-3, 20, 0);
     EquiSolnAlgo      *theSolnAlgo   = new NewtonRaphson();
     StaticIntegrator  *theIntegrator = new LoadControl(0.05, 1, 0.05, 0.05);
-    //ConstraintHandler *theHandler    = new TransformationConstraintHandler();
     ConstraintHandler *theHandler    = new PenaltyConstraintHandler(1.0e14, 1.0e14);
     RCM               *theRCM        = new RCM();
     DOF_Numberer      *theNumberer   = new DOF_Numberer(*theRCM);
@@ -1092,6 +1175,32 @@ void PileFEAmodeler::buildAnalysis()
     theSolnAlgo->setConvergenceTest(theTest);
 
     ENABLE_STATE("analysisValid");
+
+    if (dumpFEMinput)
+    {
+        out << endl;
+        out << "#----------------------------------------------------------" << endl;
+        out << "#  create the analysis" << endl;
+        out << "#----------------------------------------------------------" << endl;
+        out << endl;
+        out << "integrator LoadControl  0.05" << endl;
+        out << "numberer RCM" << endl;
+        out << "system SparseGeneral" << endl;
+        out << "constraints Penalty   1.0e14  1.0e14" << endl;
+        out << "test NormDispIncr 1e-5      20      1" << endl;
+        out << "algorithm Newton" << endl;
+        out << "analysis Static" << endl;
+        out << endl;
+        out << "set startT [clock seconds]" << endl;
+        out << "puts \"Starting Load Application...\"" << endl;
+        out << "analyze          201" << endl;
+        out << endl;
+        out << "set endT [clock seconds]" << endl;
+        out << "puts \"Load Application finished...\"" << endl;
+        out << "puts \"Loading Analysis execution time: [expr $endT-$startT] seconds.\"" << endl;
+        out << endl;
+        out << "wipe" << endl;
+    }
 }
 
 void PileFEAmodeler::clearPlotBuffers()
@@ -1320,17 +1429,11 @@ void PileFEAmodeler::dumpDomain(QString filename)
     {
         out << "equalDOF " << " " << MPC->getNodeRetained() << " " << MPC->getNodeConstrained() << " ";
         ID cDOFs = MPC->getConstrainedDOFs();
-
-        for (int j=0; j<cDOFs.Size(); j++)
-        {
-            out << cDOFs[j]+1 << " ";
-        }
-
+        for (int j=0; j<cDOFs.Size(); j++) { out << " " << cDOFs[j]+1; }
         out << endl;
     }
 
     LoadPatternIter &patternIter = theDomain->getLoadPatterns();
-
 
     file.flush();
     file.close();
