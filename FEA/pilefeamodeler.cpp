@@ -79,12 +79,7 @@ PileFEAmodeler::PileFEAmodeler()
 
     numLoadedNode = -1;
 
-    SOIL_MOTION_DATA data;
-    data.delta0 = 0.0;
-    data.delta1 = 0.0;
-    data.zmax   = 0.0;
-
-    motionData = QVector<SOIL_MOTION_DATA>(MAXLAYERS, data);
+    motionData = QVector<SoilMotionData>(MAXLAYERS, SoilMotionData());
 
     /* set default parameters */
     this->setDefaultParameters();
@@ -298,7 +293,14 @@ void PileFEAmodeler::updateDispProfile(QVector<double> &profile)
     if (profile.size() > 2) percentage23   = profile[2];   // percentage of surface displacement at 2nd layer interface
     if (profile.size() > 3) percentageBase = profile[3];   // percentage of surface displacement at base of soil column
 
+    soilMotion[0] = surfaceDisp;
+    soilMotion[1] = surfaceDisp*percentage12;
+    soilMotion[2] = surfaceDisp*percentage23;
+    soilMotion[3] = surfaceDisp*percentageBase;
+
     DISABLE_STATE(AnalysisState::loadValid);
+
+    this->updateMotionData();
 }
 
 void PileFEAmodeler::setAnalysisType(QString)
@@ -349,11 +351,14 @@ void PileFEAmodeler::doAnalysis()
 
 void PileFEAmodeler::buildMesh()
 {
-    //QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
+    if (CHECK_STATE(AnalysisState::meshValid)) return;
 
     QTextStream out(FEMfile);
     int materialIndex = 0;
     int nDOFs = 0;
+
+    // clear the list of soil nodes == those nodes where p-y springs are attaching to the soil
+    soilNodes.clear();
 
     for (int k=0; k<MAXPILES; k++) {
         headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
@@ -573,6 +578,7 @@ void PileFEAmodeler::buildMesh()
             theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain->addSP_Constraint(theSP);
             theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain->addSP_Constraint(theSP);
             theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain->addSP_Constraint(theSP);
+            if (nodeTag>maxID) maxID = nodeTag;
 
             if (dumpFEMinput) { out << "fix  " << nodeTag << "  0 1 0 1 0 1" << endl; }
         }
@@ -600,6 +606,7 @@ void PileFEAmodeler::buildMesh()
             theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain->addSP_Constraint(theSP);
             theSP = new SP_Constraint(numNode+ioffset, 0, 0., true);  theDomain->addSP_Constraint(theSP);
             theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain->addSP_Constraint(theSP);
+            if (numNode+ioffset>maxID) maxID = numNode+ioffset;
 
             if (dumpFEMinput)
             {
@@ -703,6 +710,9 @@ void PileFEAmodeler::buildMesh()
                 theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain->addSP_Constraint(theSP);
                 theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain->addSP_Constraint(theSP);
                 theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain->addSP_Constraint(theSP);
+                if (nodeTag>maxID) maxID = nodeTag;
+
+                soilNodes.append(SoilNodeData(nodeTag, -zCoord));
 
                 if (dumpFEMinput)
                 {
@@ -738,6 +748,7 @@ void PileFEAmodeler::buildMesh()
                     theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain->addSP_Constraint(theSP);
                     theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain->addSP_Constraint(theSP);
                     theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain->addSP_Constraint(theSP);
+                    if (nodeTag>maxID) maxID = nodeTag;
 
                     if (dumpFEMinput)
                     {
@@ -884,6 +895,7 @@ void PileFEAmodeler::buildMesh()
                 theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain->addSP_Constraint(theSP);
                 theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain->addSP_Constraint(theSP);
                 theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain->addSP_Constraint(theSP);
+                if (nodeTag>maxID) maxID = nodeTag;
 
                 if (dumpFEMinput)
                 {
@@ -1104,11 +1116,14 @@ void PileFEAmodeler::buildMesh()
 
         SP_Constraint *theSP = 0;
         theSP = new SP_Constraint(nodeTag, 4, 0., true); theDomain->addSP_Constraint(theSP);
+        if (nodeTag>maxID) maxID = nodeTag;
 
         if (dumpFEMinput)
         {
             out << "fix  " << nodeTag << "  0 0 0 0 1 0" << endl;
         }
+
+        if (nodeTag>maxID) maxID = nodeTag;
     }
 
     numLoadedNode = headNodeList[0].nodeIdx;
@@ -1134,7 +1149,7 @@ void PileFEAmodeler::buildLoad()
     LoadPattern  *theLoadPattern = NULL;
     NodalLoad    *theLoad        = NULL;
 
-    theTimeSeries = new LinearSeries(1, 1.0);
+    theTimeSeries  = new LinearSeries(1, 1.0);
     theLoadPattern = new LoadPattern(1);
     theLoadPattern->setTimeSeries(theTimeSeries);
 
@@ -1183,13 +1198,43 @@ void PileFEAmodeler::buildLoad()
 
         if (soilNodes.length() > 0)
         {
-            theLoad = new NodalLoad(0, numLoadedNode, load);
-            theLoadPattern->addNodalLoad(theLoad);
+            if (dumpFEMinput)
+            {
+                out << "puts \"Running Pushover...\""  << endl;
+                out << "# create soil motion pattern:" << endl;
+                out << "pattern Plain 200 Linear {"    << endl;
+            }
+
+            foreach (SoilNodeData nd, soilNodes)
+            {
+                maxID++;
+                SP_Constraint *theSP = new SP_Constraint(maxID, nd.ID, shift(nd.depth), false);
+                theLoadPattern->addSP_Constraint(theSP);
+
+                if (dumpFEMinput)
+                {
+                    // sp $nodeTag $dofTag $dofValue
+                    out << "              sp " << nd.ID << " 1 " << shift(nd.depth) << endl;
+                }
+            }
+
+            if (dumpFEMinput) { out << "}" << endl;  out << endl; }
+
             theDomain->addLoadPattern(theLoadPattern);
 
             ENABLE_STATE(AnalysisState::loadValid);
             DISABLE_STATE(AnalysisState::solutionAvailable);
             DISABLE_STATE(AnalysisState::solutionValid);
+
+            if (dumpFEMinput)
+            {
+                out << "# displacement parameters" << endl;
+                out << "	set IDctrlNode 13;					# node where disp is read for disp control" << endl;
+                out << "	set IDctrlDOF 1;					# degree of freedom read for disp control (1 = x displacement)" << endl;
+                out << "	set Dmax [expr 0.1*$HBuilding];		# maximum displacement of pushover: 10% roof drift" << endl;
+                out << "	set Dincr [expr 0.01];				# displacement increment" << endl;
+                out << endl;
+            }
         };
         break;
     }
@@ -1252,6 +1297,28 @@ void PileFEAmodeler::buildAnalysis()
         out << "puts \"Loading Analysis execution time: [expr $endT-$startT] seconds.\"" << endl;
         out << endl;
         out << "wipe" << endl;
+    }
+
+
+    if (dumpFEMinput)
+    {
+        out << "# displacement parameters" << endl;
+        out << "	set IDctrlNode 13;					# node where disp is read for disp control" << endl;
+        out << "	set IDctrlDOF 1;					# degree of freedom read for disp control (1 = x displacement)" << endl;
+        out << "	set Dmax [expr 0.1*$HBuilding];		# maximum displacement of pushover: 10% roof drift" << endl;
+        out << "	set Dincr [expr 0.01];				# displacement increment" << endl;
+        out << endl;
+        out << "# analysis commands" << endl;
+        out << "	constraints Plain;					# how it handles boundary conditions" << endl;
+        out << "	numberer RCM;						# renumber dof's to minimize band-width (optimization)" << endl;
+        out << "	system BandGeneral;					# how to store and solve the system of equations in the analysis (large model: try UmfPack)" << endl;
+        out << "	test NormUnbalance 1.0e-6 400;		# tolerance, max iterations" << endl;
+        out << "	algorithm Newton;					# use Newton's solution algorithm: updates tangent stiffness at every iteration" << endl;
+        out << "	integrator DisplacementControl  $IDctrlNode   $IDctrlDOF $Dincr;	# use displacement-controlled analysis" << endl;
+        out << "	analysis Static;					# define type of analysis: static for pushover" << endl;
+        out << "	set Nsteps [expr int($Dmax/$Dincr)];# number of pushover analysis steps" << endl;
+        out << "	set ok [analyze $Nsteps];			# this will return zero if no convergence problems were encountered" << endl;
+        out << "	puts \"Pushover complete\";			# display this message in the command window" << endl;
     }
 }
 
@@ -1630,11 +1697,11 @@ double PileFEAmodeler::shift(double z)
 {
     double s = soilMotion.last();
 
-    QVectorIterator<SOIL_MOTION_DATA> itr(motionData);
+    QVectorIterator<SoilMotionData> itr(motionData);
 
     while (itr.hasNext())
     {
-        SOIL_MOTION_DATA info = itr.next();
+        SoilMotionData info = itr.next();
 
         if (info.zmax >= z)
         {
@@ -1648,7 +1715,7 @@ double PileFEAmodeler::shift(double z)
 
 void PileFEAmodeler::updateMotionData(void)
 {
-    SOIL_MOTION_DATA info;
+    SoilMotionData info;
 
     for (int i=0; i<MAXLAYERS; i++)
     {

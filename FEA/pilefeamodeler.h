@@ -43,10 +43,25 @@ public:
     PileFEAmodeler();
     ~PileFEAmodeler();
 
-    struct SOIL_MOTION_DATA {
+    class SoilMotionData
+    {
+    public:
+        SoilMotionData() { delta0=0.0; delta1=0.0;zmax=999999.0;};
+        SoilMotionData(double d0, double d1, double zm) { delta0=d0; delta1=d1;zmax=zm;};
+
         double  delta0;
         double  delta1;
         double  zmax;
+    };
+
+    class SoilNodeData
+    {
+    public:
+        SoilNodeData() {ID=-1; depth=0;};
+        SoilNodeData(int id, double z) {ID=id; depth=z;};
+
+        int     ID;
+        double  depth;
     };
 
     void updatePiles(QVector<PILE_INFO> &);
@@ -69,7 +84,6 @@ public:
     void buildMesh();
     void buildLoad();
     void buildAnalysis();
-
 
     void updateMotionData(void);
     double shift(double z);
@@ -108,7 +122,7 @@ protected:
     double percentageBase; // percentage of surface displacement at base of soil column
 
     QVector<double> soilMotion = QVector<double>(MAXLAYERS+1, 0.0);
-    QVector<SOIL_MOTION_DATA> motionData = QVector<SOIL_MOTION_DATA>(MAXLAYERS);
+    QVector<SoilMotionData> motionData = QVector<SoilMotionData>(MAXLAYERS);
 
     // get parameters
     double gwtDepth;  // depth of ground water table below the surface
@@ -155,6 +169,7 @@ protected:
     PILE_FEA_INFO pileInfo[MAXPILES];
 
     int numNodePiles;
+    int maxID = 0;
 
     // pile head parameters
     double EI = 1.;
@@ -183,13 +198,7 @@ protected:
     QVector<QVector<double> *> tultList;
     QVector<QVector<double> *> z50List;
 
-    // soil node list
-    struct SOIL_NODE {
-        unsigned int ID;
-        double       depth;
-    };
-
-    QList<SOIL_NODE> soilNodes;
+    QList<SoilNodeData> soilNodes;
 
     //
     // state switches
