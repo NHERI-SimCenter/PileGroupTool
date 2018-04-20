@@ -169,6 +169,14 @@ protected:
     QVector<QVector<double> *> y50List;
     QVector<QVector<double> *> tultList;
     QVector<QVector<double> *> z50List;
+
+    // soil node list
+    struct SOIL_NODE {
+        unsigned int ID;
+        double       depth;
+    };
+
+    QList<SOIL_NODE> soilNodes;
 };
 
 #endif // PILEFEAMODELER_H

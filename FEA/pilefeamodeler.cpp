@@ -875,25 +875,68 @@ void PileFEAmodeler::buildLoad()
     //
     // create load pattern and add loads
     //
+    LinearSeries *theTimeSeries  = NULL;
+    LoadPattern  *theLoadPattern = NULL;
+    NodalLoad    *theLoad        = NULL;
 
-    LinearSeries *theTimeSeries = new LinearSeries(1, 1.0);
-    LoadPattern *theLoadPattern = new LoadPattern(1);
+    theTimeSeries = new LinearSeries(1, 1.0);
+    theLoadPattern = new LoadPattern(1);
     theLoadPattern->setTimeSeries(theTimeSeries);
-    static Vector load(6);
-    load.Zero();
-    load(0) = P;
-    load(2) = PV;
-    load(4) = PMom;
 
-    if (numLoadedNode >= 0)
+    switch (loadControlType)
     {
-        NodalLoad *theLoad = new NodalLoad(0, numLoadedNode, load);
-        theLoadPattern->addNodalLoad(theLoad);
-        theDomain->addLoadPattern(theLoadPattern);
+    case LoadControlType::ForceControl:
+        // numLoadedNode is the ID of the reference node that will be pushed
+        static Vector load(6);
+        load.Zero();
+        load(0) = P;
+        load(2) = PV;
+        load(4) = PMom;
 
-        ENABLE_STATE("loadValid");
-        DISABLE_STATE("solutionAvailable");
-        DISABLE_STATE("solutionValid");
+        if (numLoadedNode >= 0)
+        {
+            theLoad = new NodalLoad(0, numLoadedNode, load);
+            theLoadPattern->addNodalLoad(theLoad);
+            theDomain->addLoadPattern(theLoadPattern);
+
+            ENABLE_STATE("loadValid");
+            DISABLE_STATE("solutionAvailable");
+            DISABLE_STATE("solutionValid");
+        };
+
+        break;
+
+    case LoadControlType::PushOver:
+
+        // numLoadedNode is the ID of the reference node that will be pushed
+        if (numLoadedNode >= 0)
+        {
+            theLoad = new NodalLoad(0, numLoadedNode, load);
+            theLoadPattern->addNodalLoad(theLoad);
+            theDomain->addLoadPattern(theLoadPattern);
+
+            ENABLE_STATE("loadValid");
+            DISABLE_STATE("solutionAvailable");
+            DISABLE_STATE("solutionValid");
+        };
+
+        break;
+
+    case LoadControlType::SoilMotion:
+
+        // soilNodes is a list of nodeID, depth pairs for soil nodes that are attached to p-y and t-z springs
+
+        if (soilNodes.length() > 0)
+        {
+            theLoad = new NodalLoad(0, numLoadedNode, load);
+            theLoadPattern->addNodalLoad(theLoad);
+            theDomain->addLoadPattern(theLoadPattern);
+
+            ENABLE_STATE("loadValid");
+            DISABLE_STATE("solutionAvailable");
+            DISABLE_STATE("solutionValid");
+        };
+        break;
     }
 }
 

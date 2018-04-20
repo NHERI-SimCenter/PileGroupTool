@@ -97,6 +97,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
     ui->appliedHorizontalForce->setMaximum(MAX_H_FORCE);
     ui->appliedHorizontalForce->setMinimum(-MAX_H_FORCE);
+    ui->appliedVerticalForce->setMaximum(MAX_V_FORCE);
+    ui->appliedVerticalForce->setMinimum(-MAX_V_FORCE);
+    ui->appliedMoment->setMaximum(MAX_MOMENT);
+    ui->appliedMoment->setMinimum(-MAX_MOMENT);
 
     ui->textBrowser->clear();
 #ifdef Q_OS_WIN
@@ -1436,6 +1440,7 @@ void MainWindow::on_forceTypeSelector_activated(int index)
     if (index == 2) { loadControlType = LoadControlType::SoilMotion;   }
 
     systemPlot->setLoadType(loadControlType);
+    pileFEAmodel->setLoadType(loadControlType);
 }
 
 
