@@ -650,15 +650,7 @@ void PileFEAmodeler::buildMesh()
         }
         else
         {
-            SP_Constraint *theSP = 0;
-            theSP = new SP_Constraint(numNode+ioffset, 0, 0., true);  theDomain->addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain->addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain->addSP_Constraint(theSP);
-
-            if (dumpFEMinput)
-            {
-                out << "fix  " << pileInfo[pileIdx].nodeIDoffset+1 << "  1 1 1" << endl;
-            }
+            // hold the pile through friction only: t-z springs will do the job
         }
 
         locList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = zCoord;
