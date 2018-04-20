@@ -25,6 +25,14 @@ enum class PilePlotData {
     Z50
 };
 
+enum class AnalysisState {
+    solutionAvailable,
+    solutionValid,
+    dataExtracted,
+    meshValid,
+    loadValid,
+    analysisValid
+};
 
 class Domain;
 class StaticAnalysis;
@@ -85,7 +93,7 @@ protected:
     // load control
     LoadControlType loadControlType;
 
-    QMap<QString, bool> modelState;
+    QMap<AnalysisState, bool> modelState;
 
     double P;     // lateral force on pile cap
     double PV;    // vertical force on pile cap

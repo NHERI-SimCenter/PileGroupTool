@@ -64,12 +64,12 @@ PileFEAmodeler::PileFEAmodeler()
 {
     // set default parameters
     modelState.clear();
-    modelState.insert("solutionAvailable", false);
-    modelState.insert("solutionValid", false);
-    modelState.insert("dataExtracted", false);
-    modelState.insert("meshValid", false);
-    modelState.insert("loadValid", false);
-    modelState.insert("analysisValid", false);
+    modelState.insert(AnalysisState::solutionAvailable, false);
+    modelState.insert(AnalysisState::solutionValid, false);
+    modelState.insert(AnalysisState::dataExtracted, false);
+    modelState.insert(AnalysisState::meshValid, false);
+    modelState.insert(AnalysisState::loadValid, false);
+    modelState.insert(AnalysisState::analysisValid, false);
 
     theDomain = new Domain();
 
@@ -182,12 +182,12 @@ void PileFEAmodeler::setDefaultParameters(void)
     GJ = 1.0e12;
 
     /* reset states */
-    DISABLE_STATE("meshValid");
-    DISABLE_STATE("loadValid");
-    DISABLE_STATE("analysisValid");
-    DISABLE_STATE("dataExtracted");
-    DISABLE_STATE("solutionValid");
-    DISABLE_STATE("solutionAvailable");
+    DISABLE_STATE(AnalysisState::meshValid);
+    DISABLE_STATE(AnalysisState::loadValid);
+    DISABLE_STATE(AnalysisState::analysisValid);
+    DISABLE_STATE(AnalysisState::dataExtracted);
+    DISABLE_STATE(AnalysisState::solutionValid);
+    DISABLE_STATE(AnalysisState::solutionAvailable);
 }
 
 void PileFEAmodeler::updatePiles(QVector<PILE_INFO> &newPileInfo)
@@ -208,10 +208,10 @@ void PileFEAmodeler::updatePiles(QVector<PILE_INFO> &newPileInfo)
         pileInfo[k].elemIDoffset = 0;
     }
 
-    DISABLE_STATE("meshValid");
-    DISABLE_STATE("solutionValid");
-    DISABLE_STATE("solutionAvailable");
-    DISABLE_STATE("dataExtracted");
+    DISABLE_STATE(AnalysisState::meshValid);
+    DISABLE_STATE(AnalysisState::solutionValid);
+    DISABLE_STATE(AnalysisState::solutionAvailable);
+    DISABLE_STATE(AnalysisState::dataExtracted);
 }
 
 void PileFEAmodeler::updateSwitches(bool useToe, bool assumeRigidHead)
@@ -219,19 +219,19 @@ void PileFEAmodeler::updateSwitches(bool useToe, bool assumeRigidHead)
     if (useToeResistance != useToe)
     {
         useToeResistance = useToe;
-        DISABLE_STATE("meshValid");
-        DISABLE_STATE("solutionValid");
-        DISABLE_STATE("solutionAvailable");
-        DISABLE_STATE("dataExtracted");
+        DISABLE_STATE(AnalysisState::meshValid);
+        DISABLE_STATE(AnalysisState::solutionValid);
+        DISABLE_STATE(AnalysisState::solutionAvailable);
+        DISABLE_STATE(AnalysisState::dataExtracted);
     }
 
     if (assumeRigidPileHeadConnection != assumeRigidHead)
     {
         assumeRigidPileHeadConnection = assumeRigidHead;
-        DISABLE_STATE("meshValid");
-        DISABLE_STATE("solutionValid");
-        DISABLE_STATE("solutionAvailable");
-        DISABLE_STATE("dataExtracted");
+        DISABLE_STATE(AnalysisState::meshValid);
+        DISABLE_STATE(AnalysisState::solutionValid);
+        DISABLE_STATE(AnalysisState::solutionAvailable);
+        DISABLE_STATE(AnalysisState::dataExtracted);
     }
 }
 
@@ -240,7 +240,7 @@ void PileFEAmodeler::setLoadType(LoadControlType type)
     if (loadControlType != type)
     {
         loadControlType = type;
-        DISABLE_STATE("loadValid");
+        DISABLE_STATE(AnalysisState::loadValid);
     }
 }
 
@@ -252,14 +252,14 @@ void PileFEAmodeler::updateLoad(double Px, double Py, double Moment)
     PV   = Py;     // vertical force on pile cap
     PMom = Moment; // applied moment on pile cap
 
-    DISABLE_STATE("loadValid");
+    DISABLE_STATE(AnalysisState::loadValid);
 }
 
 void PileFEAmodeler::updateSoil(QVector<soilLayer> &layers)
 {
     mSoilLayers = layers;
 
-    DISABLE_STATE("meshValid");
+    DISABLE_STATE(AnalysisState::meshValid);
 }
 
 void PileFEAmodeler::updateGWtable(double depth)
@@ -267,7 +267,7 @@ void PileFEAmodeler::updateGWtable(double depth)
     if (gwtDepth == depth) return;
 
     gwtDepth = depth;
-    DISABLE_STATE("meshValid");
+    DISABLE_STATE(AnalysisState::meshValid);
 }
 
 void PileFEAmodeler::updateDisplacement(double ux, double uy)
@@ -277,7 +277,7 @@ void PileFEAmodeler::updateDisplacement(double ux, double uy)
     HDisp = ux; // prescribed horizontal displacement
     VDisp = uy; // prescriber vertical displacement
 
-    DISABLE_STATE("loadValid");
+    DISABLE_STATE(AnalysisState::loadValid);
 }
 
 void PileFEAmodeler::updateDispProfile(QVector<double> &profile)
@@ -294,35 +294,35 @@ void PileFEAmodeler::updateDispProfile(QVector<double> &profile)
     if (profile.size() > 2) percentage23   = profile[2];   // percentage of surface displacement at 2nd layer interface
     if (profile.size() > 3) percentageBase = profile[3];   // percentage of surface displacement at base of soil column
 
-    DISABLE_STATE("loadValid");
+    DISABLE_STATE(AnalysisState::loadValid);
 }
 
 void PileFEAmodeler::setAnalysisType(QString)
 {
 
-    DISABLE_STATE("analysisValid");
+    DISABLE_STATE(AnalysisState::analysisValid);
 }
 
 void PileFEAmodeler::doAnalysis()
 {
-    if (!CHECK_STATE("meshValid"))
+    if (!CHECK_STATE(AnalysisState::meshValid))
     {
         this->buildMesh();
-        DISABLE_STATE("analysisValid");
+        DISABLE_STATE(AnalysisState::analysisValid);
     }
-    if (!CHECK_STATE("loadValid"))
+    if (!CHECK_STATE(AnalysisState::loadValid))
     {
         this->buildLoad();
-        DISABLE_STATE("analysisValid");
+        DISABLE_STATE(AnalysisState::analysisValid);
     }
-    if (!CHECK_STATE("analysisValid"))
+    if (!CHECK_STATE(AnalysisState::analysisValid))
     {
-        DISABLE_STATE("dataExtracted");
-        DISABLE_STATE("solutionValid");
+        DISABLE_STATE(AnalysisState::dataExtracted);
+        DISABLE_STATE(AnalysisState::solutionValid);
         this->buildAnalysis();
     }
 
-    DISABLE_STATE("solutionAvailable");
+    DISABLE_STATE(AnalysisState::solutionAvailable);
 
     //
     //analyze & get results
@@ -331,15 +331,15 @@ void PileFEAmodeler::doAnalysis()
     theDomain->calculateNodalReactions(0);
 
     // the solution exists, but it may or may not be valid !
-    ENABLE_STATE("solutionAvailable");
+    ENABLE_STATE(AnalysisState::solutionAvailable);
 
     if (converged < 0)
     {
-        DISABLE_STATE("solutionValid");
+        DISABLE_STATE(AnalysisState::solutionValid);
     }
     else
     {
-        ENABLE_STATE("solutionValid");
+        ENABLE_STATE(AnalysisState::solutionValid);
     }
 }
 
@@ -1110,8 +1110,8 @@ void PileFEAmodeler::buildMesh()
         qDebug() << "ERROR: " << numNode << " nodes generated but " << numNodePiles << "expected" << endln;
     }
 
-    ENABLE_STATE("meshValid");
-    DISABLE_STATE("solutionAvailable");
+    ENABLE_STATE(AnalysisState::meshValid);
+    DISABLE_STATE(AnalysisState::solutionAvailable);
 }
 
 void PileFEAmodeler::buildLoad()
@@ -1145,9 +1145,9 @@ void PileFEAmodeler::buildLoad()
             theLoadPattern->addNodalLoad(theLoad);
             theDomain->addLoadPattern(theLoadPattern);
 
-            ENABLE_STATE("loadValid");
-            DISABLE_STATE("solutionAvailable");
-            DISABLE_STATE("solutionValid");
+            ENABLE_STATE(AnalysisState::loadValid);
+            DISABLE_STATE(AnalysisState::solutionAvailable);
+            DISABLE_STATE(AnalysisState::solutionValid);
         };
 
         break;
@@ -1161,9 +1161,9 @@ void PileFEAmodeler::buildLoad()
             theLoadPattern->addNodalLoad(theLoad);
             theDomain->addLoadPattern(theLoadPattern);
 
-            ENABLE_STATE("loadValid");
-            DISABLE_STATE("solutionAvailable");
-            DISABLE_STATE("solutionValid");
+            ENABLE_STATE(AnalysisState::loadValid);
+            DISABLE_STATE(AnalysisState::solutionAvailable);
+            DISABLE_STATE(AnalysisState::solutionValid);
         };
 
         break;
@@ -1178,9 +1178,9 @@ void PileFEAmodeler::buildLoad()
             theLoadPattern->addNodalLoad(theLoad);
             theDomain->addLoadPattern(theLoadPattern);
 
-            ENABLE_STATE("loadValid");
-            DISABLE_STATE("solutionAvailable");
-            DISABLE_STATE("solutionValid");
+            ENABLE_STATE(AnalysisState::loadValid);
+            DISABLE_STATE(AnalysisState::solutionAvailable);
+            DISABLE_STATE(AnalysisState::solutionValid);
         };
         break;
     }
@@ -1188,7 +1188,7 @@ void PileFEAmodeler::buildLoad()
 
 void PileFEAmodeler::buildAnalysis()
 {
-    if (CHECK_STATE("analysisValid")) return;
+    if (CHECK_STATE(AnalysisState::analysisValid)) return;
 
     QTextStream out(FEMfile);
 
@@ -1217,7 +1217,7 @@ void PileFEAmodeler::buildAnalysis()
                                   *theIntegrator);
     theSolnAlgo->setConvergenceTest(theTest);
 
-    ENABLE_STATE("analysisValid");
+    ENABLE_STATE(AnalysisState::analysisValid);
 
     if (dumpFEMinput)
     {
@@ -1284,11 +1284,11 @@ void PileFEAmodeler::clearPlotBuffers()
 
 int PileFEAmodeler::extractPlotData()
 {
-    if ( CHECK_STATE("dataExtracted")) return 0;
+    if ( CHECK_STATE(AnalysisState::dataExtracted)) return 0;
 
-    if (!CHECK_STATE("solutionAvailable")) this->doAnalysis();
+    if (!CHECK_STATE(AnalysisState::solutionAvailable)) this->doAnalysis();
 
-    if (!CHECK_STATE("solutionValid")) return -1;
+    if (!CHECK_STATE(AnalysisState::solutionValid)) return -1;
 
     this->clearPlotBuffers();
 
@@ -1392,7 +1392,7 @@ int PileFEAmodeler::extractPlotData()
         }
     }
 
-    ENABLE_STATE("dataExtracted");
+    ENABLE_STATE(AnalysisState::dataExtracted);
 }
 
 void PileFEAmodeler::dumpDomain(QString filename)
@@ -1671,9 +1671,9 @@ void PileFEAmodeler::writeFEMinput(QString filename)
     }
 
     dumpFEMinput = true;
-    DISABLE_STATE("meshValid");
-    DISABLE_STATE("loadValid");
-    DISABLE_STATE("analysisValid");
+    DISABLE_STATE(AnalysisState::meshValid);
+    DISABLE_STATE(AnalysisState::loadValid);
+    DISABLE_STATE(AnalysisState::analysisValid);
 
     this->buildMesh();
     this->buildLoad();
