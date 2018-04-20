@@ -3,6 +3,7 @@
 
 //#include <QVector>
 #include <QMap>
+#include <QFile>
 
 #include "pilegrouptool_parameters.h"
 #include "soilmat.h"
@@ -52,11 +53,15 @@ public:
     void setDefaultParameters(void);
     void doAnalysis();
 
+    void writeFEMinput(QString filename);
+    void dumpDomain(QString filename);
+
     int  getExitStatus();
 
     void buildMesh();
     void buildLoad();
     void buildAnalysis();
+
 
     void updateMotionData(void);
     double shift(double z);
@@ -177,6 +182,11 @@ protected:
     };
 
     QList<SOIL_NODE> soilNodes;
+
+    //
+    // state switches
+    bool    dumpFEMinput;
+    QFile  *FEMfile = NULL;
 };
 
 #endif // PILEFEAMODELER_H

@@ -540,9 +540,17 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionExport_to_OpenSees_triggered()
 {
-    DialogFutureFeature *dlg = new DialogFutureFeature();
-    dlg->exec();
-    delete dlg;
+    // TODO:
+    // ... add a file selector
+
+    //DialogFutureFeature *dlg = new DialogFutureFeature();
+    //dlg->exec();
+    //delete dlg;
+
+    QString filename = "testfile.tcl";
+
+    pileFEAmodel->dumpDomain("domainDump.tcl");
+    pileFEAmodel->writeFEMinput(filename);
 }
 
 void MainWindow::on_actionReset_triggered()
