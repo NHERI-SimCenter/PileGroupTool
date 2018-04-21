@@ -25,6 +25,14 @@ enum class PilePlotData {
     Z50
 };
 
+enum class AnalysisState {
+    solutionAvailable,
+    solutionValid,
+    dataExtracted,
+    meshValid,
+    loadValid,
+    analysisValid
+};
 
 class Domain;
 class StaticAnalysis;
@@ -35,10 +43,25 @@ public:
     PileFEAmodeler();
     ~PileFEAmodeler();
 
-    struct SOIL_MOTION_DATA {
+    class SoilMotionData
+    {
+    public:
+        SoilMotionData() { delta0=0.0; delta1=0.0;zmax=999999.0;};
+        SoilMotionData(double d0, double d1, double zm) { delta0=d0; delta1=d1;zmax=zm;};
+
         double  delta0;
         double  delta1;
         double  zmax;
+    };
+
+    class SoilNodeData
+    {
+    public:
+        SoilNodeData() {ID=-1; depth=0;};
+        SoilNodeData(int id, double z) {ID=id; depth=z;};
+
+        int     ID;
+        double  depth;
     };
 
     void updatePiles(QVector<PILE_INFO> &);
@@ -62,7 +85,6 @@ public:
     void buildLoad();
     void buildAnalysis();
 
-
     void updateMotionData(void);
     double shift(double z);
 
@@ -85,7 +107,7 @@ protected:
     // load control
     LoadControlType loadControlType;
 
-    QMap<QString, bool> modelState;
+    QMap<AnalysisState, bool> modelState;
 
     double P;     // lateral force on pile cap
     double PV;    // vertical force on pile cap
@@ -100,7 +122,7 @@ protected:
     double percentageBase; // percentage of surface displacement at base of soil column
 
     QVector<double> soilMotion = QVector<double>(MAXLAYERS+1, 0.0);
-    QVector<SOIL_MOTION_DATA> motionData = QVector<SOIL_MOTION_DATA>(MAXLAYERS);
+    QVector<SoilMotionData> motionData = QVector<SoilMotionData>(MAXLAYERS);
 
     // get parameters
     double gwtDepth;  // depth of ground water table below the surface
@@ -175,6 +197,9 @@ protected:
     QVector<QVector<double> *> tultList;
     QVector<QVector<double> *> z50List;
 
+    QList<SoilNodeData> soilNodes;
+
+    //
     // state switches
     bool    dumpFEMinput;
     QFile  *FEMfile = NULL;

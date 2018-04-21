@@ -97,6 +97,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
     ui->appliedHorizontalForce->setMaximum(MAX_H_FORCE);
     ui->appliedHorizontalForce->setMinimum(-MAX_H_FORCE);
+    ui->appliedVerticalForce->setMaximum(MAX_V_FORCE);
+    ui->appliedVerticalForce->setMinimum(-MAX_V_FORCE);
+    ui->appliedMoment->setMaximum(MAX_MOMENT);
+    ui->appliedMoment->setMinimum(-MAX_MOMENT);
 
     ui->textBrowser->clear();
 #ifdef Q_OS_WIN
@@ -536,17 +540,19 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionExport_to_OpenSees_triggered()
 {
-    // TODO:
-    // ... add a file selector
+    QString theFolder = QDir::homePath();
+    QString theFilter = "Tcl file (*.tcl)";
+    QFileDialog dlg;
 
-    //DialogFutureFeature *dlg = new DialogFutureFeature();
-    //dlg->exec();
-    //delete dlg;
+    // "PileGroup.tcl"
 
-    QString filename = "testfile.tcl";
+    QString fileName = dlg.getSaveFileName(this, "Save File", theFolder, theFilter);
 
-    pileFEAmodel->dumpDomain("domainDump.tcl");
-    pileFEAmodel->writeFEMinput(filename);
+    if (fileName != "")
+    {
+        //pileFEAmodel->dumpDomain("domainDump.tcl");
+        pileFEAmodel->writeFEMinput(fileName);
+    }
 }
 
 void MainWindow::on_actionReset_triggered()
@@ -1096,8 +1102,6 @@ bool MainWindow::ReadFile(QString s)
 {
     /* identify filename and location for loading */
 
-    //QString filename = "PileGroupTool.json";
-
     QString theFolder = QDir::homePath();
     QString theFilter = "Json file (*.json)";
     QFileDialog dlg;
@@ -1117,8 +1121,6 @@ bool MainWindow::ReadFile(QString s)
 
     QString theFile = loadFile.readAll();
     loadFile.close();
-
-    //qWarning() << theFile;
 
     bool fileTypeError = false;
 
@@ -1444,6 +1446,7 @@ void MainWindow::on_forceTypeSelector_activated(int index)
     if (index == 2) { loadControlType = LoadControlType::SoilMotion;   }
 
     systemPlot->setLoadType(loadControlType);
+    pileFEAmodel->setLoadType(loadControlType);
 }
 
 

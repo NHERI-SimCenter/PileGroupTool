@@ -85,6 +85,7 @@ getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, d
 
   // better use a regression in kN/m^3 (Peter Mackenzie-Helnwein, 2018)
   double kSIunits = 2304. * phi - 53408.;
+  if (kSIunits < 1.e-4) kSIunits = 1.e-4;
   
   // based on a t-z curve of the shape recommended by Mosher (1984), z50 = tult/kf
   *z50 = *tult/kSIunits;

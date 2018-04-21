@@ -4,6 +4,7 @@
 #include <QListIterator>
 #include <QVector>
 #include <QTextStream>
+#include <QDateTime>
 
 extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
 extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
@@ -60,27 +61,25 @@ extern int getPyParam(double pyDepth,
 #include <QDebug>
 
 
+#define SET_3_NDOF if (nDOFs != 3) { nDOFs = 3; out << "model BasicBuilder -ndm 3 - ndf " << nDOFs << " ;" << endl; }
+#define SET_6_NDOF if (nDOFs != 6) { nDOFs = 6; out << "model BasicBuilder -ndm 3 - ndf " << nDOFs << " ;" << endl; }
+
 PileFEAmodeler::PileFEAmodeler()
 {
     // set default parameters
     modelState.clear();
-    modelState.insert("solutionAvailable", false);
-    modelState.insert("solutionValid", false);
-    modelState.insert("dataExtracted", false);
-    modelState.insert("meshValid", false);
-    modelState.insert("loadValid", false);
-    modelState.insert("analysisValid", false);
+    modelState.insert(AnalysisState::solutionAvailable, false);
+    modelState.insert(AnalysisState::solutionValid, false);
+    modelState.insert(AnalysisState::dataExtracted, false);
+    modelState.insert(AnalysisState::meshValid, false);
+    modelState.insert(AnalysisState::loadValid, false);
+    modelState.insert(AnalysisState::analysisValid, false);
 
     theDomain = new Domain();
 
     numLoadedNode = -1;
 
-    SOIL_MOTION_DATA data;
-    data.delta0 = 0.0;
-    data.delta1 = 0.0;
-    data.zmax   = 0.0;
-
-    motionData = QVector<SOIL_MOTION_DATA>(MAXLAYERS, data);
+    motionData = QVector<SoilMotionData>(MAXLAYERS, SoilMotionData());
 
     /* set default parameters */
     this->setDefaultParameters();
@@ -182,12 +181,12 @@ void PileFEAmodeler::setDefaultParameters(void)
     GJ = 1.0e12;
 
     /* reset states */
-    DISABLE_STATE("meshValid");
-    DISABLE_STATE("loadValid");
-    DISABLE_STATE("analysisValid");
-    DISABLE_STATE("dataExtracted");
-    DISABLE_STATE("solutionValid");
-    DISABLE_STATE("solutionAvailable");
+    DISABLE_STATE(AnalysisState::meshValid);
+    DISABLE_STATE(AnalysisState::loadValid);
+    DISABLE_STATE(AnalysisState::analysisValid);
+    DISABLE_STATE(AnalysisState::dataExtracted);
+    DISABLE_STATE(AnalysisState::solutionValid);
+    DISABLE_STATE(AnalysisState::solutionAvailable);
 }
 
 void PileFEAmodeler::updatePiles(QVector<PILE_INFO> &newPileInfo)
@@ -208,10 +207,10 @@ void PileFEAmodeler::updatePiles(QVector<PILE_INFO> &newPileInfo)
         pileInfo[k].elemIDoffset = 0;
     }
 
-    DISABLE_STATE("meshValid");
-    DISABLE_STATE("solutionValid");
-    DISABLE_STATE("solutionAvailable");
-    DISABLE_STATE("dataExtracted");
+    DISABLE_STATE(AnalysisState::meshValid);
+    DISABLE_STATE(AnalysisState::solutionValid);
+    DISABLE_STATE(AnalysisState::solutionAvailable);
+    DISABLE_STATE(AnalysisState::dataExtracted);
 }
 
 void PileFEAmodeler::updateSwitches(bool useToe, bool assumeRigidHead)
@@ -219,19 +218,19 @@ void PileFEAmodeler::updateSwitches(bool useToe, bool assumeRigidHead)
     if (useToeResistance != useToe)
     {
         useToeResistance = useToe;
-        DISABLE_STATE("meshValid");
-        DISABLE_STATE("solutionValid");
-        DISABLE_STATE("solutionAvailable");
-        DISABLE_STATE("dataExtracted");
+        DISABLE_STATE(AnalysisState::meshValid);
+        DISABLE_STATE(AnalysisState::solutionValid);
+        DISABLE_STATE(AnalysisState::solutionAvailable);
+        DISABLE_STATE(AnalysisState::dataExtracted);
     }
 
     if (assumeRigidPileHeadConnection != assumeRigidHead)
     {
         assumeRigidPileHeadConnection = assumeRigidHead;
-        DISABLE_STATE("meshValid");
-        DISABLE_STATE("solutionValid");
-        DISABLE_STATE("solutionAvailable");
-        DISABLE_STATE("dataExtracted");
+        DISABLE_STATE(AnalysisState::meshValid);
+        DISABLE_STATE(AnalysisState::solutionValid);
+        DISABLE_STATE(AnalysisState::solutionAvailable);
+        DISABLE_STATE(AnalysisState::dataExtracted);
     }
 }
 
@@ -240,7 +239,7 @@ void PileFEAmodeler::setLoadType(LoadControlType type)
     if (loadControlType != type)
     {
         loadControlType = type;
-        DISABLE_STATE("loadValid");
+        DISABLE_STATE(AnalysisState::loadValid);
     }
 }
 
@@ -252,14 +251,14 @@ void PileFEAmodeler::updateLoad(double Px, double Py, double Moment)
     PV   = Py;     // vertical force on pile cap
     PMom = Moment; // applied moment on pile cap
 
-    DISABLE_STATE("loadValid");
+    DISABLE_STATE(AnalysisState::loadValid);
 }
 
 void PileFEAmodeler::updateSoil(QVector<soilLayer> &layers)
 {
     mSoilLayers = layers;
 
-    DISABLE_STATE("meshValid");
+    DISABLE_STATE(AnalysisState::meshValid);
 }
 
 void PileFEAmodeler::updateGWtable(double depth)
@@ -267,7 +266,7 @@ void PileFEAmodeler::updateGWtable(double depth)
     if (gwtDepth == depth) return;
 
     gwtDepth = depth;
-    DISABLE_STATE("meshValid");
+    DISABLE_STATE(AnalysisState::meshValid);
 }
 
 void PileFEAmodeler::updateDisplacement(double ux, double uy)
@@ -277,7 +276,7 @@ void PileFEAmodeler::updateDisplacement(double ux, double uy)
     HDisp = ux; // prescribed horizontal displacement
     VDisp = uy; // prescriber vertical displacement
 
-    DISABLE_STATE("loadValid");
+    DISABLE_STATE(AnalysisState::loadValid);
 }
 
 void PileFEAmodeler::updateDispProfile(QVector<double> &profile)
@@ -294,35 +293,42 @@ void PileFEAmodeler::updateDispProfile(QVector<double> &profile)
     if (profile.size() > 2) percentage23   = profile[2];   // percentage of surface displacement at 2nd layer interface
     if (profile.size() > 3) percentageBase = profile[3];   // percentage of surface displacement at base of soil column
 
-    DISABLE_STATE("loadValid");
+    soilMotion[0] = surfaceDisp;
+    soilMotion[1] = surfaceDisp*percentage12;
+    soilMotion[2] = surfaceDisp*percentage23;
+    soilMotion[3] = surfaceDisp*percentageBase;
+
+    DISABLE_STATE(AnalysisState::loadValid);
+
+    this->updateMotionData();
 }
 
 void PileFEAmodeler::setAnalysisType(QString)
 {
 
-    DISABLE_STATE("analysisValid");
+    DISABLE_STATE(AnalysisState::analysisValid);
 }
 
 void PileFEAmodeler::doAnalysis()
 {
-    if (!CHECK_STATE("meshValid"))
+    if (!CHECK_STATE(AnalysisState::meshValid))
     {
         this->buildMesh();
-        DISABLE_STATE("analysisValid");
+        DISABLE_STATE(AnalysisState::analysisValid);
     }
-    if (!CHECK_STATE("loadValid"))
+    if (!CHECK_STATE(AnalysisState::loadValid))
     {
         this->buildLoad();
-        DISABLE_STATE("analysisValid");
+        DISABLE_STATE(AnalysisState::analysisValid);
     }
-    if (!CHECK_STATE("analysisValid"))
+    if (!CHECK_STATE(AnalysisState::analysisValid))
     {
-        DISABLE_STATE("dataExtracted");
-        DISABLE_STATE("solutionValid");
+        DISABLE_STATE(AnalysisState::dataExtracted);
+        DISABLE_STATE(AnalysisState::solutionValid);
         this->buildAnalysis();
     }
 
-    DISABLE_STATE("solutionAvailable");
+    DISABLE_STATE(AnalysisState::solutionAvailable);
 
     //
     //analyze & get results
@@ -331,24 +337,28 @@ void PileFEAmodeler::doAnalysis()
     theDomain->calculateNodalReactions(0);
 
     // the solution exists, but it may or may not be valid !
-    ENABLE_STATE("solutionAvailable");
+    ENABLE_STATE(AnalysisState::solutionAvailable);
 
     if (converged < 0)
     {
-        DISABLE_STATE("solutionValid");
+        DISABLE_STATE(AnalysisState::solutionValid);
     }
     else
     {
-        ENABLE_STATE("solutionValid");
+        ENABLE_STATE(AnalysisState::solutionValid);
     }
 }
 
 void PileFEAmodeler::buildMesh()
 {
-    //QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
+    if (CHECK_STATE(AnalysisState::meshValid)) return;
 
     QTextStream out(FEMfile);
     int materialIndex = 0;
+    int nDOFs = 0;
+
+    // clear the list of soil nodes == those nodes where p-y springs are attaching to the soil
+    soilNodes.clear();
 
     for (int k=0; k<MAXPILES; k++) {
         headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
@@ -356,12 +366,13 @@ void PileFEAmodeler::buildMesh()
 
     if (dumpFEMinput)
     {
-        out << "#----------------------------------------------------------" << endl;
-        out << "#   file created by PileGroup Tool                         " << endl;
-        out << "#                                                          " << endl;
-        out << "#   author:      Peter Mackenzie-Helnwein                  " << endl;
-        out << "#   affiliation: University of Washington                  " << endl;
-        out << "#----------------------------------------------------------" << endl;
+        out << "#----------------------------------------------------------"  << endl;
+        out << "#   file created by PileGroup Tool                         "  << endl;
+        out << "#                                                          "  << endl;
+        out << "#   author:      Peter Mackenzie-Helnwein                  "  << endl;
+        out << "#   affiliation: University of Washington                  "  << endl;
+        out << "#   created on:  " << QDateTime::currentDateTime().toString() << endl;
+        out << "#----------------------------------------------------------"  << endl;
         out << endl;
     }
 
@@ -493,8 +504,6 @@ void PileFEAmodeler::buildMesh()
     int numElem = ioffset2;
     int nodeTag = 0;
 
-    if (dumpFEMinput)  out << "model basic -ndm 3 -ndf 6 " << endl;
-
     pileInfo[0].nodeIDoffset = ioffset2;
     pileInfo[0].elemIDoffset = ioffset2;
     for (int k=1; k<numPiles; k++) {
@@ -537,7 +546,7 @@ void PileFEAmodeler::buildMesh()
                                       << Iz  << " "     // $Iz
                                       << Iz  << " "     // $Iy
                                       << G   << " "     // $G
-                                      << J   << " "     // $J
+                                      << J   << " ;"     // $J
                                       << endl;
         }
 
@@ -557,11 +566,12 @@ void PileFEAmodeler::buildMesh()
         Node *theNode = 0;
         nodeTag = numNode+ioffset2;
 
-        //qDebug() << "Node(" << nodeTag << "," << 6 << "," << pileInfo[pileIdx].xOffset << "," << 0.0 << "," << zCoord << ")";
-
         theNode = new Node(nodeTag, 6, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
         if (dumpFEMinput)
-            { out << "node " << nodeTag << " " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << endl; }
+        {
+            SET_6_NDOF
+            out << "node " << nodeTag << " " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << " ;" << endl;
+        }
 
         if (numNode != 1) {
             SP_Constraint *theSP = 0;
@@ -569,10 +579,8 @@ void PileFEAmodeler::buildMesh()
             theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain->addSP_Constraint(theSP);
             theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain->addSP_Constraint(theSP);
 
-            if (dumpFEMinput) { out << "fix  " << nodeTag << "  0 1 0 1 0 1" << endl; }
+            if (dumpFEMinput) { out << "fix  " << nodeTag << "  0 1 0 1 0 1 ;" << endl; }
         }
-
-        if (dumpFEMinput)  out << "model BasicBuilder -ndm 3 -ndf 3 " << endl;
 
         //
         // add toe resistance (if requested)
@@ -581,28 +589,73 @@ void PileFEAmodeler::buildMesh()
         if (useToeResistance) {
             Node *theNode = 0;
 
-            if (dumpFEMinput)
-            {
-                out << "node " << numNode         << " " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << endl;
-                out << "node " << numNode+ioffset << " " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << endl;
-            }
-
             theNode = new Node(numNode,         3, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
             theNode = new Node(numNode+ioffset, 3, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
+
+            if (dumpFEMinput)
+            {
+                SET_3_NDOF
+                out << "node " << numNode         << " " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << " ;" << endl;
+                out << "node " << numNode+ioffset << " " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << " ;" << endl;
+            }
 
             SP_Constraint *theSP = 0;
             theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain->addSP_Constraint(theSP);
             theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain->addSP_Constraint(theSP);
             theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain->addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode+ioffset, 0, 0., true);  theDomain->addSP_Constraint(theSP); // ?
+            theSP = new SP_Constraint(numNode+ioffset, 0, 0., true);  theDomain->addSP_Constraint(theSP);
             theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain->addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain->addSP_Constraint(theSP);
 
             if (dumpFEMinput)
             {
-                out << "fix  " << numNode         << "  1 1 1" << endl;
-                out << "fix  " << numNode+ioffset << "  1 1 1" << endl;
+                out << "fix  " << numNode         << "  1 1 1 ;" << endl;
+                out << "fix  " << numNode+ioffset << "  1 1 0 ;" << endl;
             }
+
+            MP_Constraint *theMP = new MP_Constraint(numNode+ioffset2, numNode+ioffset, Ccr, rcDof, rcDof);
+            theDomain->addMP_Constraint(theMP);
+
+            if (dumpFEMinput)
+            {
+                out << "equalDOF " << numNode+ioffset2 << " " << numNode+ioffset << " ";
+                for (int k=0; k<rcDof.Size(); k++) { out << rcDof(k)+1 << " "; }
+                out << " ;" << endl;
+            }
+
+            // # q-z spring material
+            // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
+            double sigVq  = mSoilLayers[pileInfo[pileIdx].maxLayers-1].getLayerBottomStress();
+            double phi  = mSoilLayers[pileInfo[pileIdx].maxLayers-1].getLayerFrictionAng();
+
+            getQzParam(phi, pileInfo[pileIdx].pileDiameter,  sigVq,  gSoil, &qult, &z50q);
+            UniaxialMaterial *theMat = new QzSimple1(numNode, 2, qult, z50q, 0.0, 0.0);
+            OPS_addUniaxialMaterial(theMat);
+
+            ID Onedirection(1); Onedirection[0] = 2;
+
+            // pile toe
+            Element *theEle = new ZeroLength(1+pileIdx+ioffset4, 3, numNode, numNode+ioffset, x, y, 1, &theMat, Onedirection);
+            theDomain->addElement(theEle);
+
+            if (dumpFEMinput)
+            {
+                out << "uniaxialMaterial QzSimple1 " << numNode << " "
+                    << 2 << " " << qult << " " << z50q << " 0.0, 0.0 ;" << endl;
+
+                out << "element zeroLength "
+                    << 1+pileIdx+ioffset4 << " " << numNode << " " << numNode+ioffset
+                    << " -mat " << numNode
+                    << " -dir ";
+                for (int k=0; k<Onedirection.Size(); k++) { out << Onedirection(k) << " "; }
+                out << " -orient ";
+                for (int k=0; k<x.Size(); k++) { out << x(k) << " "; }
+                for (int k=0; k<y.Size(); k++) { out << y(k) << " "; }
+                out << " ;" << endl;
+            }
+        }
+        else
+        {
+            // hold the pile through friction only: t-z springs will do the job
         }
 
         locList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = zCoord;
@@ -639,10 +692,12 @@ void PileFEAmodeler::buildMesh()
 
                 theNode = new Node(numNode,         3, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
                 theNode = new Node(numNode+ioffset, 3, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
+
                 if (dumpFEMinput)
                 {
-                    out << "node " << numNode         << " " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << endl;
-                    out << "node " << numNode+ioffset << " " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << endl;
+                    SET_3_NDOF
+                    out << "node " << numNode         << " " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << " ;" << endl;
+                    out << "node " << numNode+ioffset << " " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << " ;" << endl;
                 }
 
 
@@ -654,9 +709,11 @@ void PileFEAmodeler::buildMesh()
                 theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain->addSP_Constraint(theSP);
                 theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain->addSP_Constraint(theSP);
 
+                soilNodes.append(SoilNodeData(nodeTag, -zCoord));
+
                 if (dumpFEMinput)
                 {
-                    out << "fix  " << numNode         << "  1 1 1" << endl;
+                    out << "fix  " << numNode         << "  1 1 1 ;" << endl;
                 }
                 //
                 // this is the node connecting to the pile.
@@ -666,20 +723,23 @@ void PileFEAmodeler::buildMesh()
 
                 if (dumpFEMinput)
                 {
-                    out << "fix  " << numNode+ioffset << "  0 1 0" << endl;
+                    out << "fix  " << numNode+ioffset << "  0 1 0 ;" << endl;
                 }
 
                 //
                 // pile nodes
                 //
 
-                if (dumpFEMinput)  out << "model BasicBuilder -ndm 3 -ndf 6 " << endl;
-
                 nodeTag = numNode+ioffset2;
 
-                //qDebug() << "Node(" << nodeTag << "," << 6 << "," << pileInfo[pileIdx].xOffset << "," << 0.0 << "," << zCoord << ")";
-
                 theNode = new Node(nodeTag, 6, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
+
+                if (dumpFEMinput)
+                {
+                    SET_6_NDOF
+                    out << "node " << nodeTag <<  "  " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << " ;" << endl;
+                }
+
                 if (numNode != 1) {
                     SP_Constraint *theSP = 0;
                     theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain->addSP_Constraint(theSP);
@@ -688,7 +748,7 @@ void PileFEAmodeler::buildMesh()
 
                     if (dumpFEMinput)
                     {
-                        out << "fix  " << nodeTag << "  0 1 0 1 0 1" << endl;
+                        out << "fix  " << nodeTag << "  0 1 0 1 0 1 ;" << endl;
                     }
                 }
 
@@ -699,8 +759,8 @@ void PileFEAmodeler::buildMesh()
                 if (dumpFEMinput)
                 {
                     out << "equalDOF " << numNode+ioffset2 << " " << numNode+ioffset << " ";
-                    for (int k=0; k<rcDof.Size(); k++) { out << rcDof(k) << " "; }
-                    out << endl;
+                    for (int k=0; k<rcDof.Size(); k++) { out << rcDof(k)+1 << " "; }
+                    out << " ;" << endl;
                 }
 
                 //
@@ -736,7 +796,7 @@ void PileFEAmodeler::buildMesh()
 
                 if (dumpFEMinput)
                 {
-                    out << "uniaxialMaterial PySimple1 " << numNode << " 2 " << pult << " " << y50 << " 0.0" << endl;
+                    out << "uniaxialMaterial PySimple1 " << numNode << " 2 " << pult << " " << y50 << " 0.0" << " ;" << endl;
                 }
 
                 locList[pileIdx][numNode+ioffset2- pileInfo[pileIdx].nodeIDoffset]  = zCoord;
@@ -761,7 +821,7 @@ void PileFEAmodeler::buildMesh()
 
                 if (dumpFEMinput)
                 {
-                    out << "uniaxialMaterial TzSimple1 " << numNode+ioffset << " 2 " << tult << " " << z50 << " 0.0" << endl;
+                    out << "uniaxialMaterial TzSimple1 " << numNode+ioffset << " 2 " << tult << " " << z50 << " 0.0 ;" << endl;
                 }
 
                 //
@@ -784,7 +844,7 @@ void PileFEAmodeler::buildMesh()
                     out << " -orient ";
                     for (int k=0; k<x.Size(); k++) { out << x(k) << " "; }
                     for (int k=0; k<y.Size(); k++) { out << y(k) << " "; }
-                    out << endl;
+                    out << " ;" << endl;
                 }
 
                 zCoord += eleSize;
@@ -818,13 +878,12 @@ void PileFEAmodeler::buildMesh()
 
             nodeTag = numNode+ioffset2;
 
-            //qDebug() << "Node(" << nodeTag << "," << 6 << "," << pileInfo[pileIdx].xOffset << "," << 0.0 << "," << zCoord << ")";
-
             Node *theNode = new Node(nodeTag, 6, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
 
             if (dumpFEMinput)
             {
-                out << "node " << nodeTag << "   " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << endl;
+                SET_6_NDOF
+                out << "node " << nodeTag << "   " << pileInfo[pileIdx].xOffset << " 0. " << zCoord << " ;" << endl;
             }
 
             if (numNode != 1) {
@@ -835,7 +894,7 @@ void PileFEAmodeler::buildMesh()
 
                 if (dumpFEMinput)
                 {
-                    out << "fix " << nodeTag << "   0 1 0 1 0 1" << endl;
+                    out << "fix " << nodeTag << "   0 1 0 1 0 1 ;" << endl;
                 }
 
             }
@@ -866,8 +925,7 @@ void PileFEAmodeler::buildMesh()
             out << "# create coordinate-transformation object" << endl;
             out << "geomTransf Linear  " << pileIdx+1;
             for (int k=0; k<crdV.Size(); k++) { out << " " << crdV(k); }
-            out << endl;
-            out << "model BasicBuilder -ndm 3 -ndf 6 " << endl;
+            out << " ;" << endl;
         }
 
         for (int i=0; i<pileInfo[pileIdx].numNodePile-1; i++) {
@@ -878,11 +936,6 @@ void PileFEAmodeler::buildMesh()
             theSections[0] = theSection;
             theSections[1] = theSection;
             theSections[2] = theSection;
-
-            //qDebug() << "DispBeamColumn3d("
-            //         << numElem << ","
-            //         << nodeIDoffset[pileIdx]+i+1 << ","
-            //         << nodeIDoffset[pileIdx]+i+2 << ")";
 
             Element *theEle = new DispBeamColumn3d(numElem,
                                                    pileInfo[pileIdx].nodeIDoffset+i+1,
@@ -902,45 +955,7 @@ void PileFEAmodeler::buildMesh()
                         << 3 << " "
                         << pileIdx+1 << " "   // section tag: use pileIdx+1
                         << pileIdx+1 << " "   // transformation tag: use pileIdx+1
-                        << endl;
-            }
-        }
-
-        //
-        // set up toe resistance, if requested
-        //
-        if (useToeResistance) {
-
-            // # q-z spring material
-            // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
-            double sigVq  = mSoilLayers[pileInfo[pileIdx].maxLayers-1].getLayerBottomStress();
-            double phi  = mSoilLayers[pileInfo[pileIdx].maxLayers-1].getLayerFrictionAng();
-
-            getQzParam(phi, pileInfo[pileIdx].pileDiameter,  sigVq,  gSoil, &qult, &z50q);
-            UniaxialMaterial *theMat = new QzSimple1(1+ioffset, 2, qult, z50q, 0.0, 0.0);
-            OPS_addUniaxialMaterial(theMat);
-
-            ID Onedirection(1);
-            Onedirection[0] = 2;
-
-            // pile toe
-            Element *theEle = new ZeroLength(1+pileIdx+ioffset4, 3, 1, 1+ioffset, x, y, 1, &theMat, Onedirection);
-            theDomain->addElement(theEle);
-
-            if (dumpFEMinput)
-            {
-                out << "uniaxialMaterial QzSimple1 " << 1+ioffset << " "
-                    << 2 << " " << qult << " " << z50q << " 0.0, 0.0 " << endl;
-
-                out << "element zeroLength "
-                    << 1+pileIdx+ioffset4 << " " << 1 << " " << 1+ioffset
-                    << " -mat " << 1+ioffset
-                    << " -dir ";
-                for (int k=0; k<Onedirection.Size(); k++) { out << Onedirection(k) << " "; }
-                out << " -orient ";
-                for (int k=0; k<x.Size(); k++) { out << x(k) << " "; }
-                for (int k=0; k<y.Size(); k++) { out << y(k) << " "; }
-                out << endl;
+                        << " ;" << endl;
             }
         }
     }
@@ -972,8 +987,7 @@ void PileFEAmodeler::buildMesh()
             out << "# create coordinate-transformation object" << endl;
             out << "geomTransf Linear  " << MAXPILES+1;
             for (int k=0; k<crdV.Size(); k++) { out << " " << crdV(k); }
-            out << endl;
-            out << "model BasicBuilder -ndm 3 -ndf 6 " << endl;
+            out << " ;" << endl;
         }
 
         // define beam element integration and cross sections
@@ -995,12 +1009,10 @@ void PileFEAmodeler::buildMesh()
                                       << EI  << " "     // $Iy
                                       << 1.0 << " "     // $G
                                       << GJ  << " "     // $J
-                                      << endl;
+                                      << " ;" << endl;
         }
 
         int prevNode = -1;
-
-        if (dumpFEMinput)  out << "model BasicBuilder -ndm 3 -ndf 6 " << endl;
 
         for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
@@ -1008,13 +1020,12 @@ void PileFEAmodeler::buildMesh()
             numNode++;
             int nodeTag = numNode + ioffset5;
 
-            //qDebug() << "Node(" << nodeTag << "," << 6 << "," << headNodeList[pileIdx].x << "," << 0.0 << "," << L1 << ")";
-
             Node *theNode = new Node(nodeTag, 6, headNodeList[pileIdx].x, 0., pileInfo[pileIdx].L1);  theDomain->addNode(theNode);
 
             if (dumpFEMinput)
             {
-                out << "node " << nodeTag << " " << headNodeList[pileIdx].x << " " << 0.0 << " " << pileInfo[pileIdx].L1 << endl;
+                SET_6_NDOF
+                out << "node " << nodeTag << " " << headNodeList[pileIdx].x << " " << 0.0 << " " << pileInfo[pileIdx].L1 << " ;" << endl;
             }
 
             // create single point constraints
@@ -1034,8 +1045,8 @@ void PileFEAmodeler::buildMesh()
                 if (dumpFEMinput)
                 {
                     out << "equalDOF " << nodeTag << " " << headNodeList[pileIdx].nodeIdx << " ";
-                    for (int k=0; k<hcDof.Size(); k++) { out << hcDof(k) << " "; }
-                    out << endl;
+                    for (int k=0; k<hcDof.Size(); k++) { out << hcDof(k)+1 << " "; }
+                    out << " ;" << endl;
                 }
             }
             else {
@@ -1054,16 +1065,14 @@ void PileFEAmodeler::buildMesh()
                 if (dumpFEMinput)
                 {
                     out << "equalDOF " << nodeTag << " " << headNodeList[pileIdx].nodeIdx << " ";
-                    for (int k=0; k<hlDof.Size(); k++) { out << hlDof(k) << " "; }
-                    out << endl;
+                    for (int k=0; k<hlDof.Size(); k++) { out << hlDof(k)+1 << " "; }
+                    out << " ;" << endl;
                 }
             }
 
             // create beams for pile head
             if (prevNode > 0) {
                 numElem++;
-
-                //qDebug() << "DispBeamColumn3d(" << numElem << "," << prevNode << "," << numNode << ")";
 
                 Element *theEle = new DispBeamColumn3d(numElem, prevNode, nodeTag,
                                                        3, theSections, *theIntegration, *theTransformation);
@@ -1081,7 +1090,7 @@ void PileFEAmodeler::buildMesh()
                             << 3 << " "
                             << MAXPILES+1 << " "   // section tag: use pileIdx+1
                             << MAXPILES+1 << " "   // transformation tag: use pileIdx+1
-                            << endl;
+                            << " ;" << endl;
                 }
             }
 
@@ -1098,7 +1107,7 @@ void PileFEAmodeler::buildMesh()
 
         if (dumpFEMinput)
         {
-            out << "fix  " << nodeTag << "  0 0 0 0 1 0" << endl;
+            out << "fix  " << nodeTag << "  0 0 0 0 1 0 ;" << endl;
         }
     }
 
@@ -1110,8 +1119,8 @@ void PileFEAmodeler::buildMesh()
         qDebug() << "ERROR: " << numNode << " nodes generated but " << numNodePiles << "expected" << endln;
     }
 
-    ENABLE_STATE("meshValid");
-    DISABLE_STATE("solutionAvailable");
+    ENABLE_STATE(AnalysisState::meshValid);
+    DISABLE_STATE(AnalysisState::solutionAvailable);
 }
 
 void PileFEAmodeler::buildLoad()
@@ -1122,30 +1131,129 @@ void PileFEAmodeler::buildLoad()
     // create load pattern and add loads
     //
 
-    LinearSeries *theTimeSeries = new LinearSeries(1, 1.0);
-    LoadPattern *theLoadPattern = new LoadPattern(1);
-    theLoadPattern->setTimeSeries(theTimeSeries);
-    static Vector load(6);
-    load.Zero();
-    load(0) = P;
-    load(2) = PV;
-    load(4) = PMom;
-
-    if (numLoadedNode >= 0)
+    if (dumpFEMinput)
     {
-        NodalLoad *theLoad = new NodalLoad(0, numLoadedNode, load);
-        theLoadPattern->addNodalLoad(theLoad);
-        theDomain->addLoadPattern(theLoadPattern);
+        out << endl;
+        out << "#----------------------------------------------------------"  << endl;
+        out << "#   create load pattern                                    "  << endl;
+        out << "#----------------------------------------------------------"  << endl;
+        out << endl;
+    }
 
-        ENABLE_STATE("loadValid");
-        DISABLE_STATE("solutionAvailable");
-        DISABLE_STATE("solutionValid");
+    LinearSeries *theTimeSeries  = NULL;
+    LoadPattern  *theLoadPattern = NULL;
+    NodalLoad    *theLoad        = NULL;
+
+    theTimeSeries  = new LinearSeries(1, 1.0);
+    theLoadPattern = new LoadPattern(1);
+    theLoadPattern->setTimeSeries(theTimeSeries);
+
+    switch (loadControlType)
+    {
+    case LoadControlType::ForceControl:
+
+        if (dumpFEMinput)
+        {
+            out << "puts \"Running force control...\" ;"  << endl;
+            out << "# create load pattern:" << endl;
+            out << "pattern Plain 200 Linear {"    << endl;
+        }
+
+        // numLoadedNode is the ID of the reference node that will be pushed
+        static Vector load(6);
+        load.Zero();
+        load(0) = P;
+        load(2) = PV;
+        load(4) = PMom;
+
+        if (numLoadedNode >= 0)
+        {
+            theLoad = new NodalLoad(0, numLoadedNode, load);
+            theLoadPattern->addNodalLoad(theLoad);
+            theDomain->addLoadPattern(theLoadPattern);
+
+            if (dumpFEMinput)
+            {
+                out << "              load " << numLoadedNode;
+                for (int k=0;k<load.Size();k++) { out << " " << load(k);};
+                out << " ;" << endl;
+            }
+
+            ENABLE_STATE(AnalysisState::loadValid);
+            DISABLE_STATE(AnalysisState::solutionAvailable);
+            DISABLE_STATE(AnalysisState::solutionValid);
+        };
+
+        if (dumpFEMinput) { out << "          } ;" << endl;  out << endl; }
+
+        break;
+
+    case LoadControlType::PushOver:
+
+        // numLoadedNode is the ID of the reference node that will be pushed
+        if (numLoadedNode > 0)
+        {
+            theLoadPattern->addSP_Constraint(new SP_Constraint(numLoadedNode, 0, HDisp, false));
+            theLoadPattern->addSP_Constraint(new SP_Constraint(numLoadedNode, 2, VDisp, false));
+
+            theDomain->addLoadPattern(theLoadPattern);
+
+            ENABLE_STATE(AnalysisState::loadValid);
+            DISABLE_STATE(AnalysisState::solutionAvailable);
+            DISABLE_STATE(AnalysisState::solutionValid);
+
+            if (dumpFEMinput)
+            {
+                out << "puts \"Running Pushover...\" ;"  << endl;
+                out << "# create push-over pattern:" << endl;
+                out << "pattern Plain 200 Linear {"    << endl;
+                out << "              sp " << numLoadedNode << " 1 " << HDisp << " ;" << endl;
+                out << "              sp " << numLoadedNode << " 3 " << VDisp << " ;" << endl;
+                out << "          } ;" << endl;  out << endl;
+            }
+        };
+        break;
+
+    case LoadControlType::SoilMotion:
+
+        // soilNodes is a list of nodeID, depth pairs for soil nodes that are attached to p-y and t-z springs
+
+        if (soilNodes.length() > 0)
+        {
+            if (dumpFEMinput)
+            {
+                out << "puts \"Running Soil Motion ...\" ;"  << endl;
+                out << "# create soil motion pattern:" << endl;
+                out << "pattern Plain 200 Linear {"    << endl;
+            }
+
+            foreach (SoilNodeData nd, soilNodes)
+            {
+                SP_Constraint *theSP = new SP_Constraint(nd.ID, 0, shift(nd.depth), false);
+                theLoadPattern->addSP_Constraint(theSP);
+
+                if (dumpFEMinput)
+                {
+                    // sp $nodeTag $dofTag $dofValue
+                    out << "              sp " << nd.ID << " 1 " << shift(nd.depth) << " ;" << endl;
+                }
+            }
+
+            if (dumpFEMinput) { out << "          } ;" << endl;  out << endl; }
+
+            theDomain->addLoadPattern(theLoadPattern);
+
+            ENABLE_STATE(AnalysisState::loadValid);
+            DISABLE_STATE(AnalysisState::solutionAvailable);
+            DISABLE_STATE(AnalysisState::solutionValid);
+        };
+        break;
     }
 }
 
 void PileFEAmodeler::buildAnalysis()
 {
-    if (CHECK_STATE("analysisValid")) return;
+    if (CHECK_STATE(AnalysisState::analysisValid)) return;
 
     QTextStream out(FEMfile);
 
@@ -1174,32 +1282,33 @@ void PileFEAmodeler::buildAnalysis()
                                   *theIntegrator);
     theSolnAlgo->setConvergenceTest(theTest);
 
-    ENABLE_STATE("analysisValid");
+    ENABLE_STATE(AnalysisState::analysisValid);
 
     if (dumpFEMinput)
     {
         out << endl;
         out << "#----------------------------------------------------------" << endl;
-        out << "#  create the analysis" << endl;
+        out << "#  create the analysis                                     " << endl;
         out << "#----------------------------------------------------------" << endl;
-        out << endl;
-        out << "integrator LoadControl  0.05" << endl;
-        out << "numberer RCM" << endl;
-        out << "system SparseGeneral" << endl;
-        out << "constraints Penalty   1.0e14  1.0e14" << endl;
-        out << "test NormDispIncr 1e-5      20      1" << endl;
-        out << "algorithm Newton" << endl;
-        out << "analysis Static" << endl;
-        out << endl;
-        out << "set startT [clock seconds]" << endl;
-        out << "puts \"Starting Load Application...\"" << endl;
-        out << "analyze          201" << endl;
-        out << endl;
-        out << "set endT [clock seconds]" << endl;
-        out << "puts \"Load Application finished...\"" << endl;
-        out << "puts \"Loading Analysis execution time: [expr $endT-$startT] seconds.\"" << endl;
-        out << endl;
-        out << "wipe" << endl;
+        out                                                                  << endl;
+        out << "# analysis commands"                                         << endl;
+        out << "    integrator LoadControl  0.05 ;"                          << endl;
+        out << "    numberer RCM ;"                                          << endl;
+        out << "	system BandGeneral ;"                                    << endl;
+        out << "    constraints Penalty   1.0e14  1.0e14 ;"                  << endl;
+        out << "    test NormDispIncr 1e-5      20      1 ;"                 << endl;
+        out << "    algorithm Newton ;"                                      << endl;
+        out << "    analysis Static ;"                                       << endl;
+        out                                                                  << endl;
+        out << "    set startT [clock seconds] ;"                            << endl;
+        out << "    puts \"Starting Load Application...\" ;"                 << endl;
+        out << "    analyze          200 ;"                                  << endl;
+        out                                                                  << endl;
+        out << "    set endT [clock seconds] ;"                              << endl;
+        out << "    puts \"Load Application finished...\" ;"                 << endl;
+        out << "    puts \"Loading Analysis execution time: [expr $endT-$startT] seconds.\" ;" << endl;
+        out                                                                  << endl;
+        out << "wipe ;"                                                      << endl;
     }
 }
 
@@ -1241,11 +1350,11 @@ void PileFEAmodeler::clearPlotBuffers()
 
 int PileFEAmodeler::extractPlotData()
 {
-    if ( CHECK_STATE("dataExtracted")) return 0;
+    if ( CHECK_STATE(AnalysisState::dataExtracted)) return 0;
 
-    if (!CHECK_STATE("solutionAvailable")) this->doAnalysis();
+    if (!CHECK_STATE(AnalysisState::solutionAvailable)) this->doAnalysis();
 
-    if (!CHECK_STATE("solutionValid")) return -1;
+    if (!CHECK_STATE(AnalysisState::solutionValid)) return -1;
 
     this->clearPlotBuffers();
 
@@ -1349,7 +1458,7 @@ int PileFEAmodeler::extractPlotData()
         }
     }
 
-    ENABLE_STATE("dataExtracted");
+    ENABLE_STATE(AnalysisState::dataExtracted);
 }
 
 void PileFEAmodeler::dumpDomain(QString filename)
@@ -1370,8 +1479,6 @@ void PileFEAmodeler::dumpDomain(QString filename)
     }
 
     QTextStream out(&file);
-
-    out << "model BasicBuilder -ndm 3 -ndf 6" << endl;
 
     out << endl << "# nodal coordinates:" << endl;
 
@@ -1400,7 +1507,7 @@ void PileFEAmodeler::dumpDomain(QString filename)
             out << extNodes[j] << " ";
         }
 
-        out << endl;
+        out << " ;" << endl;
     }
 
     out << endl << "# boundary conditions:" << endl;
@@ -1414,7 +1521,7 @@ void PileFEAmodeler::dumpDomain(QString filename)
     {
         if (nodeTag != SPC->getNodeTag())
         {
-            out << "fix " << " " << nodeTag << " " << fixity << endl;
+            out << "fix " << " " << nodeTag << " " << fixity << " ;" << endl;
             nodeTag = SPC->getNodeTag();
             fixity.Zero();
         }
@@ -1430,7 +1537,7 @@ void PileFEAmodeler::dumpDomain(QString filename)
         out << "equalDOF " << " " << MPC->getNodeRetained() << " " << MPC->getNodeConstrained() << " ";
         ID cDOFs = MPC->getConstrainedDOFs();
         for (int j=0; j<cDOFs.Size(); j++) { out << " " << cDOFs[j]+1; }
-        out << endl;
+        out << " ;" << endl;
     }
 
     LoadPatternIter &patternIter = theDomain->getLoadPatterns();
@@ -1580,11 +1687,11 @@ double PileFEAmodeler::shift(double z)
 {
     double s = soilMotion.last();
 
-    QVectorIterator<SOIL_MOTION_DATA> itr(motionData);
+    QVectorIterator<SoilMotionData> itr(motionData);
 
     while (itr.hasNext())
     {
-        SOIL_MOTION_DATA info = itr.next();
+        SoilMotionData info = itr.next();
 
         if (info.zmax >= z)
         {
@@ -1598,7 +1705,7 @@ double PileFEAmodeler::shift(double z)
 
 void PileFEAmodeler::updateMotionData(void)
 {
-    SOIL_MOTION_DATA info;
+    SoilMotionData info;
 
     for (int i=0; i<MAXLAYERS; i++)
     {
@@ -1628,9 +1735,9 @@ void PileFEAmodeler::writeFEMinput(QString filename)
     }
 
     dumpFEMinput = true;
-    DISABLE_STATE("meshValid");
-    DISABLE_STATE("loadValid");
-    DISABLE_STATE("analysisValid");
+    DISABLE_STATE(AnalysisState::meshValid);
+    DISABLE_STATE(AnalysisState::loadValid);
+    DISABLE_STATE(AnalysisState::analysisValid);
 
     this->buildMesh();
     this->buildLoad();
