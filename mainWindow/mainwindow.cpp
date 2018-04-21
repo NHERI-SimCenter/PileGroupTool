@@ -172,8 +172,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // adjust size of application window to the available display
     //
     QRect rec = QApplication::desktop()->screenGeometry();
-    int height = this->height()<0.85*rec.height()?this->height():0.85*rec.height();
-    int width  = this->width()<0.85*rec.width()?this->width():0.85*rec.width();
+    int height = this->height()<0.85*rec.height()?0.85*rec.height():this->height();
+    int width  = this->width()<0.85*rec.width()?0.85*rec.width():this->width();
     this->resize(width, height);
 
     //

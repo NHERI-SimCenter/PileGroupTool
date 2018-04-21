@@ -16,9 +16,8 @@
 #   * LNK1104: cannot open file 'qwt.lib'
 #
 #     - in Qt Creator, open existing project PileGroupTool\qwt-6.2\qwt.pro
-#     - configure the kit to compile in "..\..\build-qwt-[....]" (the ..\..\ part is important)
+#     - configure the kit to compile in "[your_path]\build-qwt-[....]" (the full path is important)
 #     - adjust the path in the LIBS line below to reflect your build directory
-#                     (the ../build-qwt-[...]) is important.
 win32: {
     INCLUDEPATH += ./qwt-6.2/src
     LIBS += -L"C:\Users\Peter Mackenzie\Documents\GitHub\PileGroupTool\build-qwt-Desktop_Qt_5_7_1_MSVC2015_64bit-Debug\lib" qwt.lib
