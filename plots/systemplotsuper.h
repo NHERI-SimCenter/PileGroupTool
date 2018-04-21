@@ -2,6 +2,7 @@
 #define SYSTEMPLOTSUPER_H
 
 #include <QWidget>
+#include <QVector>
 #include "pilegrouptool_parameters.h"
 #include "qcp/qcustomplot.h"
 
@@ -14,6 +15,13 @@ class SystemPlotSuper : public QWidget
 public:
     explicit SystemPlotSuper(QWidget *parent = 0);
     ~SystemPlotSuper();
+
+    struct SOIL_MOTION_DATA {
+        double  delta0;
+        double  delta1;
+        double  zmax;
+    };
+
     virtual void refresh() = 0;
     virtual void setLoadType(LoadControlType);
     virtual void updatePiles(QVector<PILE_INFO> &);
@@ -21,8 +29,11 @@ public:
     virtual void updateSoil(QVector<double> &);
     virtual void updateGWtable(double);
     virtual void updateDisplacement(double ux=0.0, double uy=0.0);
-    virtual void updateDispProfile(QVector<double> &);
+    virtual void updateDispProfile(double surfaceDisp, double percentage12, double percentage23, double percentageBase);
+
     virtual void updatePileDeformation(QVector<double> &, QVector<QVector<double> > &);
+    virtual void updateMotionData(void);
+    virtual double shift(double z);
 
     virtual void setActivePile(int index) {activePileIdx = index;}
     virtual int  getActivePileIndex() {return activePileIdx;}
@@ -47,6 +58,9 @@ protected:
     double percentage12;   // percentage of surface displacement at 1st layer interface
     double percentage23;   // percentage of surface displacement at 2nd layer interface
     double percentageBase; // percentage of surface displacement at base of soil column
+
+    QVector<double> soilMotion = QVector<double>(MAXLAYERS+1, 0.0);
+    QVector<SOIL_MOTION_DATA> motionData = QVector<SOIL_MOTION_DATA>(MAXLAYERS);
 
     // get parameters
     double gwtDepth;  // depth of ground water table below the surface

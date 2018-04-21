@@ -38,6 +38,8 @@ LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
 LIBS += -lqwt
 
 INCLUDEPATH += includes
+INCLUDEPATH += mainWindow
+INCLUDEPATH += dialogs
 INCLUDEPATH += plots
 INCLUDEPATH += FEA
 

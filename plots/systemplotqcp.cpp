@@ -128,11 +128,11 @@ void SystemPlotQCP::refresh()
         QVector<double> x(5,0.0);
         QVector<double> y(5,0.0);
 
-        x[0] = xbar - W/2.; y[0] = -depthOfLayer[iLayer];
-        x[1] = x[0];        y[1] = -depthOfLayer[iLayer+1];
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
+        x[0] = xbar - W/2.+shift(depthOfLayer[iLayer]);   y[0] = -depthOfLayer[iLayer];
+        x[1] = xbar - W/2.+shift(depthOfLayer[iLayer+1]); y[1] = -depthOfLayer[iLayer+1];
+        x[2] = xbar + W/2.+shift(depthOfLayer[iLayer+1]); y[2] = y[1];
+        x[3] = xbar + W/2.+shift(depthOfLayer[iLayer]);   y[3] = y[0];
+        x[4] = x[0];                                      y[4] = y[0];
 
         QCPCurve *layerII = new QCPCurve(plot->xAxis, plot->yAxis);
         layerII->setData(x,y);
@@ -153,14 +153,42 @@ void SystemPlotQCP::refresh()
     plot->setCurrentLayer("groundwater");
 
     if (gwtDepth < (H-L1)) {
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
+        QVector<double> x;
+        QVector<double> y;
 
-        x[0] = xbar - W/2.; y[0] = -gwtDepth;
-        x[1] = x[0];        y[1] = -(H - L1);
-        x[2] = xbar + W/2.; y[2] = y[1];
-        x[3] = x[2];        y[3] = y[0];
-        x[4] = x[0];        y[4] = y[0];
+        double xl = xbar - W/2;
+        double xr = xbar + W/2;
+
+        double s = soilMotion.last();
+
+        s = shift(gwtDepth);
+        x.append(xl + s);         y.append(-gwtDepth);
+
+        for (int i=0; i<=MAXLAYERS; i++)
+        {
+            if (gwtDepth <= depthOfLayer[i])
+            {
+                s = shift(depthOfLayer[i]);
+                x.append(xl + s);   y.append(-depthOfLayer[i]);
+            }
+        }
+
+        s = shift((H - L1));
+        x.append(xl + s);         y.append(-(H - L1));
+        x.append(xr + s);         y.append(-(H - L1));
+
+        for (int i=MAXLAYERS; i>=0; i--)
+        {
+            if (gwtDepth <= depthOfLayer[i])
+            {
+                s = shift(depthOfLayer[i]);
+                x.append(xr + s);   y.append(-depthOfLayer[i]);
+            }
+        }
+
+        s = shift(gwtDepth);
+        x.append(xr + s);          y.append(-gwtDepth);
+        x.append(xl + s);          y.append(-gwtDepth);
 
         QCPCurve *water = new QCPCurve(plot->xAxis, plot->yAxis);
         water->setData(x,y);
@@ -220,7 +248,7 @@ void SystemPlotQCP::refresh()
     // add force to the plot
 
     if (ABS(P) > 0.0) {
-        double force = 0.45*W*P/MAX_FORCE;
+        double force = 0.45*W*P/MAX_H_FORCE;
 
         // add the arrow:
         QCPItemLine *arrow = new QCPItemLine(plot);
@@ -232,7 +260,7 @@ void SystemPlotQCP::refresh()
     }
 
     if (ABS(PV) > 0.0) {
-        double force = 0.45*W*PV/MAX_FORCE;
+        double force = 0.45*W*PV/MAX_V_FORCE;
 
         // add the arrow:
         QCPItemLine *arrow = new QCPItemLine(plot);

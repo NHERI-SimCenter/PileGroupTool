@@ -241,4 +241,24 @@ QFrame#forceFrame {
     border:none;
 }
 
+QFrame#loadProperties {
+    background-color: #FFFFFF;
+    border:none;
+}
+
+QFrame#pushOverFrame {
+    background-color: #FFFFFF;
+    border:none;
+}
+
+QFrame#soilMotionFrame {
+    background-color: #FFFFFF;
+    border:none;
+}
+
+QFrame#loadSelectionFrame {
+    background-color: #FFFFFF;
+    border:none;
+}
+
 

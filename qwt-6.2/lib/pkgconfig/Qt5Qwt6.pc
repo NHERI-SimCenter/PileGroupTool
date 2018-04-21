@@ -1,0 +1,13 @@
+prefix=/Users/pmackenz/Qt/5.10.0/clang_64
+exec_prefix=${prefix}
+libdir=./qwt-6.2.0/lib
+includedir=./qwt-6.2.0/include
+
+
+Name: Qwt6
+Description: Qt Widgets for Technical Applications
+Version: 6.2.0
+Libs: -L${libdir} -lqwt 
+Cflags: -I${includedir}
+Requires: Qt5Widgets Qt5Concurrent Qt5PrintSupport Qt5Svg Qt5OpenGL
+

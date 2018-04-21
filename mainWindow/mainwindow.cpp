@@ -28,56 +28,11 @@
 #include <QJsonObject>
 #include <QJsonValue>
 
-extern int getTzParam(double phi, double b, double sigV, double pEleLength, double *tult, double *z50);
-extern int getQzParam(double phiDegree, double b, double sigV, double G, double *qult, double *z50);
-extern int getPyParam(double pyDepth,
-                      double gamma,
-                      double phiDegree,
-                      double b,
-                      double pEleLength,
-                      int puSwitch,
-                      int kSwitch,
-                      int gwtSwitch,
-                      double *pult,
-                      double *y50);
-
 // OpenSees include files
-#include <Node.h>
-#include <ID.h>
-#include <SP_Constraint.h>
-#include <MP_Constraint.h>
-#include <Domain.h>
 #include <StandardStream.h>
-#include <LinearCrdTransf3d.h>
-#include <DispBeamColumn3d.h>
-#include <PySimple1.h>
-#include <TzSimple1.h>
-#include <QzSimple1.h>
-#include <ZeroLength.h>
-#include <LegendreBeamIntegration.h>
-#include <ElasticSection3d.h>
-#include <LinearSeries.h>
-#include <NodalLoad.h>
-#include <LoadPattern.h>
-#include <SimulationInformation.h>
-
-#include <LoadControl.h>
-#include <RCM.h>
-#include <PlainNumberer.h>
-#include <NewtonRaphson.h>
-#include <CTestNormDispIncr.h>
-#include <TransformationConstraintHandler.h>
-#include <PenaltyConstraintHandler.h>
-#include <BandGenLinSOE.h>
-#include <BandGenLinLapackSolver.h>
-#include <StaticAnalysis.h>
-#include <AnalysisModel.h>
-
-#include <soilmat.h>
 
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
-Domain theDomain;
 
 //SimulationInformation simulationInfo;
 
@@ -140,8 +95,12 @@ MainWindow::MainWindow(QWidget *parent) :
     //
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
-    ui->appliedHorizontalForce->setMaximum(MAX_FORCE);
-    ui->appliedHorizontalForce->setMinimum(-MAX_FORCE);
+    ui->appliedHorizontalForce->setMaximum(MAX_H_FORCE);
+    ui->appliedHorizontalForce->setMinimum(-MAX_H_FORCE);
+    ui->appliedVerticalForce->setMaximum(MAX_V_FORCE);
+    ui->appliedVerticalForce->setMinimum(-MAX_V_FORCE);
+    ui->appliedMoment->setMaximum(MAX_MOMENT);
+    ui->appliedMoment->setMinimum(-MAX_MOMENT);
 
     ui->textBrowser->clear();
 #ifdef Q_OS_WIN
@@ -182,7 +141,7 @@ MainWindow::MainWindow(QWidget *parent) :
     gwtSwitch= 1;
 
      // set initial state of check boxes
-    useToeResistance    = false;
+    useToeResistance              = true;
     assumeRigidPileHeadConnection = false;
 
     // set up initial values before activating live analysis (= connecting the slots)
@@ -279,13 +238,14 @@ void MainWindow::refreshUI() {
 
 void MainWindow::doAnalysis(void)
 {
+    if (inSetupState) return;
+
     //
     // create pile information for plotting
     //
     QVector<PILE_INFO> pileInfo;
 
     pileInfo.clear();
-
     for (int i=0; i<numPiles; i++)
     {
         PILE_INFO thisPile;
@@ -297,6 +257,11 @@ void MainWindow::doAnalysis(void)
         pileInfo.append(thisPile);
     }
     pileFEAmodel->updatePiles(pileInfo);
+
+    //
+    // switches
+    //
+    pileFEAmodel->updateSwitches(useToeResistance, assumeRigidPileHeadConnection);
 
     //
     // set the soil layer information
@@ -336,783 +301,77 @@ void MainWindow::doAnalysis(void)
     //
     // run the analysis
     //
-    //pileFEAmodel->doAnalysis();
-
-    /* ******************* everything below will become obsolete once the PileFEAmodeler is functional **** */
-
-    double overburdonStress;
-
-    //QVector<HEAD_NODE_TYPE> headNodeList(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
-
-    for (int k=0; k<MAXPILES; k++) {
-        headNodeList[k] = {-1, -1, 0.0, 1.0, 1.0};
-    }
-
-    if (inSetupState) return;
-
-    // clear existing model
-    theDomain.clearAll();
-    OPS_clearAllUniaxialMaterial();
-    ops_Dt = 0.0;
+    pileFEAmodel->doAnalysis();
 
     //
-    // find meshing parameters
+    // plot results
     //
-
-    QVector<QVector<int>> elemsInLayer(MAXPILES,QVector<int>(3,minElementsPerLayer));
-    QVector<double> depthOfLayer = QVector<double>(4, 0.0); // add a buffer element for bottom of the third layer
-
-    numNodePiles = numPiles;
-
-    for (int k=0; k<MAXPILES; k++) {
-        numNodePile[k]  = 0;
-        maxLayers[k]    = MAXLAYERS;
-        nodeIDoffset[k] = 0;
-        elemIDoffset[k] = 0;
-    }
-
-    /* ******** sizing and adjustments ******** */
-
-    for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
-    {
-        numNodePile[pileIdx] = 2; // bottom plus surface node
-        if (L1 > 0.0001) numNodePile[pileIdx] += numElementsInAir; // free standing
-
-        //
-        // find active layers for pile #pileIdx
-        //
-        for (int iLayer=0; iLayer < maxLayers[pileIdx]; iLayer++)
-        {
-            if (depthOfLayer[iLayer] >= L2[pileIdx]) {
-                // this pile only penetrates till layer #iLayer
-                maxLayers[pileIdx] = iLayer;
-                break;
-            }
-
-            double thickness = mSoilLayers[iLayer].getLayerThickness();
-
-            // compute bottom of this layer/top of the next layer
-            if (depthOfLayer[iLayer] + thickness < L2[pileIdx] && iLayer == MAXLAYERS - 1) {
-                thickness = L2[pileIdx] - depthOfLayer[iLayer];
-                mSoilLayers[iLayer].setLayerThickness(thickness);
-            }
-            depthOfLayer[iLayer+1] = depthOfLayer[iLayer] + thickness;
-
-            // check if layer ends below the pile toe and adjust thickness for mesh generation
-            if (depthOfLayer[iLayer+1] > L2[pileIdx]) {
-                thickness = L2[pileIdx] - depthOfLayer[iLayer];
-            }
-
-            int numElemThisLayer = int(thickness/pileDiameter[pileIdx]);
-            if (numElemThisLayer < minElementsPerLayer) numElemThisLayer = minElementsPerLayer;
-            if (numElemThisLayer > maxElementsPerLayer) numElemThisLayer = maxElementsPerLayer;
-
-            // remember number of elements in this layer
-            elemsInLayer[pileIdx][iLayer] = numElemThisLayer;
-
-            // total node count
-            numNodePile[pileIdx] += numElemThisLayer;
-
-            // update layer information on overburdon stress and water table
-            if (iLayer > 0) {
-                overburdonStress = mSoilLayers[iLayer-1].getLayerBottomStress();
-            }
-            else {
-                overburdonStress = 0.00;
-            }
-            mSoilLayers[iLayer].setLayerOverburdenStress(overburdonStress);
-
-            double groundWaterHead = gwtDepth - depthOfLayer[iLayer];
-            mSoilLayers[iLayer].setLayerGWHead(groundWaterHead);
-        }
-
-        // add numper of nodes in this pile to global number of nodes
-        numNodePiles += numNodePile[pileIdx];
-    }
-
-    /* ******** done with sizing and adjustments ******** */
-
-    QVector<QVector<double> *> locList;
-    QVector<QVector<double> *> pultList;
-    QVector<QVector<double> *> y50List;
-
-    for (int i=0; i<numPiles; i++)
-    {
-        locList.append(new QVector<double>(numNodePile[i],0.0));
-        pultList.append(new QVector<double>(numNodePile[i],0.0));
-        y50List.append(new QVector<double>(numNodePile[i],0.0));
-    }
-
-    int ioffset  = numNodePiles;              // for p-y spring nodes
-    int ioffset2 = ioffset + numNodePiles;    // for pile nodes
-    int ioffset3 = ioffset2 + numNodePiles;   // for t-z spring nodes
-    int ioffset4 = ioffset3 + numNodePiles;   // for toe resistance nodes
-    int ioffset5 = ioffset4 + numNodePiles;   // for pile cap nodes
-
-    /* ******** build the finite element mesh ******** */
-
-    //
-    // matrix used to constrain spring and pile nodes with equalDOF (identity constraints)
-    //
-    static Matrix Ccr (2, 2);
-    Ccr.Zero(); Ccr(0,0)=1.0; Ccr(1,1)=1.0;
-    static ID rcDof (2);
-    rcDof(0) = 0;
-    rcDof(1) = 2;
-
-    // create the vectors for the spring elements orientation
-    static Vector x(3); x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
-    static Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
-
-    // direction for spring elements
-    ID direction(2);
-    direction[0] = 0;
-    direction[1] = 2;
-
-    // initialization of counters
-    int numNode = 0;
-    int numElem = ioffset2;
-    int nodeTag = 0;
-
-    nodeIDoffset[0] = ioffset2;
-    elemIDoffset[0] = ioffset2;
-    for (int k=1; k<numPiles; k++) {
-        nodeIDoffset[k] = nodeIDoffset[k-1] + numNodePile[k-1];
-        elemIDoffset[k] = elemIDoffset[k-1] + numNodePile[k-1] - 1;
-    }
-
-    // build the FE-model one pile at a time
-
-    for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
-    {
-        //qDebug() << "+ pile index: " << pileIdx;
-
-        //
-        // compute pile properties (compute once; used for all pile elements)
-        //
-        double PI = 3.14159;
-        double A  = 0.2500 * PI * pileDiameter[pileIdx] * pileDiameter[pileIdx];
-        double Iz = 0.0625 *  A * pileDiameter[pileIdx] * pileDiameter[pileIdx];
-        double G  = E[pileIdx]/(2.0*(1.+0.3));
-        double J  = 1.0e10;
-
-        // suitable pile head parameters (make pile head stiff)
-        if (100.*E[pileIdx]*A > EA ) EA = 100.*E[pileIdx]*A;
-        if (100.*E[pileIdx]*Iz > EI) EI = 100.*E[pileIdx]*Iz;
-        if (10.*G*J > GJ)            GJ = 10.*G*J;
-
-        //
-        // Ready to generate the structure
-        //
-
-        /* embedded pile portion */
-
-        zCoord = -L2[pileIdx];
-
-        //
-        // create bottom pile node
-        //
-        numNode += 1;
-
-        Node *theNode = 0;
-        nodeTag = numNode+ioffset2;
-
-        //qDebug() << "Node(" << nodeTag << "," << 6 << "," << xOffset[pileIdx] << "," << 0.0 << "," << zCoord << ")";
-
-        theNode = new Node(nodeTag, 6, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
-        if (numNode != 1) {
-            SP_Constraint *theSP = 0;
-            theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
-        }
-
-        //
-        // add toe resistance (if requested)
-        //
-    /*
-     *  CHECK IN WITH FRANK:
-     *     how to properly implement a Q-z spring at the end WITHOUT the p-y spring.
-     */
-
-        if (useToeResistance) {
-            Node *theNode = 0;
-
-            theNode = new Node(numNode,         3, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
-            theNode = new Node(numNode+ioffset, 3, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
-
-            SP_Constraint *theSP = 0;
-            theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode+ioffset, 0, 0., true);  theDomain.addSP_Constraint(theSP); // ?
-            theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-            theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
-        }
-
-        (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-        (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
-        (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
-
-        //
-        // work the way up layer by layer
-        //
-
-        for (int iLayer=maxLayers[pileIdx]-1; iLayer >= 0; iLayer--)
-        {
-            double thickness = mSoilLayers[iLayer].getLayerThickness();
-            if (depthOfLayer[iLayer+1] > L2[pileIdx]) {
-                thickness = L2[pileIdx] - depthOfLayer[iLayer];
-            }
-
-            eleSize = thickness/(1.0*elemsInLayer[pileIdx][iLayer]);
-            int numNodesLayer = elemsInLayer[pileIdx][iLayer] + 1;
-
-            //
-            // create spring nodes
-            //
-            zCoord += 0.5*eleSize;
-
-            for (int i=1; i<numNodesLayer; i++) {
-                numNode += 1;
-
-                //
-                // spring nodes
-                //
-
-                Node *theNode = 0;
-
-                theNode = new Node(numNode,         3, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
-                theNode = new Node(numNode+ioffset, 3, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
-
-                SP_Constraint *theSP = 0;
-                theSP = new SP_Constraint(numNode, 0, 0., true);  theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(numNode+ioffset, 1, 0., true);  theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(numNode+ioffset, 2, 0., true);  theDomain.addSP_Constraint(theSP);
-
-                //
-                // pile nodes
-                //
-
-                nodeTag = numNode+ioffset2;
-
-                //qDebug() << "Node(" << nodeTag << "," << 6 << "," << xOffset[pileIdx] << "," << 0.0 << "," << zCoord << ")";
-
-                theNode = new Node(nodeTag, 6, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
-                if (numNode != 1) {
-                    SP_Constraint *theSP = 0;
-                    theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
-                    theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
-                    theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
-                }
-
-                // constrain spring and pile nodes with equalDOF (identity constraints)
-                MP_Constraint *theMP = new MP_Constraint(numNode+ioffset2, numNode+ioffset, Ccr, rcDof, rcDof);
-                theDomain.addMP_Constraint(theMP);
-
-                //
-                // create soil-spring materials
-                //
-
-                // # p-y spring material
-                puSwitch  = 2;  // Hanson
-                //puSwitch  = 1;  // API // temporary switch
-                kSwitch   = 1;  // API
-
-                gwtSwitch = (gwtDepth > -zCoord)?1:2;
-
-                int dummy = iLayer;
-
-                double depthInLayer = -zCoord - depthOfLayer[iLayer];
-                sigV = mSoilLayers[iLayer].getEffectiveStress(depthInLayer);
-                double phi  = mSoilLayers[iLayer].getLayerFrictionAng();
-
-                UniaxialMaterial *theMat;
-                getPyParam(-zCoord, sigV, phi, pileDiameter[pileIdx], eleSize, puSwitch, kSwitch, gwtSwitch, &pult, &y50);
-
-                if(pult <= 0.0 || y50 <= 0.0) {
-                    qDebug() << "WARNING -- only accepts positive nonzero pult and y50";
-                    qDebug() << "*** iLayer: " << iLayer << "   pile number" << pileIdx+1
-                             << "   depth: " << -zCoord
-                             << "   depth in layer: " << depthInLayer
-                             << "   sigV: "  << sigV
-                             << "   diameter: " << pileDiameter[pileIdx] << "   eleSize: " << eleSize;
-                    qDebug() << "*** pult: " << pult << "   y50: " << y50;
-                }
-
-                theMat = new PySimple1(numNode, 0, 2, pult, y50, 0.0, 0.0);
-                OPS_addUniaxialMaterial(theMat);
-
-                (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-                // pult is a nodal value for the p-y spring.
-                // It needs to be scaled by element length ito represent a line load
-                (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = pult/eleSize;
-                (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = y50;
-
-                // t-z spring material
-                getTzParam(phi, pileDiameter[pileIdx],  sigV,  eleSize, &tult, &z50);
-
-                if(tult <= 0.0 || z50 <= 0.0) {
-                    qDebug() << "WARNING -- only accepts positive nonzero tult and z50";
-                    qDebug() << "*** iLayer: " << iLayer << "   pile number" << pileIdx+1
-                             << "   depth: " << -zCoord << "   sigV: "  << sigV
-                             << "   diameter: " << pileDiameter[pileIdx] << "   eleSize: " << eleSize;
-                    qDebug() << "*** tult: " << tult << "   z50: " << z50;
-                }
-
-                theMat = new TzSimple1(numNode+ioffset, 0, 2, tult, z50, 0.0);
-                OPS_addUniaxialMaterial(theMat);
-
-                //
-                // create soil spring elements
-                //
-
-                UniaxialMaterial *theMaterials[2];
-                theMaterials[0] = OPS_getUniaxialMaterial(numNode);
-                theMaterials[1] = OPS_getUniaxialMaterial(numNode+ioffset);
-                Element *theEle = new ZeroLength(numNode+ioffset3, 3, numNode, numNode+ioffset, x, y, 2, theMaterials, direction);
-                theDomain.addElement(theEle);
-
-                zCoord += eleSize;
-            }
-            // back to the layer interface
-            zCoord -= 0.5*eleSize;
-
-            //qDebug() << "Layer interface at " << "zCoord: " << zCoord << ", eleSize: " << eleSize;
-
-        } // on to the next layer, working our way up from the bottom
-
-        if (ABS(zCoord) > 1.0e-2) {
-            qDebug() << "ERROR in node generation: surface reached at " << zCoord << endln;
-        }
-        //
-        // add elements above ground
-        //
-
-        if (L1 > 0.0001) {
-            eleSize = L1 / (1.0*numElementsInAir);
-            zCoord = 0.0;
-        }
-        else {
-            eleSize = 999.99;
-            zCoord = 0.0;
-        }
-
-        while (zCoord < (L1 + 1.0e-6)) {
-            numNode += 1;
-
-            nodeTag = numNode+ioffset2;
-
-            //qDebug() << "Node(" << nodeTag << "," << 6 << "," << xOffset[pileIdx] << "," << 0.0 << "," << zCoord << ")";
-
-            Node *theNode = new Node(nodeTag, 6, xOffset[pileIdx], 0., zCoord);  theDomain.addNode(theNode);
-            if (numNode != 1) {
-                SP_Constraint *theSP = 0;
-                theSP = new SP_Constraint(nodeTag, 1, 0., true); theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(nodeTag, 3, 0., true); theDomain.addSP_Constraint(theSP);
-                theSP = new SP_Constraint(nodeTag, 5, 0., true); theDomain.addSP_Constraint(theSP);
-            }
-
-            /*
-            (*locList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = zCoord;
-            (*pultList[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]] = 0.001;
-            (*y50List[pileIdx])[numNode+ioffset2-nodeIDoffset[pileIdx]]  = 0.00001;
-            */
-
-            locList[pileIdx]->append(zCoord);
-            pultList[pileIdx]->append(0.001);
-            y50List[pileIdx]->append(0.00001);
-
-            zCoord += eleSize;
-        }
-
-
-        headNodeList[pileIdx] = {pileIdx, nodeTag, xOffset[pileIdx]};
-
-        //
-        // create pile elements
-        //
-
-        static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
-        CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
-
-        for (int i=0; i<numNodePile[pileIdx]-1; i++) {
-            numElem++;
-            BeamIntegration *theIntegration = new LegendreBeamIntegration();
-            SectionForceDeformation *theSections[3];
-            SectionForceDeformation *theSection = new ElasticSection3d(pileIdx+1, E[pileIdx], A, Iz, Iz, G, J);
-            theSections[0] = theSection;
-            theSections[1] = theSection;
-            theSections[2] = theSection;
-
-            //qDebug() << "DispBeamColumn3d("
-            //         << numElem << ","
-            //         << nodeIDoffset[pileIdx]+i+1 << ","
-            //         << nodeIDoffset[pileIdx]+i+2 << ")";
-
-            Element *theEle = new DispBeamColumn3d(numElem,
-                                                   nodeIDoffset[pileIdx]+i+1,
-                                                   nodeIDoffset[pileIdx]+i+2,
-                                                   3, theSections, *theIntegration, *theTransformation);
-            theDomain.addElement(theEle);
-            //delete theSection;
-            //delete theIntegration;
-        }
-
-        //
-        // set up toe resistance, if requested
-        //
-        if (useToeResistance) {
-
-            // # q-z spring material
-            // # vertical effective stress at pile tip, no water table (depth is embedded pile length)
-            double sigVq  = mSoilLayers[maxLayers[pileIdx]-1].getLayerBottomStress();
-            double phi  = mSoilLayers[maxLayers[pileIdx]-1].getLayerFrictionAng();
-
-            getQzParam(phi, pileDiameter[pileIdx],  sigVq,  gSoil, &qult, &z50q);
-            UniaxialMaterial *theMat = new QzSimple1(1+ioffset, 2, qult, z50q, 0.0, 0.0);
-            OPS_addUniaxialMaterial(theMat);
-
-            ID Onedirection(1);
-            Onedirection[0] = 2;
-
-            // pile toe
-            Element *theEle = new ZeroLength(1+pileIdx+ioffset4, 3, 1, 1+ioffset, x, y, 1, &theMat, Onedirection);
-            theDomain.addElement(theEle);
-        }
-    }
-
-    //
-    // *** construct the pile head ***
-    //
-    if (numPiles > 0) {
-
-        // sort piles by xOffset
-
-        for (int i=0; i<numPiles; i++) {
-            for (int j=0; j<numPiles-i; j++) {
-                if (headNodeList[i].x < headNodeList[j].x) SWAP(headNodeList[i],headNodeList[j]);
-            }
-        }
-
-        // set up transformation and orientation for the pile cap elements
-
-        static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
-        CrdTransf *theTransformation = new LinearCrdTransf3d(1, crdV);
-
-        // define beam element integration and cross sections
-
-        BeamIntegration *theIntegration = new LegendreBeamIntegration();
-        SectionForceDeformation *theSections[3];
-        SectionForceDeformation *theSection = new ElasticSection3d(numPiles+1, 1., EA, EI, EI, 1., GJ);
-        theSections[0] = theSection;
-        theSections[1] = theSection;
-        theSections[2] = theSection;
-
-        int prevNode = -1;
-
-        for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
-
-            // create node for pile head
-            numNode++;
-            int nodeTag = numNode + ioffset5;
-
-            //qDebug() << "Node(" << nodeTag << "," << 6 << "," << headNodeList[pileIdx].x << "," << 0.0 << "," << L1 << ")";
-
-            Node *theNode = new Node(nodeTag, 6, headNodeList[pileIdx].x, 0., L1);  theDomain.addNode(theNode);
-
-            // create single point constraints
-            if (assumeRigidPileHeadConnection) {
-                // constrain spring and pile nodes with equalDOF (identity constraints)
-                static Matrix Chr (6, 6);
-                Chr.Zero();
-                Chr(0,0)=1.0; Chr(1,1)=1.0; Chr(2,2)=1.0; Chr(3,3)=1.0; Chr(4,4)=1.0; Chr(5,5)=1.0;
-                static ID hcDof (6);
-                hcDof(0) = 0; hcDof(1) = 1; hcDof(2) = 2; hcDof(3) = 3; hcDof(4) = 4; hcDof(5) = 5;
-
-                //qDebug() << "MP_Constraint(" << nodeTag << "," << headNodeList[pileIdx].nodeIdx << "," << "Idty(6,6)" << "," << "{0,1,2,3,4,5}" << "," << "{0,1,2,3,4,5}" << ")";
-
-                MP_Constraint *theMP = new MP_Constraint(nodeTag, headNodeList[pileIdx].nodeIdx, Chr, hcDof, hcDof);
-                theDomain.addMP_Constraint(theMP);
-            }
-            else {
-                // constrain spring and pile nodes with equalDOF (identity constraints)
-                static Matrix Chl (5, 5);
-                Chl.Zero();
-                Chl(0,0)=1.0; Chl(1,1)=1.0; Chl(2,2)=1.0; Chl(3,3)=1.0; Chl(4,4)=1.0;
-                static ID hlDof (5);
-                hlDof(0) = 0; hlDof(1) = 1; hlDof(2) = 2; hlDof(3) = 3; hlDof(4) = 5;
-
-                //qDebug() << "MP_Constraint(" << nodeTag << "," << headNodeList[pileIdx].nodeIdx << "," << "Idty(5,5)" << "," << "{0,1,2,3,5}" << "," << "{0,1,2,3,5}" << ")";
-
-                MP_Constraint *theMP = new MP_Constraint(nodeTag, headNodeList[pileIdx].nodeIdx, Chl, hlDof, hlDof);
-                theDomain.addMP_Constraint(theMP);
-            }
-
-            // create beams for pile head
-            if (prevNode > 0) {
-                numElem++;
-
-                //qDebug() << "DispBeamColumn3d(" << numElem << "," << prevNode << "," << numNode << ")";
-
-                Element *theEle = new DispBeamColumn3d(numElem, prevNode, nodeTag,
-                                                       3, theSections, *theIntegration, *theTransformation);
-                theDomain.addElement(theEle);
-            }
-
-            prevNode = nodeTag;
-        }
-    }
-
-    if (numPiles == 1) {
-        /* need extra fixities to prevent singular system matrix */
-        int nodeTag = numNode + ioffset5;
-
-        SP_Constraint *theSP = 0;
-        theSP = new SP_Constraint(nodeTag, 4, 0., true); theDomain.addSP_Constraint(theSP);
-    }
-
-    int numLoadedNode = headNodeList[0].nodeIdx;
-
-    /* *** done with the pile head *** */
-
-    if (numNode != numNodePiles) {
-        qDebug() << "ERROR: " << numNode << " nodes generated but " << numNodePiles << "expected" << endln;
-    }
-
-    //
-    // create load pattern and add loads
-    //
-
-    LinearSeries *theTimeSeries = new LinearSeries(1, 1.0);
-    LoadPattern *theLoadPattern = new LoadPattern(1);
-    theLoadPattern->setTimeSeries(theTimeSeries);
-    static Vector load(6); load.Zero(); load(0) = P;
-    NodalLoad *theLoad = new NodalLoad(0, numLoadedNode, load);
-    theLoadPattern->addNodalLoad(theLoad);
-    theDomain.addLoadPattern(theLoadPattern);
-
-    //
-    // create the analysis
-    //
-
-    AnalysisModel     *theModel = new AnalysisModel();
-    CTestNormDispIncr *theTest = new CTestNormDispIncr(1.0e-3, 20, 0);
-    EquiSolnAlgo      *theSolnAlgo = new NewtonRaphson();
-    StaticIntegrator  *theIntegrator = new LoadControl(0.05, 1, 0.05, 0.05);
-    //ConstraintHandler *theHandler = new TransformationConstraintHandler();
-    ConstraintHandler *theHandler = new PenaltyConstraintHandler(1.0e14, 1.0e14);
-    RCM               *theRCM = new RCM();
-    DOF_Numberer      *theNumberer = new DOF_Numberer(*theRCM);
-    BandGenLinSolver  *theSolver = new BandGenLinLapackSolver();
-    LinearSOE         *theSOE = new BandGenLinSOE(*theSolver);
-
-    StaticAnalysis    theAnalysis(theDomain,
-                                  *theHandler,
-                                  *theNumberer,
-                                  *theModel,
-                                  *theSolnAlgo,
-                                  *theSOE,
-                                  *theIntegrator);
-    theSolnAlgo->setConvergenceTest(theTest);
-
-    //
-    //analyze & get results
-    //
-    theAnalysis.analyze(20);
-    theDomain.calculateNodalReactions(0);
-
     this->updateResultPlots();
+}
 
-
-
-
-
-
-
-    QVector<QVector<double> *> loc;
-    QVector<QVector<double> *> Hdisps;
-    QVector<QVector<double> *> Vdisps;
-    QVector<QVector<double> *> moment;
-    QVector<QVector<double> *> shear;
-    QVector<QVector<double> *> axial;
-    QVector<QVector<double> *> stress;
-
-    for (int i=0; i<numPiles; i++)
-    {
-        loc.append(new QVector<double>(numNodePile[i],0.0));
-        Hdisps.append(new QVector<double>(numNodePile[i],0.0));
-        Vdisps.append(new QVector<double>(numNodePile[i],0.0));
-        moment.append(new QVector<double>(numNodePile[i],0.0));
-        shear.append(new QVector<double>(numNodePile[i],0.0));
-        axial.append(new QVector<double>(numNodePile[i],0.0));
-        stress.append(new QVector<double>(numNodePile[i],0.0));
-    }
-
-    double maxHDisp  = 0.0;
-    double minHDisp  = 0.0;
-    double maxVDisp  = 0.0;
-    double minVDisp  = 0.0;
-    double maxAxial  = 0.0;
-    double minAxial  = 0.0;
-    double maxShear  = 0.0;
-    double minShear  = 0.0;
-    double maxMoment = 0.0;
-    double minMoment = 0.0;
-
-    int pileIdx;
-
-    for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
-
-        for (int i=1; i<=numNodePile[pileIdx]; i++) {
-
-            Node *theNode = theDomain.getNode(i+nodeIDoffset[pileIdx]);
-            const Vector &nodeCoord = theNode->getCrds();
-            (*loc[pileIdx])[i-1] = nodeCoord(2);
-            int iLayer;
-            for (iLayer=0; iLayer<maxLayers[pileIdx]; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
-            (*stress[pileIdx])[i-1] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
-            //if (stress[pileIdx][i-1] > maxStress) maxStress = stress[pileIdx][i-1];
-            //if (stress[pileIdx][i-1] < minStress) minStress = stress[pileIdx][i-1];
-            const Vector &nodeDisp = theNode->getDisp();
-            (*Hdisps[pileIdx])[i-1] = nodeDisp(0);
-            if ((*Hdisps[pileIdx])[i-1] > maxHDisp) maxHDisp = Hdisps[pileIdx]->value(i-1);
-            if ((*Hdisps[pileIdx])[i-1] < minHDisp) minHDisp = Hdisps[pileIdx]->value(i-1);
-            (*Vdisps[pileIdx])[i-1] = nodeDisp(2);
-            if ((*Vdisps[pileIdx])[i-1] > maxVDisp) maxVDisp = Vdisps[pileIdx]->value(i-1);
-            if ((*Vdisps[pileIdx])[i-1] < minVDisp) minVDisp = Vdisps[pileIdx]->value(i-1);
-        }
-    }
-
-    for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
-
-        //qDebug() << "= pile index: " << pileIdx ;
-
-        (*moment[pileIdx])[0] = 0.0;
-        (*shear[pileIdx])[0]  = 0.0;
-        (*axial[pileIdx])[0]  = 0.0;
-
-        for (int i=1; i<numNodePile[pileIdx]; i++) {
-
-            /*
-             *  identify force components
-             *  components identified by *** will be shown in plots
-             *
-             * eleForces[0] ... Px on node 1 == in plane shear force
-             * eleForces[1] ... Py on node 1 == out of plane shear force
-             * eleForces[2] ... Pz on node 1 == axial force
-             * eleForces[3] ... Mx on node 1 == out of plane bending moment
-             * eleForces[4] ... My on node 1 == in plane bending moment
-             * eleForces[5] ... Mz on node 1 == torsion
-             * eleForces[6] ... Px on node 2 == in plane shear force        ***
-             * eleForces[7] ... Py on node 2 == out of plane shear force
-             * eleForces[8] ... Pz on node 2 == axial force                 ***
-             * eleForces[9] ... Mx on node 2 == out of plane bending moment
-             * eleForces[10] .. My on node 2 == in plane bending moment     ***
-             * eleForces[11] .. Mz on node 2 == torsion
-             */
-
-            Element *theEle = theDomain.getElement(i+elemIDoffset[pileIdx]);
-            const Vector &eleForces = theEle->getResistingForce();
-            (*moment[pileIdx])[i] = eleForces(10);
-            if ((*moment[pileIdx])[i] > maxMoment) maxMoment = moment[pileIdx]->value(i);
-            if ((*moment[pileIdx])[i] < minMoment) minMoment = moment[pileIdx]->value(i);
-            (*shear[pileIdx])[i] = eleForces(6);
-            if ((*shear[pileIdx])[i] > maxShear) maxShear = shear[pileIdx]->value(i);
-            if ((*shear[pileIdx])[i] < minShear) minShear = shear[pileIdx]->value(i);
-            (*axial[pileIdx])[i] = eleForces(8);
-            if ((*axial[pileIdx])[i] > maxAxial) maxAxial = axial[pileIdx]->value(i);
-            if ((*axial[pileIdx])[i] < minAxial) minAxial = axial[pileIdx]->value(i);
-        }
-    }
+void MainWindow::updateResultPlots()
+{
+    // this should call the results update from the analysis modeler and the plot methods
 
     //
     // plot results
     //
 
-    //qDebug() << numNodePile[0] << numNodePile[1] << numNodePile[2] ;
-
     // lateral displacements
     if (showDisplacements) {
-        displPlot->plotResults(Hdisps, loc);
+        QList<QVector<QVector<double> *> *> list = pileFEAmodel->getLateralDisplacements();
+        if (list.size() >= 2)
+            displPlot->plotResults(*list[0], *list[1]);
     }
 
     // axial displacements
     if (showPullOut) {
-        pullOutPlot->plotResults(Vdisps, loc);
+        QList<QVector<QVector<double> *> *> list = pileFEAmodel->getAxialDisplacements();
+        if (list.size() >= 2)
+            pullOutPlot->plotResults(*list[0], *list[1]);
     }
 
     // axial
     if (showAxial) {
-        axialPlot->plotResults(axial, loc);
+        QList<QVector<QVector<double> *> *> list = pileFEAmodel->getForce();
+        if (list.size() >= 2)
+            axialPlot->plotResults(*list[0], *list[1]);
     }
 
     // shear
     if (showShear) {
-        shearPlot->plotResults(shear, loc);
+        QList<QVector<QVector<double> *> *> list = pileFEAmodel->getShear();
+        if (list.size() >= 2)
+            shearPlot->plotResults(*list[0], *list[1]);
     }
 
     // moments
     if (showMoments) {
-        momentPlot->plotResults(moment, loc);
+        QList<QVector<QVector<double> *> *> list = pileFEAmodel->getMoment();
+        if (list.size() >= 2)
+            momentPlot->plotResults(*list[0], *list[1]);
     }
 
     // vertical stress
     if (showStress) {
-        stressPlot->plotResults(stress, loc);
+        QList<QVector<QVector<double> *> *> list = pileFEAmodel->getStress();
+        if (list.size() >= 2)
+            stressPlot->plotResults(*list[0], *list[1]);
     }
 
     // p_ultimate
     if (showPultimate) {
-        pultPlot->plotResults(pultList, locList);
+        QList<QVector<QVector<double> *> *> list = pileFEAmodel->getPult();
+        if (list.size() >= 2)
+            pultPlot->plotResults(*list[0], *list[1]);
     }
 
     // y_50
     if (showY50) {
-        y50Plot->plotResults(y50List, locList);
+        QList<QVector<QVector<double> *> *> list = pileFEAmodel->getY50();
+        if (list.size() >= 2)
+            y50Plot->plotResults(*list[0], *list[1]);
     }
-
-    for (int i=0; i<numPiles; i++)
-    {
-        if (loc[i]      != NULL) { delete loc[i];      loc[i]      = NULL; }
-        if (Hdisps[i]   != NULL) { delete Hdisps[i];   Hdisps[i]   = NULL; }
-        if (Vdisps[i]   != NULL) { delete Vdisps[i];   Vdisps[i]   = NULL; }
-        if (moment[i]   != NULL) { delete moment[i];   moment[i]   = NULL; }
-        if (shear[i]    != NULL) { delete shear[i];    shear[i]    = NULL; }
-        if (axial[i]    != NULL) { delete axial[i];    axial[i]    = NULL; }
-        if (stress[i]   != NULL) { delete stress[i];   stress[i]   = NULL; }
-
-        if (locList[i]  != NULL) { delete locList[i];  locList[i]  = NULL; }
-        if (pultList[i] != NULL) { delete pultList[i]; pultList[i] = NULL; }
-        if (y50List[i]  != NULL) { delete y50List[i];  y50List[i]  = NULL; }
-    }
-
-    /*
-     *
-    //
-    // the following lines will become necessary once those vectors become member variables
-    //
-    loc.clear();
-    Hdisps.clear();
-    Vdisps.clear();
-    moment.clear();
-    shear.clear();
-    axial.clear();
-    stress.clear();
-
-    locList.clear();
-    pultList.clear();
-    y50List.clear();
-    *
-    */
-
-}
-
-void MainWindow::updateResultPlots()
-{
-    // this should call the results update from th eanalysis modeler and the plot methods
 }
 
 void MainWindow::fetchSettings()
@@ -1281,9 +540,19 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionExport_to_OpenSees_triggered()
 {
-    DialogFutureFeature *dlg = new DialogFutureFeature();
-    dlg->exec();
-    delete dlg;
+    QString theFolder = QDir::homePath();
+    QString theFilter = "Tcl file (*.tcl)";
+    QFileDialog dlg;
+
+    // "PileGroup.tcl"
+
+    QString fileName = dlg.getSaveFileName(this, "Save File", theFolder, theFilter);
+
+    if (fileName != "")
+    {
+        //pileFEAmodel->dumpDomain("domainDump.tcl");
+        pileFEAmodel->writeFEMinput(fileName);
+    }
 }
 
 void MainWindow::on_actionReset_triggered()
@@ -1741,22 +1010,30 @@ void MainWindow::updateSystemPlot()
     //
     // update the load control data
     //
+    double pltSurfaceDisp    = 0.0;
+    double HPush  = 0.0;
+    double VPush  = 0.0;
+    double FHorz  = 0.0;
+    double FVert  = 0.0;
+    double Moment = 0.0;
+
     switch (loadControlType) {
     case LoadControlType::ForceControl:
-        systemPlot->updateLoad(P, PV, PMom);
+        FHorz  = P;
+        FVert  = PV;
+        Moment = PMom;
         break;
     case LoadControlType::PushOver:
-        systemPlot->updateDisplacement(HDisp, VDisp);
+        HPush = HDisp;
+        VPush = VDisp;
         break;
     case LoadControlType::SoilMotion:
-        QVector<double> profile;
-        profile.append(surfaceDisp);
-        profile.append(percentage12);
-        profile.append(percentage23);
-        profile.append(percentageBase);
-        systemPlot->updateDispProfile(profile);
+        pltSurfaceDisp = surfaceDisp;
         break;
     }
+    systemPlot->updateLoad(FHorz, FVert, Moment);
+    systemPlot->updateDisplacement(HPush, VPush);
+    systemPlot->updateDispProfile(pltSurfaceDisp, percentage12, percentage23, percentageBase);
 
     //
     // refresh the plot
@@ -1825,8 +1102,6 @@ bool MainWindow::ReadFile(QString s)
 {
     /* identify filename and location for loading */
 
-    //QString filename = "PileGroupTool.json";
-
     QString theFolder = QDir::homePath();
     QString theFilter = "Json file (*.json)";
     QFileDialog dlg;
@@ -1846,8 +1121,6 @@ bool MainWindow::ReadFile(QString s)
 
     QString theFile = loadFile.readAll();
     loadFile.close();
-
-    //qWarning() << theFile;
 
     bool fileTypeError = false;
 
@@ -2167,6 +1440,13 @@ void MainWindow::replyFinished(QNetworkReply *pReply)
 void MainWindow::on_forceTypeSelector_activated(int index)
 {
     ui->loadTypesStack->setCurrentIndex(index);
+
+    if (index == 0) { loadControlType = LoadControlType::ForceControl; }
+    if (index == 1) { loadControlType = LoadControlType::PushOver;     }
+    if (index == 2) { loadControlType = LoadControlType::SoilMotion;   }
+
+    systemPlot->setLoadType(loadControlType);
+    pileFEAmodel->setLoadType(loadControlType);
 }
 
 
@@ -2176,7 +1456,7 @@ void MainWindow::on_appliedHorizontalForce_editingFinished()
 {
     P = ui->appliedHorizontalForce->value();
 
-    int sliderPosition = nearbyint(100.*P/MAX_FORCE);
+    int sliderPosition = nearbyint(100.*P/MAX_H_FORCE);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -2190,7 +1470,7 @@ void MainWindow::on_horizontalForceSlider_valueChanged(int value)
     // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
     sliderRatio = double(value)/100.0;
 
-    P = MAX_FORCE * sliderRatio;
+    P = MAX_H_FORCE * sliderRatio;
 
     ui->appliedHorizontalForce->setValue(P);
 
@@ -2202,7 +1482,7 @@ void MainWindow::on_appliedVerticalForce_editingFinished()
 {
     PV = ui->appliedHorizontalForce->value();
 
-    int sliderPosition = nearbyint(100.*PV/MAX_FORCE);
+    int sliderPosition = nearbyint(100.*PV/MAX_V_FORCE);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -2216,7 +1496,7 @@ void MainWindow::on_verticalForceSlider_valueChanged(int value)
     // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
     sliderRatio = double(value)/100.0;
 
-    PV = MAX_FORCE * sliderRatio;
+    PV = MAX_V_FORCE * sliderRatio;
 
     ui->appliedVerticalForce->setValue(PV);
 
@@ -2276,6 +1556,8 @@ void MainWindow::on_pushoverDisplacementSlider_valueChanged(int value)
 
     ui->pushoverDisplacement->setValue(HDisp);
 
+    systemPlot->updateDisplacement(HDisp, VDisp);
+
     this->doAnalysis();
     this->updateSystemPlot();
 }
@@ -2302,14 +1584,11 @@ void MainWindow::on_pulloutDisplacementSlider_valueChanged(int value)
 
     ui->pulloutDisplacement->setValue(VDisp);
 
+    systemPlot->updateDisplacement(HDisp, VDisp);
+
     this->doAnalysis();
     this->updateSystemPlot();
 }
-
-
-
-
-
 
 void MainWindow::on_surfaceDisplacement_editingFinished()
 {
@@ -2333,15 +1612,17 @@ void MainWindow::on_surfaceDisplacementSlider_valueChanged(int value)
 
     ui->surfaceDisplacement->setValue(surfaceDisp);
 
+    systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
+
     this->doAnalysis();
     this->updateSystemPlot();
 }
 
 void MainWindow::on_Interface12_editingFinished()
 {
-    percentage12 = ui->Interface12->value();
+    percentage12 = ui->Interface12->value()/100.00;
 
-    int sliderPosition = nearbyint(percentage12);
+    int sliderPosition = nearbyint(percentage12*100.0);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -2357,7 +1638,9 @@ void MainWindow::on_Interface12Slider_valueChanged(int value)
 
     percentage12 = sliderRatio;
 
-    ui->Interface12->setValue(percentage12);
+    ui->Interface12->setValue(percentage12*100.0);
+
+    systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
 
     this->doAnalysis();
     this->updateSystemPlot();
@@ -2365,9 +1648,9 @@ void MainWindow::on_Interface12Slider_valueChanged(int value)
 
 void MainWindow::on_Interface23_editingFinished()
 {
-    percentage23 = ui->Interface23->value();
+    percentage23 = ui->Interface23->value()/100.0;
 
-    int sliderPosition = nearbyint(percentage23);
+    int sliderPosition = nearbyint(percentage23*100.0);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -2383,7 +1666,9 @@ void MainWindow::on_Interface23Slider_valueChanged(int value)
 
     percentage23 = sliderRatio;
 
-    ui->Interface23->setValue(percentage23);
+    ui->Interface23->setValue(percentage23*100.0);
+
+    systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
 
     this->doAnalysis();
     this->updateSystemPlot();
@@ -2391,9 +1676,9 @@ void MainWindow::on_Interface23Slider_valueChanged(int value)
 
 void MainWindow::on_BaseDisplacement_editingFinished()
 {
-    percentageBase = ui->BaseDisplacement->value();
+    percentageBase = ui->BaseDisplacement->value()/100.0;
 
-    int sliderPosition = nearbyint(percentageBase);
+    int sliderPosition = nearbyint(percentageBase*100.0);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -2409,7 +1694,9 @@ void MainWindow::on_BaseDisplacementSlider_valueChanged(int value)
 
     percentageBase = sliderRatio;
 
-    ui->BaseDisplacement->setValue(percentageBase);
+    ui->BaseDisplacement->setValue(percentageBase*100.0);
+
+    systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
 
     this->doAnalysis();
     this->updateSystemPlot();

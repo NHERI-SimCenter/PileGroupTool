@@ -1088,6 +1088,14 @@ OPS_Stream &operator<<(OPS_Stream &s, const Vector &V)
 
 }
 
+QTextStream &operator<<(QTextStream &s, const Vector &V)
+{
+    int i;
+    for (i=0; i<V.Size(); i++)
+        s << V(i) << " ";
+    return s;
+}
+
 // friend istream &operator>>(istream &s, Vector &V)
 //	A function is defined to allow user to input the data into a Vector which has already
 //	been constructed with data, i.e. Vector(int) or Vector(const Vector &) constructors.
