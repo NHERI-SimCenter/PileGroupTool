@@ -271,12 +271,11 @@ INCLUDEPATH += "%MKLROOT%"\include
 # this is specified in C++ -> Code Generation -> RunTime Library
 # this is because Qt must be built with this option as they have memory issues if built /MT
 
-LIBS += -L"C:\Program Files (x86)\IntelSWTools\compilers_and_libraries_2017.4.210\windows\mkl\lib\intel64_win" mkl_intel_lp64.lib mkl_sequential.lib mkl_core.lib
-LIBS += -L".\..\QtPile\lib" lapack.lib blas.lib
+LIBS += -L"C:\Program Files (x86)\IntelSWTools\compilers_and_libraries\windows\mkl\lib\intel64" mkl_intel_lp64.lib mkl_sequential.lib mkl_core.lib
+LIBS += -L"C:\Program Files (x86)\IntelSWTools\compilers_and_libraries\windows\mkl\lib\intel64" mkl_lapack95_lp64.lib mkl_blas95_lp64.lib
 
 DEFINES += -D_FORTRAN -D_RELIABILITY -D_TCL85
 QMAKE_CXXFLAGS += /GS /W3 /Gy   /Zi /Gm- /O2 /Ob1 /fp:precise /errorReport:prompt /GF /WX- /Zc:forScope /Gd /EHsc /MD
-
 
 } else {
 
