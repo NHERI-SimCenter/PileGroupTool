@@ -1148,6 +1148,8 @@ void PileFEAmodeler::buildLoad()
     theLoadPattern = new LoadPattern(1);
     theLoadPattern->setTimeSeries(theTimeSeries);
 
+    static Vector load(6);
+
     switch (loadControlType)
     {
     case LoadControlType::ForceControl:
@@ -1160,7 +1162,6 @@ void PileFEAmodeler::buildLoad()
         }
 
         // numLoadedNode is the ID of the reference node that will be pushed
-        static Vector load(6);
         load.Zero();
         load(0) = P;
         load(2) = PV;
