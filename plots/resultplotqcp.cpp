@@ -18,8 +18,8 @@ ResultPlotQCP::~ResultPlotQCP()
     delete plot;
 }
 
-void ResultPlotQCP::plotResults(QVector<QVector<double> *> &x,
-                                QVector<QVector<double> *> &y)
+void ResultPlotQCP::plotResults(QVector<QVector<double> *> &y,
+                                QVector<QVector<double> *> &x)
 {
     /*
      * MAKE SURE THE LENGTH OF THE VECTORS IN ALL PLOTS MATCHES THE ACTUAL PILE

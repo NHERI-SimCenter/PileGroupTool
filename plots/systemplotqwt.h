@@ -8,6 +8,15 @@
 class QwtPlot;
 class QwtPlotGrid;
 class QwtPlotItem;
+class QwtPlotShapeItem;
+
+enum class PLType { PILE, SOIL, WATER, CAP, LOAD, OTHER, NONE };
+
+struct PLOTOBJECT {
+    QwtPlotItem *itemPtr;   // pointer to the PlotItem
+    PLType       type;      // object type identifier
+    int          index;     // pile index OR layer index
+};
 
 namespace Ui {
 class SystemPlotQwt;
@@ -23,6 +32,13 @@ public:
 
     void refresh();
 
+    PLOTOBJECT itemAt( const QPoint& pos ) const;
+
+
+public slots:
+    void on_picker_appended (const QPoint &pos);
+
+
 private:
 
 signals:
@@ -34,7 +50,7 @@ protected:
     QwtPlot *plot;
     QwtPlotGrid *grid;
 
-    QList<QwtPlotItem *> plotItemList;
+    QList<PLOTOBJECT> plotItemList;
 
 };
 

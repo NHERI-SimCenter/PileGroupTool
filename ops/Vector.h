@@ -32,6 +32,7 @@
 #define Vector_h 
 
 #include <OPS_Globals.h>
+#include <QTextStream>
 
 #define VECTOR_VERY_LARGE_VALUE 1.0e200
 
@@ -104,6 +105,7 @@ class Vector
     int  Extract (const Vector &V, int init_row, double fact = 1.0); 
   
     friend OPS_Stream &operator<<(OPS_Stream &s, const Vector &V);
+    friend QTextStream &operator<<(QTextStream &s, const Vector &V);
     // friend istream &operator>>(istream &s, Vector &V);    
     friend Vector operator*(double a, const Vector &V);
     

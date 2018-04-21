@@ -685,6 +685,9 @@
           <string>Load Options</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_5">
+          <property name="spacing">
+           <number>2</number>
+          </property>
           <property name="leftMargin">
            <number>0</number>
           </property>
@@ -698,35 +701,59 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QLabel" name="label_20">
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
+           <widget class="QFrame" name="loadSelectionFrame">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
             </property>
-            <property name="text">
-             <string>Load control</string>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="forceTypeSelector">
-            <item>
-             <property name="text">
-              <string>Force control</string>
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <property name="leftMargin">
+              <number>6</number>
              </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Push-over analysis</string>
+             <property name="topMargin">
+              <number>6</number>
              </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Soil motion profile</string>
+             <property name="rightMargin">
+              <number>6</number>
              </property>
-            </item>
+             <property name="bottomMargin">
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_20">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Load control</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="forceTypeSelector">
+               <item>
+                <property name="text">
+                 <string>Force control</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Push-over analysis</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Soil motion profile</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
           <item>
@@ -827,6 +854,12 @@
                  </item>
                  <item row="5" column="1">
                   <widget class="QSlider" name="verticalForceSlider">
+                   <property name="minimum">
+                    <number>-100</number>
+                   </property>
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -847,6 +880,15 @@
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
+                   <property name="minimum">
+                    <double>-10000.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>100000.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>100.000000000000000</double>
+                   </property>
                   </widget>
                  </item>
                  <item row="6" column="2">
@@ -863,6 +905,15 @@
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
+                   </property>
+                   <property name="minimum">
+                    <double>-5000.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>5000.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>50.000000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -900,6 +951,12 @@
                  </item>
                  <item row="7" column="1">
                   <widget class="QSlider" name="momentSlider">
+                   <property name="minimum">
+                    <number>-100</number>
+                   </property>
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -962,7 +1019,17 @@ displacement</string>
                   </widget>
                  </item>
                  <item row="1" column="2">
-                  <widget class="QDoubleSpinBox" name="pushoverDisplacement"/>
+                  <widget class="QDoubleSpinBox" name="pushoverDisplacement">
+                   <property name="minimum">
+                    <double>-1.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>1.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
+                   </property>
+                  </widget>
                  </item>
                  <item row="4" column="2">
                   <widget class="QDoubleSpinBox" name="pulloutDisplacement">
@@ -971,6 +1038,12 @@ displacement</string>
                      <horstretch>0</horstretch>
                      <verstretch>2</verstretch>
                     </sizepolicy>
+                   </property>
+                   <property name="minimum">
+                    <double>-1.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>1.000000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -984,6 +1057,12 @@ displacement</string>
                  </item>
                  <item row="2" column="2" colspan="2">
                   <widget class="QSlider" name="pushoverDisplacementSlider">
+                   <property name="minimum">
+                    <number>-100</number>
+                   </property>
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -998,6 +1077,12 @@ displacement</string>
                  </item>
                  <item row="5" column="2" colspan="2">
                   <widget class="QSlider" name="pulloutDisplacementSlider">
+                   <property name="minimum">
+                    <number>-100</number>
+                   </property>
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -1023,7 +1108,7 @@ displacement</string>
                <number>0</number>
               </property>
               <item row="0" column="0">
-               <widget class="QFrame" name="frame">
+               <widget class="QFrame" name="soilMotionFrame">
                 <property name="frameShape">
                  <enum>QFrame::StyledPanel</enum>
                 </property>
@@ -1056,7 +1141,14 @@ displacement:</string>
                   </widget>
                  </item>
                  <item row="4" column="1">
-                  <widget class="QSpinBox" name="Interface23"/>
+                  <widget class="QSpinBox" name="Interface23">
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>5</number>
+                   </property>
+                  </widget>
                  </item>
                  <item row="2" column="0">
                   <widget class="QLabel" name="label_Interface12">
@@ -1074,16 +1166,51 @@ Layers 1 &amp; 2:</string>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
+                   <property name="minimum">
+                    <double>-1.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>1.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
+                   </property>
                   </widget>
                  </item>
                  <item row="2" column="1">
-                  <widget class="QSpinBox" name="Interface12"/>
+                  <widget class="QSpinBox" name="Interface12">
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>5</number>
+                   </property>
+                   <property name="value">
+                    <number>100</number>
+                   </property>
+                  </widget>
                  </item>
                  <item row="6" column="1">
-                  <widget class="QSpinBox" name="BaseDisplacement"/>
+                  <widget class="QSpinBox" name="BaseDisplacement">
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>5</number>
+                   </property>
+                  </widget>
                  </item>
                  <item row="3" column="1" colspan="2">
                   <widget class="QSlider" name="Interface12Slider">
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>5</number>
+                   </property>
+                   <property name="value">
+                    <number>100</number>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -1105,6 +1232,12 @@ Layers 1 &amp; 2:</string>
                  </item>
                  <item row="1" column="1" colspan="2">
                   <widget class="QSlider" name="surfaceDisplacementSlider">
+                   <property name="minimum">
+                    <number>-100</number>
+                   </property>
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -1119,6 +1252,12 @@ Layers 1 &amp; 2:</string>
                  </item>
                  <item row="5" column="1" colspan="2">
                   <widget class="QSlider" name="Interface23Slider">
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>5</number>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -1126,6 +1265,12 @@ Layers 1 &amp; 2:</string>
                  </item>
                  <item row="7" column="1" colspan="2">
                   <widget class="QSlider" name="BaseDisplacementSlider">
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>5</number>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
