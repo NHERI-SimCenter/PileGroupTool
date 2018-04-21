@@ -540,17 +540,19 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionExport_to_OpenSees_triggered()
 {
-    // TODO:
-    // ... add a file selector
+    QString theFolder = QDir::homePath();
+    QString theFilter = "Tcl file (*.tcl)";
+    QFileDialog dlg;
 
-    //DialogFutureFeature *dlg = new DialogFutureFeature();
-    //dlg->exec();
-    //delete dlg;
+    // "PileGroup.tcl"
 
-    QString filename = "testfile.tcl";
+    QString fileName = dlg.getSaveFileName(this, "Save File", theFolder, theFilter);
 
-    pileFEAmodel->dumpDomain("domainDump.tcl");
-    pileFEAmodel->writeFEMinput(filename);
+    if (fileName != "")
+    {
+        //pileFEAmodel->dumpDomain("domainDump.tcl");
+        pileFEAmodel->writeFEMinput(fileName);
+    }
 }
 
 void MainWindow::on_actionReset_triggered()
@@ -1100,8 +1102,6 @@ bool MainWindow::ReadFile(QString s)
 {
     /* identify filename and location for loading */
 
-    //QString filename = "PileGroupTool.json";
-
     QString theFolder = QDir::homePath();
     QString theFilter = "Json file (*.json)";
     QFileDialog dlg;
@@ -1121,8 +1121,6 @@ bool MainWindow::ReadFile(QString s)
 
     QString theFile = loadFile.readAll();
     loadFile.close();
-
-    //qWarning() << theFile;
 
     bool fileTypeError = false;
 

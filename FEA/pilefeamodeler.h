@@ -169,7 +169,6 @@ protected:
     PILE_FEA_INFO pileInfo[MAXPILES];
 
     int numNodePiles;
-    int maxID = 0;
 
     // pile head parameters
     double EI = 1.;
