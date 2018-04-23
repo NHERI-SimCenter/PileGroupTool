@@ -144,16 +144,6 @@ void PileFEAmodeler::setDefaultParameters(void)
     qult = 9999.;
     z50q = 1.0;
 
-    // viewer settings
-    showDisplacements = true;
-    showPullOut       = true;
-    showMoments       = true;
-    showShear         = true;
-    showAxial         = true;
-    showStress        = true;
-    showPultimate     = true;
-    showY50           = true;
-
     // meshing parameters
     minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
     maxElementsPerLayer = MAX_ELEMENTS_PER_LAYER;
