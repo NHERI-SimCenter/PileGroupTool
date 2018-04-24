@@ -1415,18 +1415,12 @@ int PileFEAmodeler::extractPlotData()
             int iLayer;
             for (iLayer=0; iLayer<pileInfo[pileIdx].maxLayers; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
             (*StressList[pileIdx])[i] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
-            //if (stress[pileIdx][i] > maxStress) maxStress = stress[pileIdx][i];
-            //if (stress[pileIdx][i] < minStress) minStress = stress[pileIdx][i];
 
             const Vector &nodeDisp = theNode->getDisp();
 
             (*lateralDispList[pileIdx])[i] = nodeDisp(0);
-            //if ((*lateralDispList[pileIdx])[i] > maxHDisp) maxHDisp = (*lateralDispList[pileIdx])[i];
-            //if ((*lateralDispList[pileIdx])[i] < minHDisp) minHDisp = (*lateralDispList[pileIdx])[i];
 
             (*axialDispList[pileIdx])[i] = nodeDisp(2);
-            //if ((*axialDispList[pileIdx])[i] > maxVDisp) maxVDisp = (*axialDispList[pileIdx])[i];
-            //if ((*axialDispList[pileIdx])[i] < minVDisp) minVDisp = (*axialDispList[pileIdx])[i];
         }
 
         /* during initialization, the list can contain zero elements and the next 2 lines will crash */
@@ -1458,16 +1452,10 @@ int PileFEAmodeler::extractPlotData()
             const Vector &eleForces = theEle->getResistingForce();
 
             (*MomentList[pileIdx])[i] = eleForces(10);
-            //if ((*MomentList[pileIdx])[i] > maxMoment) maxMoment = (*MomentList[pileIdx])[i];
-            //if ((*MomentList[pileIdx])[i] < minMoment) minMoment = (*MomentList[pileIdx])[i];
 
             (*ShearList[pileIdx])[i] = eleForces(6);
-            //if ((*ShearList[pileIdx])[i] > maxShear) maxShear = (*ShearList[pileIdx])[i];
-            //if ((*ShearList[pileIdx])[i] < minShear) minShear = (*ShearList[pileIdx])[i];
 
             (*AxialList[pileIdx])[i] = eleForces(8);
-            //if ((*AxialList[pileIdx])[i] > maxAxial) maxAxial = (*AxialList[pileIdx])[i];
-            //if ((*AxialList[pileIdx])[i] < minAxial) minAxial = (*AxialList[pileIdx])[i];
         }
     }
 
