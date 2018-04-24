@@ -1150,6 +1150,8 @@ bool MainWindow::ReadFile(QString s)
     fileTypeError = true;
     if (version == "1.0")   fileTypeError = false;
     if (version == "1.99")  fileTypeError = false;
+    if (version == "1.99.1")  fileTypeError = false;
+    if (version == "1.99.2")  fileTypeError = false;
     if (version == "2.0")   fileTypeError = false;
 
     if (fileTypeError) {
