@@ -469,11 +469,20 @@ void PileFEAmodeler::buildMesh()
 
     /* ******** done with sizing and adjustments ******** */
 
-    //this->updateSystemPlot();
+    locList.clear();
+    pultList.clear();
+    y50List.clear();
+    tultList.clear();
+    z50List.clear();
 
-    QVector<QVector<double> > locList(MAXPILES, QVector<double>(numNodePiles,0.0));  // need these as member variables
-    QVector<QVector<double> > pultList(MAXPILES, QVector<double>(numNodePiles,0.0)); // need these as member variables
-    QVector<QVector<double> > y50List(MAXPILES, QVector<double>(numNodePiles,0.0));  // need these as member variables
+    for (int pileIdx=0; pileIdx<MAXPILES; pileIdx++)
+    {
+        locList.append(new QVector<double>(pileInfo[pileIdx].numNodePile));
+        pultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile));
+        y50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile));
+        tultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile));
+        z50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile));
+    }
 
     int ioffset  = numNodePiles;              // for p-y spring nodes
     int ioffset2 = ioffset + numNodePiles;    // for pile nodes
@@ -668,9 +677,11 @@ void PileFEAmodeler::buildMesh()
             // hold the pile through friction only: t-z springs will do the job
         }
 
-        locList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = zCoord;
-        pultList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset] = 0.001;
-        y50List[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = 0.00001;
+        (*locList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = zCoord;
+        (*pultList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1] = 0.001;
+        (*y50List[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = 0.00001;
+        (*tultList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1] = 0.001;
+        (*z50List[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = 0.00001;
 
         //
         // work the way up layer by layer
@@ -809,11 +820,13 @@ void PileFEAmodeler::buildMesh()
                     out << "uniaxialMaterial PySimple1 " << numNode << " 2 " << pult << " " << y50 << " 0.0" << " ;" << endl;
                 }
 
-                locList[pileIdx][numNode+ioffset2- pileInfo[pileIdx].nodeIDoffset]  = zCoord;
+                (*locList[pileIdx])[numNode+ioffset2- pileInfo[pileIdx].nodeIDoffset-1]  = zCoord;
                 // pult is a nodal value for the p-y spring.
                 // It needs to be scaled by element length ito represent a line load
-                pultList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset] = pult/eleSize;
-                y50List[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = y50;
+                (*pultList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1] = pult/eleSize;
+                (*y50List[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = y50;
+                (*tultList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1] = tult/eleSize;
+                (*z50List[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = z50;
 
                 // t-z spring material
                 getTzParam(phi, pileInfo[pileIdx].pileDiameter,  sigV,  eleSize, &tult, &z50);
@@ -909,9 +922,11 @@ void PileFEAmodeler::buildMesh()
 
             }
 
-            locList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = zCoord;
-            pultList[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset] = 0.001;
-            y50List[pileIdx][numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset]  = 0.00001;
+            (*locList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = zCoord;
+            (*pultList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1] = 0.001;
+            (*y50List[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = 0.00001;
+            (*tultList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1] = 0.001;
+            (*z50List[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = 0.00001;
 
             zCoord += eleSize;
         }
@@ -1346,17 +1361,17 @@ void PileFEAmodeler::clearPlotBuffers()
     foreach (QVector<double> *ptr, StressList) { if (ptr != NULL) delete ptr; }
     StressList.clear();
 
-    foreach (QVector<double> *ptr, pultList) { if (ptr != NULL) delete ptr; }
-    pultList.clear();
+    //foreach (QVector<double> *ptr, pultList) { if (ptr != NULL) delete ptr; }
+    //pultList.clear();
 
-    foreach (QVector<double> *ptr, y50List) { if (ptr != NULL) delete ptr; }
-    y50List.clear();
+    //foreach (QVector<double> *ptr, y50List) { if (ptr != NULL) delete ptr; }
+    //y50List.clear();
 
-    foreach (QVector<double> *ptr, tultList) { if (ptr != NULL) delete ptr; }
-    tultList.clear();
+    //foreach (QVector<double> *ptr, tultList) { if (ptr != NULL) delete ptr; }
+    //tultList.clear();
 
-    foreach (QVector<double> *ptr, z50List) { if (ptr != NULL) delete ptr; }
-    z50List.clear();
+    //foreach (QVector<double> *ptr, z50List) { if (ptr != NULL) delete ptr; }
+    //z50List.clear();
 }
 
 int PileFEAmodeler::extractPlotData()
@@ -1368,19 +1383,6 @@ int PileFEAmodeler::extractPlotData()
     if (!CHECK_STATE(AnalysisState::solutionValid)) return -1;
 
     this->clearPlotBuffers();
-
-    /*
-    double maxHDisp  = 0.0;
-    double minHDisp  = 0.0;
-    double maxVDisp  = 0.0;
-    double minVDisp  = 0.0;
-    double maxShear  = 0.0;
-    double minShear  = 0.0;
-    double maxAxial  = 0.0;
-    double minAxial  = 0.0;
-    double maxMoment = 0.0;
-    double minMoment = 0.0;
-    */
 
     int pileIdx;
 
@@ -1398,10 +1400,10 @@ int PileFEAmodeler::extractPlotData()
 
         StressList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
 
-        pultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        y50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
-        tultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        z50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
+        //pultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        //y50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
+        //tultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        //z50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
 
         //
         // collect nodal results
