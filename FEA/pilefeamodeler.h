@@ -182,6 +182,7 @@ protected:
     QVector<QVector<double> *> ShearList;
     QVector<QVector<double> *> AxialList;
     QVector<QVector<double> *> StressList;
+
     QVector<QVector<double> *> pultList;
     QVector<QVector<double> *> y50List;
     QVector<QVector<double> *> tultList;
