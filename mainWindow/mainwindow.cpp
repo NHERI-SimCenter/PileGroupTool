@@ -58,6 +58,8 @@ MainWindow::MainWindow(QWidget *parent) :
         stressPlot  = new ResultPlotQwt(ui->stressTab);
         pultPlot    = new ResultPlotQwt(ui->pultTab);
         y50Plot     = new ResultPlotQwt(ui->y50Tab);
+        tultPlot    = new ResultPlotQwt(ui->tultTab);
+        z50Plot     = new ResultPlotQwt(ui->z50Tab);
     }
     else
     {
@@ -71,6 +73,8 @@ MainWindow::MainWindow(QWidget *parent) :
         stressPlot  = new ResultPlotQCP(ui->stressTab);
         pultPlot    = new ResultPlotQCP(ui->pultTab);
         y50Plot     = new ResultPlotQCP(ui->y50Tab);
+        tultPlot    = new ResultPlotQCP(ui->tultTab);
+        z50Plot     = new ResultPlotQCP(ui->z50Tab);
     }
 
     //
@@ -87,6 +91,8 @@ MainWindow::MainWindow(QWidget *parent) :
     lyt = ui->stressTab->layout();  lyt->addWidget(stressPlot);
     lyt = ui->pultTab->layout();    lyt->addWidget(pultPlot);
     lyt = ui->y50Tab->layout();     lyt->addWidget(y50Plot);
+    lyt = ui->tultTab->layout();    lyt->addWidget(tultPlot);
+    lyt = ui->z50Tab->layout();     lyt->addWidget(z50Plot);
 
     ui->tabWidget->setCurrentWidget(ui->dispTab);
 
@@ -382,6 +388,20 @@ void MainWindow::updateResultPlots()
         if (list.size() >= 2)
             y50Plot->plotResults(*list[0], *list[1]);
     }
+
+    // t_ultimate
+    if (showTultimate) {
+        QList<QVector<QVector<double> *> *> list = pileFEAmodel->getTult();
+        if (list.size() >= 2)
+            tultPlot->plotResults(*list[0], *list[1]);
+    }
+
+    // z_50
+    if (showZ50) {
+        QList<QVector<QVector<double> *> *> list = pileFEAmodel->getZ50();
+        if (list.size() >= 2)
+            z50Plot->plotResults(*list[0], *list[1]);
+    }
 }
 
 void MainWindow::fetchSettings()
@@ -405,6 +425,8 @@ void MainWindow::fetchSettings()
         showStress        = settings->value("stress",1).toBool();
         showPultimate     = settings->value("pult",1).toBool();
         showY50           = settings->value("compliance",1).toBool();
+        showTultimate     = settings->value("tult",1).toBool();
+        showZ50           = settings->value("Zcompliance",1).toBool();
     settings->endGroup();
 
     // meshing parameters
@@ -496,6 +518,12 @@ void MainWindow::updateUI()
     if (!showY50 && ui->tabWidget->indexOf(ui->y50Tab)>=0 ) {
         ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->y50Tab));
     }
+    if (!showTultimate && ui->tabWidget->indexOf(ui->tultTab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->tultTab));
+    }
+    if (!showZ50 && ui->tabWidget->indexOf(ui->z50Tab)>=0 ) {
+        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->z50Tab));
+    }
 
     int numTabs = ui->tabWidget->count();
 
@@ -522,6 +550,12 @@ void MainWindow::updateUI()
     }
     if (showY50 && ui->tabWidget->indexOf(ui->y50Tab) < 0) {
         ui->tabWidget->addTab(ui->y50Tab,"y50");
+    }
+    if (showTultimate && ui->tabWidget->indexOf(ui->tultTab) < 0 ) {
+        ui->tabWidget->addTab(ui->tultTab,"t_ult");
+    }
+    if (showZ50 && ui->tabWidget->indexOf(ui->z50Tab) < 0) {
+        ui->tabWidget->addTab(ui->z50Tab,"z50");
     }
 }
 

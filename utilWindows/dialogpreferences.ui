@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
@@ -267,6 +267,20 @@ next time you run the PileGroupTool.
         <widget class="QCheckBox" name="chkBx_y50">
          <property name="text">
           <string>compliance (y50) graph</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chkBx_tu">
+         <property name="text">
+          <string>t ultimate graph</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chkBx_z50">
+         <property name="text">
+          <string>compliance (z50) graph</string>
          </property>
         </widget>
        </item>

@@ -39,6 +39,8 @@ DialogPreferences::DialogPreferences(QWidget *parent, QSettings *settings) :
         DLGshowStress        = DLGsettings->value("stress",1).toInt();
         DLGshowPultimate     = DLGsettings->value("pult",1).toInt();
         DLGshowY50           = DLGsettings->value("compliance",1).toInt();
+        DLGshowTultimate     = DLGsettings->value("tult",1).toInt();
+        DLGshowZ50           = DLGsettings->value("Zcompliance",1).toInt();
     DLGsettings->endGroup();
 
     // meshing parameters
@@ -79,6 +81,8 @@ void DialogPreferences::InitGUI()
     ui->chkBx_stress->setCheckState(DLGshowStress!=0?Qt::Checked:Qt::Unchecked);
     ui->chkBx_pu->setCheckState(DLGshowPultimate!=0?Qt::Checked:Qt::Unchecked);
     ui->chkBx_y50->setCheckState(DLGshowY50!=0?Qt::Checked:Qt::Unchecked);
+    ui->chkBx_tu->setCheckState(DLGshowTultimate!=0?Qt::Checked:Qt::Unchecked);
+    ui->chkBx_z50->setCheckState(DLGshowZ50!=0?Qt::Checked:Qt::Unchecked);
 
     ui->elementsAboveGround->setValue(DLGnumElementsInAir);
     ui->minElementsPerLayer->setValue(DLGminElementsPerLayer);
@@ -110,6 +114,8 @@ void DialogPreferences::on_buttonBox_clicked(QAbstractButton *button)
         DLGshowStress        = 1;
         DLGshowPultimate     = 1;
         DLGshowY50           = 1;
+        DLGshowTultimate     = 1;
+        DLGshowZ50           = 1;
 
         DLGsettings->setValue("displacements",DLGshowDisplacements);
         DLGsettings->setValue("pullout",DLGshowPullOut);
@@ -119,6 +125,8 @@ void DialogPreferences::on_buttonBox_clicked(QAbstractButton *button)
         DLGsettings->setValue("stress",DLGshowStress);
         DLGsettings->setValue("pult",DLGshowPultimate);
         DLGsettings->setValue("compliance",DLGshowY50);
+        DLGsettings->setValue("tult",DLGshowTultimate);
+        DLGsettings->setValue("Zcompliance",DLGshowZ50);
     DLGsettings->endGroup();
 
     // meshing parameters
@@ -197,6 +205,22 @@ void DialogPreferences::on_chkBx_y50_stateChanged(int arg1)
     DLGshowY50 = arg1==Qt::Checked?1:0;
     DLGsettings->beginGroup("viewer");
         DLGsettings->setValue("compliance",DLGshowY50);
+    DLGsettings->endGroup();
+}
+
+void DialogPreferences::on_chkBx_tu_stateChanged(int arg1)
+{
+    DLGshowTultimate = arg1==Qt::Checked?1:0;
+    DLGsettings->beginGroup("viewer");
+        DLGsettings->setValue("tult",DLGshowTultimate);
+    DLGsettings->endGroup();
+}
+
+void DialogPreferences::on_chkBx_z50_stateChanged(int arg1)
+{
+    DLGshowZ50 = arg1==Qt::Checked?1:0;
+    DLGsettings->beginGroup("viewer");
+        DLGsettings->setValue("Zcompliance",DLGshowZ50);
     DLGsettings->endGroup();
 }
 

@@ -198,6 +198,8 @@ private:
     bool showStress;
     bool showPultimate;
     bool showY50;
+    bool showTultimate;
+    bool showZ50;
 
     // meshing parameters
     int minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
@@ -224,6 +226,8 @@ private:
      ResultPlotSuper *stressPlot;
      ResultPlotSuper *pultPlot;
      ResultPlotSuper *y50Plot;
+     ResultPlotSuper *tultPlot;
+     ResultPlotSuper *z50Plot;
 
 };
 
