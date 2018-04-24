@@ -113,6 +113,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /* connect a FEA modeler */
     pileFEAmodel = new PileFEAmodeler();
+    loadControlType == LoadControlType::ForceControl;
+    pileFEAmodel->setLoadType(loadControlType);
 
     // setup data
     numPiles = 1;
@@ -217,6 +219,10 @@ void MainWindow::refreshUI() {
     ui->appliedHorizontalForce->setValue(P);
     ui->appliedVerticalForce->setValue(PV);
     ui->appliedMoment->setValue(PMom);
+
+    this->on_appliedHorizontalForce_editingFinished();
+    this->on_appliedVerticalForce_editingFinished();
+    this->on_appliedMoment_editingFinished();
 
     int pileIdx = ui->pileIndex->value() - 1;
 
