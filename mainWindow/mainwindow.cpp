@@ -196,7 +196,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //manager->get(QNetworkRequest(QUrl("https://simcenter.designsafe-ci.org/pile-group-analytics/")));
 
     //this->on_forceTypeSelector_activated(0);
-    this->on_horizontalForceSlider_valueChanged(10);
+    //this->on_horizontalForceSlider_valueChanged(10);
     //this->on_forceTypeSelector_activated(0);
 }
 
