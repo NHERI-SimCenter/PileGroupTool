@@ -151,16 +151,6 @@ protected:
     double tult, z50;     // shaft friction
     double qult, z50q;    // toe resistance
 
-    // viewer settings
-    bool showDisplacements;
-    bool showPullOut;
-    bool showMoments;
-    bool showShear;
-    bool showAxial;
-    bool showStress;
-    bool showPultimate;
-    bool showY50;
-
     // meshing parameters
     int minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
     int maxElementsPerLayer = MAX_ELEMENTS_PER_LAYER;
