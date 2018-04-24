@@ -113,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /* connect a FEA modeler */
     pileFEAmodel = new PileFEAmodeler();
-    loadControlType == LoadControlType::ForceControl;
+    loadControlType = LoadControlType::ForceControl;
     pileFEAmodel->setLoadType(loadControlType);
 
     // setup data
@@ -194,6 +194,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/qtPile/use.php")));
     //manager->get(QNetworkRequest(QUrl("https://simcenter.designsafe-ci.org/pile-group-analytics/")));
+
+    //this->on_forceTypeSelector_activated(0);
+    //this->on_horizontalForceSlider_valueChanged(10);
+    //this->on_forceTypeSelector_activated(0);
 }
 
 MainWindow::~MainWindow()
@@ -1453,6 +1457,7 @@ void MainWindow::on_forceTypeSelector_activated(int index)
 
     systemPlot->setLoadType(loadControlType);
     pileFEAmodel->setLoadType(loadControlType);
+    this->doAnalysis();
 }
 
 
