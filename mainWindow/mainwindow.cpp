@@ -113,6 +113,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /* connect a FEA modeler */
     pileFEAmodel = new PileFEAmodeler();
+    loadControlType = LoadControlType::ForceControl;
+    pileFEAmodel->setLoadType(loadControlType);
 
     // setup data
     numPiles = 1;
@@ -172,8 +174,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // adjust size of application window to the available display
     //
     QRect rec = QApplication::desktop()->screenGeometry();
-    int height = this->height()<0.85*rec.height()?this->height():0.85*rec.height();
-    int width  = this->width()<0.85*rec.width()?this->width():0.85*rec.width();
+    int height = this->height()<0.85*rec.height()?0.85*rec.height():this->height();
+    int width  = this->width()<0.85*rec.width()?0.85*rec.width():this->width();
     this->resize(width, height);
 
     //
@@ -192,6 +194,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/qtPile/use.php")));
     //manager->get(QNetworkRequest(QUrl("https://simcenter.designsafe-ci.org/pile-group-analytics/")));
+
+    //this->on_forceTypeSelector_activated(0);
+    //this->on_horizontalForceSlider_valueChanged(10);
+    //this->on_forceTypeSelector_activated(0);
 }
 
 MainWindow::~MainWindow()
@@ -217,6 +223,10 @@ void MainWindow::refreshUI() {
     ui->appliedHorizontalForce->setValue(P);
     ui->appliedVerticalForce->setValue(PV);
     ui->appliedMoment->setValue(PMom);
+
+    this->on_appliedHorizontalForce_editingFinished();
+    this->on_appliedVerticalForce_editingFinished();
+    this->on_appliedMoment_editingFinished();
 
     int pileIdx = ui->pileIndex->value() - 1;
 
@@ -1140,6 +1150,8 @@ bool MainWindow::ReadFile(QString s)
     fileTypeError = true;
     if (version == "1.0")   fileTypeError = false;
     if (version == "1.99")  fileTypeError = false;
+    if (version == "1.99.1")  fileTypeError = false;
+    if (version == "1.99.2")  fileTypeError = false;
     if (version == "2.0")   fileTypeError = false;
 
     if (fileTypeError) {
@@ -1447,6 +1459,7 @@ void MainWindow::on_forceTypeSelector_activated(int index)
 
     systemPlot->setLoadType(loadControlType);
     pileFEAmodel->setLoadType(loadControlType);
+    this->doAnalysis();
 }
 
 

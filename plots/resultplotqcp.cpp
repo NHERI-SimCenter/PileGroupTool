@@ -30,6 +30,7 @@ void ResultPlotQCP::plotResults(QVector<QVector<double> *> &y,
     QVector<double> *xOffset;
 
     int numPiles = x.size();
+    if (y.size() < numPiles) numPiles = y.size();
 
     int maxPts = -1;
 
