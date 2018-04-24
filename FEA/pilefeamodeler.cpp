@@ -730,7 +730,7 @@ void PileFEAmodeler::buildMesh()
                 theSP = new SP_Constraint(numNode, 1, 0., true);  theDomain->addSP_Constraint(theSP);
                 theSP = new SP_Constraint(numNode, 2, 0., true);  theDomain->addSP_Constraint(theSP);
 
-                soilNodes.append(SoilNodeData(nodeTag, -zCoord));
+                soilNodes.append(SoilNodeData(numNode, -zCoord));
 
                 if (dumpFEMinput)
                 {
