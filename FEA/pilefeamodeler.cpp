@@ -230,6 +230,9 @@ void PileFEAmodeler::setLoadType(LoadControlType type)
     {
         loadControlType = type;
         DISABLE_STATE(AnalysisState::loadValid);
+        DISABLE_STATE(AnalysisState::solutionValid);
+        DISABLE_STATE(AnalysisState::solutionAvailable);
+        DISABLE_STATE(AnalysisState::dataExtracted);
     }
 }
 
@@ -242,6 +245,9 @@ void PileFEAmodeler::updateLoad(double Px, double Py, double Moment)
     PMom = Moment; // applied moment on pile cap
 
     DISABLE_STATE(AnalysisState::loadValid);
+    DISABLE_STATE(AnalysisState::solutionValid);
+    DISABLE_STATE(AnalysisState::solutionAvailable);
+    DISABLE_STATE(AnalysisState::dataExtracted);
 }
 
 void PileFEAmodeler::updateSoil(QVector<soilLayer> &layers)
@@ -249,6 +255,10 @@ void PileFEAmodeler::updateSoil(QVector<soilLayer> &layers)
     mSoilLayers = layers;
 
     DISABLE_STATE(AnalysisState::meshValid);
+    DISABLE_STATE(AnalysisState::loadValid);
+    DISABLE_STATE(AnalysisState::solutionValid);
+    DISABLE_STATE(AnalysisState::solutionAvailable);
+    DISABLE_STATE(AnalysisState::dataExtracted);
 }
 
 void PileFEAmodeler::updateGWtable(double depth)
@@ -257,6 +267,10 @@ void PileFEAmodeler::updateGWtable(double depth)
 
     gwtDepth = depth;
     DISABLE_STATE(AnalysisState::meshValid);
+    DISABLE_STATE(AnalysisState::loadValid);
+    DISABLE_STATE(AnalysisState::solutionValid);
+    DISABLE_STATE(AnalysisState::solutionAvailable);
+    DISABLE_STATE(AnalysisState::dataExtracted);
 }
 
 void PileFEAmodeler::updateDisplacement(double ux, double uy)
@@ -267,6 +281,9 @@ void PileFEAmodeler::updateDisplacement(double ux, double uy)
     VDisp = uy; // prescriber vertical displacement
 
     DISABLE_STATE(AnalysisState::loadValid);
+    DISABLE_STATE(AnalysisState::solutionValid);
+    DISABLE_STATE(AnalysisState::solutionAvailable);
+    DISABLE_STATE(AnalysisState::dataExtracted);
 }
 
 void PileFEAmodeler::updateDispProfile(QVector<double> &profile)
@@ -289,13 +306,16 @@ void PileFEAmodeler::updateDispProfile(QVector<double> &profile)
     soilMotion[3] = surfaceDisp*percentageBase;
 
     DISABLE_STATE(AnalysisState::loadValid);
+    DISABLE_STATE(AnalysisState::solutionValid);
+    DISABLE_STATE(AnalysisState::solutionAvailable);
+    DISABLE_STATE(AnalysisState::dataExtracted);
 
     this->updateMotionData();
 }
 
 void PileFEAmodeler::setAnalysisType(QString)
 {
-
+    qWarning() << "PileFEAmodeler::setAnalysisType(QString) not implemented";
     DISABLE_STATE(AnalysisState::analysisValid);
 }
 

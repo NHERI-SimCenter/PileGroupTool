@@ -1457,6 +1457,7 @@ void MainWindow::on_forceTypeSelector_activated(int index)
 
     systemPlot->setLoadType(loadControlType);
     pileFEAmodel->setLoadType(loadControlType);
+    this->doAnalysis();
 }
 
 
