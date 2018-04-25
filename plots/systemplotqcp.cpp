@@ -221,16 +221,44 @@ void SystemPlotQCP::refresh()
     // plot the piles
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
+        QVector<double> x;
+        QVector<double> y;
 
         double D = pileDiameter[pileIdx];
 
-        x[0] = xOffset[pileIdx] - D/2.; y[0] = L1;
-        x[1] = x[0];                    y[1] = -L2[pileIdx];
-        x[2] = xOffset[pileIdx] + D/2.; y[2] = y[1];
-        x[3] = x[2];                    y[3] = y[0];
-        x[4] = x[0];                    y[4] = y[0];
+
+        if (m_pos.size() == numPiles)
+        {
+            // deformed pile
+
+            x.clear();
+            y.clear();
+
+            for (int i=0; i<m_pos[pileIdx]->size(); i++)
+            {
+                x.append( xOffset[pileIdx]     + (*m_dispU[pileIdx])[i] + D/2.);
+                y.append( (*m_pos[pileIdx])[i] + (*m_dispV[pileIdx])[i]       );
+            }
+
+            for (int i=m_pos[pileIdx]->size()-1; i>=0; i--)
+            {
+                x.append( xOffset[pileIdx]     + (*m_dispU[pileIdx])[i] - D/2.);
+                y.append( (*m_pos[pileIdx])[i] + (*m_dispV[pileIdx])[i]       );
+            }
+        }
+        else
+        {
+            // undeformed pile
+
+            x.clear();
+            y.clear();
+
+            x.append(xOffset[pileIdx] - D/2.);      y.append(L1);
+            x.append(xOffset[pileIdx] - D/2.);      y.append(-L2[pileIdx]);
+            x.append(xOffset[pileIdx] + D/2.);      y.append(-L2[pileIdx]);
+            x.append(xOffset[pileIdx] + D/2.);      y.append(L1);
+            x.append(xOffset[pileIdx] - D/2.);      y.append(L1);
+        }
 
         QCPCurve *pileII = new QCPCurve(plot->xAxis, plot->yAxis);
         pileII->setData(x,y);
@@ -269,6 +297,18 @@ void SystemPlotQCP::refresh()
         arrow->start->setCoords(xbar, L1 - force);
         arrow->end->setCoords(xbar, L1);
         arrow->setHead(QCPLineEnding::esSpikeArrow);
+    }
+
+    // status info
+    if (!mIsStable)
+    {
+        QCPItemText *warning = new QCPItemText(plot);
+        warning->position->setType(QCPItemPosition::ptAxisRectRatio);
+        warning->position->setCoords(0.5,  0.5);
+        warning->setPositionAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+        warning->setText("unstable\nsystem");
+        warning->setFont(QFont(font().family(), 36));
+        warning->setPadding(QMargins(8, 0, 0, 0));
     }
 
     // plot scaling options
