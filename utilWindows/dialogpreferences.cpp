@@ -27,6 +27,8 @@ DialogPreferences::DialogPreferences(QWidget *parent, QSettings *settings) :
 
     DLGsettings->beginGroup("general");
         DLGgraphicsLib       = DLGsettings->value("graphicsLibrary","QCP").toString();
+        if (DLGgraphicsLib == "Qwt") { DLGgraphicsLib="QwtSystem"; }
+        // if (DLGgraphicsLib == "Qwt") { DLGgraphicsLib="QwtAll"; }
         DLGfemAnalyzer       = DLGsettings->value("femAnalyzer","OpenSeesInt").toString();
     DLGsettings->endGroup();
 
@@ -65,7 +67,7 @@ DialogPreferences::~DialogPreferences()
 
 void DialogPreferences::InitGUI()
 {
-    if (DLGgraphicsLib == "Qwt")
+    if (DLGgraphicsLib == "QwtSystem" || DLGgraphicsLib == "QwtAll" || DLGgraphicsLib == "QwtResults" || DLGgraphicsLib == "Qwt")
         { ui->rbtn_useQwt->setChecked(true); }
     else
         { ui->rbtn_useQCP->setChecked(true); }  // default to QCP
@@ -96,7 +98,8 @@ void DialogPreferences::on_buttonBox_clicked(QAbstractButton *button)
 
     DLGsettings->beginGroup("general");
         if (ui->rbtn_useQCP->isChecked()) {DLGgraphicsLib = QString("QCP");}
-        if (ui->rbtn_useQwt->isChecked()) {DLGgraphicsLib = QString("Qwt");}
+        if (ui->rbtn_useQwt->isChecked()) {DLGgraphicsLib = QString("QwtSystem");}
+        //if (ui->rbtn_useQwt->isChecked()) {DLGgraphicsLib = QString("QwtAll");}
 
         if (ui->rbtn_OpenSeesInt->isChecked()) {DLGfemAnalyzer = QString("OpenSeesInt");}
         if (ui->rbtn_OpenSeesExt->isChecked()) {DLGfemAnalyzer = QString("OpenSeesExt");}
@@ -240,7 +243,8 @@ void DialogPreferences::on_rbtn_useQwt_clicked(bool checked)
 {
     if (!checked) return;
 
-    DLGgraphicsLib = QString("Qwt");
+    DLGgraphicsLib = QString("QwtSystem");
+    //DLGgraphicsLib = QString("QwtAll");
     DLGsettings->beginGroup("general");
         DLGsettings->setValue("graphicsLibrary",DLGgraphicsLib);
     DLGsettings->endGroup();

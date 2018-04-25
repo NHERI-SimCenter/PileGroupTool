@@ -46,10 +46,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->fetchSettings();
 
-    if (useGraphicsLib == "Qwt")
+    if (useGraphicsLib == "QwtAll" || useGraphicsLib == "QwtSystem")
     {
         systemPlot  = new SystemPlotQwt(ui->systemTab);
+    }
+    else
+    {
+        systemPlot  = new SystemPlotQCP(ui->systemTab);
+    }
 
+    if (useGraphicsLib == "QwtAll" || useGraphicsLib == "QwtResults")
+    {
         displPlot   = new ResultPlotQwt(ui->dispTab);
         pullOutPlot = new ResultPlotQwt(ui->pulloutTab);
         momentPlot  = new ResultPlotQwt(ui->momentTab);
@@ -63,8 +70,6 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     else
     {
-        systemPlot  = new SystemPlotQCP(ui->systemTab);
-
         displPlot   = new ResultPlotQCP(ui->dispTab);
         pullOutPlot = new ResultPlotQCP(ui->pulloutTab);
         momentPlot  = new ResultPlotQCP(ui->momentTab);
@@ -124,7 +129,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // setup data
     numPiles = 1;
-    P        = 1000.0;
+    P        = MAX_H_FORCE/10.;
     PV       =    0.0;
     PMom     =    0.0;
 
@@ -330,6 +335,19 @@ void MainWindow::updateResultPlots()
     // this should call the results update from the analysis modeler and the plot methods
 
     //
+    // send deformations to systemPlot
+    //
+
+    QList<QVector<QVector<double> *> *> list;
+    list = pileFEAmodel->getLateralDisplacements();
+    QVector<QVector<double> *> &pos   = *list[0];
+    QVector<QVector<double> *> &dispU = *list[1];
+    list = pileFEAmodel->getAxialDisplacements();
+    QVector<QVector<double> *> &dispV = *list[1];
+
+    this->systemPlot->updatePileDeformation(pos, dispU, dispV);
+
+    //
     // plot results
     //
 
@@ -412,6 +430,7 @@ void MainWindow::fetchSettings()
     // general settings
     settings->beginGroup("general");
         useGraphicsLib    = settings->value("graphicsLibrary", QString("QCP")).toString();
+        if (useGraphicsLib == "Qwt") { useGraphicsLib = "QwtSystem"; }
         useFEAnalyzer     = settings->value("femAnalyzer", QString("OpenSeesInt")).toString();
     settings->endGroup();
 
@@ -471,7 +490,7 @@ void MainWindow::setupLayers()
     mSoilLayers.clear();
     mSoilLayers.push_back(soilLayer("Layer 1", 3.0, 15.0, 18.0, 2.0e5, 30, 0.0, QColor(100,0,0,100)));
     mSoilLayers.push_back(soilLayer("Layer 2", 3.0, 16.0, 19.0, 2.0e5, 35, 0.0, QColor(0,100,0,100)));
-    mSoilLayers.push_back(soilLayer("Layer 3", 4.0, 14.0, 17.0, 2.0e5, 28, 0.0, QColor(0,0,100,100)));
+    mSoilLayers.push_back(soilLayer("Layer 3",14.0, 14.0, 17.0, 2.0e5, 28, 0.0, QColor(0,0,100,100)));
 
     updateLayerState();
 }

@@ -6,6 +6,9 @@
 #include "pilegrouptool_parameters.h"
 #include "qcp/qcustomplot.h"
 
+#define PLOT_DEFORMED
+//#undef PLOT_DEFORMED
+
 namespace Ui {
 class SystemPlotSuper;
 }
@@ -31,7 +34,7 @@ public:
     virtual void updateDisplacement(double ux=0.0, double uy=0.0);
     virtual void updateDispProfile(double surfaceDisp, double percentage12, double percentage23, double percentageBase);
 
-    virtual void updatePileDeformation(QVector<double> &, QVector<QVector<double> > &);
+    virtual void updatePileDeformation(QVector<QVector<double> *> &, QVector<QVector<double> *> &, QVector<QVector<double> *> &);
     virtual void updateMotionData(void);
     virtual double shift(double z);
 
@@ -96,6 +99,11 @@ protected:
     // selection tracking
     int activePileIdx = 0;
     int activeLayerIdx = -1;
+
+    // deformed pile information
+    QVector<QVector<double> *> m_pos;
+    QVector<QVector<double> *> m_dispU;
+    QVector<QVector<double> *> m_dispV;
 };
 
 #endif // SYSTEMPLOTSUPER_H

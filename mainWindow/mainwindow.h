@@ -186,7 +186,7 @@ private:
     QSettings *settings = NULL;
 
     // general settings
-    QString useGraphicsLib;  // "QCP" or "Qwt"
+    QString useGraphicsLib;  // "QCP" or "QwtAll" or "QwtSystem" or "QwtResults"
     QString useFEAnalyzer;   // "OpenSeesInt" is currently the only implemented option
 
     // viewer settings

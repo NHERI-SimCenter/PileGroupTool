@@ -1288,7 +1288,7 @@ void PileFEAmodeler::buildAnalysis()
     //
 
     AnalysisModel     *theModel      = new AnalysisModel();
-    CTestNormDispIncr *theTest       = new CTestNormDispIncr(1.0e-3, 20, 0);
+    CTestNormDispIncr *theTest       = new CTestNormDispIncr(1.0e-3, 25, 0);
     EquiSolnAlgo      *theSolnAlgo   = new NewtonRaphson();
     StaticIntegrator  *theIntegrator = new LoadControl(0.05, 1, 0.05, 0.05);
     ConstraintHandler *theHandler    = new PenaltyConstraintHandler(1.0e14, 1.0e14);
