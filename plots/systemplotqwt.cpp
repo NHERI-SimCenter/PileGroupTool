@@ -286,6 +286,9 @@ void SystemPlotQwt::refresh()
     maxH = maxD;
     if (maxH > L1/2.) maxH = L1/2.;
 
+    double xl = xbar - W/2;
+    double xr = xbar + W/2;
+
 
     //
     // HERE IS WHERE TO START ...
@@ -308,14 +311,65 @@ void SystemPlotQwt::refresh()
     //
 
     //plot->setCurrentLayer("groundwater");
+    /*
+    if (gwtDepth < (H-L1)) {
+        QPolygonF(groundwaterCorners);
+        groundwaterCorners << QPointF(xl, -gwtDepth)
+                           << QPointF(xl, -(H - L1))
+                           << QPointF(xr, -(H - L1))
+                           << QPointF(xr, -gwtDepth)
+                           << QPointF(xl, -gwtDepth);
+
+        QwtPlotShapeItem *water = new QwtPlotShapeItem();
+        water->setPolygon(groundwaterCorners);
+
+        water->setPen(QPen(Qt::blue, 2));
+        water->setBrush(QBrush(GROUND_WATER_BLUE));
+
+        water->setTitle(QString("Groundwater"));
+        water->attach( plot );
+        water->setItemAttribute(QwtPlotItem::Legend, true);
+
+        PLOTOBJECT var;
+        var.itemPtr = water;
+        var.type    = PLType::WATER;
+        var.index   = -1;
+        plotItemList.append(var);
+    }
+    */
 
     if (gwtDepth < (H-L1)) {
         QPolygonF(groundwaterCorners);
-        groundwaterCorners << QPointF(xbar - W/2, -gwtDepth)
-                           << QPointF(xbar - W/2, -(H - L1))
-                           << QPointF(xbar + W/2, -(H - L1))
-                           << QPointF(xbar + W/2, -gwtDepth)
-                           << QPointF(xbar - W/2, -gwtDepth);
+        double s = soilMotion.last();
+        s = shift(gwtDepth);
+
+        groundwaterCorners << QPointF(xl + s, -gwtDepth);
+
+        for (int i=0; i<=MAXLAYERS; i++)
+        {
+            if (gwtDepth <= depthOfLayer[i])
+            {
+                s = shift(depthOfLayer[i]);
+                groundwaterCorners << QPointF(xl + s, -depthOfLayer[i]);
+            }
+        }
+
+        s = shift((H - L1));
+        groundwaterCorners << QPointF(xl + s, -(H - L1))
+                           << QPointF(xr + s, -(H - L1));
+
+        for (int i=MAXLAYERS; i>=0; i--)
+        {
+            if (gwtDepth <= depthOfLayer[i])
+            {
+                s = shift(depthOfLayer[i]);
+                groundwaterCorners << QPointF(xr + s, -depthOfLayer[i]);
+            }
+        }
+
+        s = shift(gwtDepth);
+        groundwaterCorners << QPointF(xr + s, -gwtDepth)
+                           << QPointF(xl + s, -gwtDepth);
 
         QwtPlotShapeItem *water = new QwtPlotShapeItem();
         water->setPolygon(groundwaterCorners);
@@ -340,11 +394,11 @@ void SystemPlotQwt::refresh()
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
 
         QPolygonF groundCorners;
-        groundCorners << QPointF(xbar - W/2, -depthOfLayer[iLayer])
-                      << QPointF(xbar - W/2, -depthOfLayer[iLayer+1])
-                      << QPointF(xbar + W/2, -depthOfLayer[iLayer+1])
-                      << QPointF(xbar + W/2, -depthOfLayer[iLayer])
-                      << QPointF(xbar - W/2, -depthOfLayer[iLayer]);
+        groundCorners << QPointF(xl + shift(depthOfLayer[iLayer])  , -depthOfLayer[iLayer]  )
+                      << QPointF(xl + shift(depthOfLayer[iLayer+1]), -depthOfLayer[iLayer+1])
+                      << QPointF(xr + shift(depthOfLayer[iLayer+1]), -depthOfLayer[iLayer+1])
+                      << QPointF(xr + shift(depthOfLayer[iLayer])  , -depthOfLayer[iLayer]  )
+                      << QPointF(xl + shift(depthOfLayer[iLayer])  , -depthOfLayer[iLayer]  );
 
         QwtPlotShapeItem *layerII = new QwtPlotShapeItem();
 
@@ -370,6 +424,7 @@ void SystemPlotQwt::refresh()
         plotItemList.append(var);
     }
 
+    /*
     // Testing percentage12 for deformation
     double percentage12temp(P/MAX_H_FORCE);
     QPolygonF testCorners;
@@ -401,6 +456,7 @@ void SystemPlotQwt::refresh()
     qWarning() << "PV = "             + QString::number(PV);
 
     // Test end
+    */
 
     //
     // Plot PileCaps
@@ -563,7 +619,7 @@ void SystemPlotQwt::refresh()
     double forceArrowRatioV = PV/MAX_V_FORCE,
            arrowHeadLengthV = 0.3,
            arrowHeadV       = 1.5,
-           arrowThicknessV  = 0.5;
+           arrowThicknessV  = 0.3;
 
     if (( forceArrowRatioV < 0.3 ) && (forceArrowRatioV > 0)) {
         forceArrowRatio = 0.3;
@@ -584,8 +640,8 @@ void SystemPlotQwt::refresh()
     pathV.moveTo( pileCapCenter                  , L1 + maxH                       );
     pathV.lineTo( pileCapCenter - arrowHeadV     , L1 + maxH + arrowHeadLengthV    );
     pathV.lineTo( pileCapCenter - arrowThicknessV, L1 + maxH + arrowHeadLengthV    );
-    pathV.lineTo( pileCapCenter - arrowThicknessV, L1 + maxH + forceArrowRatioV    );
-    pathV.lineTo( pileCapCenter + arrowThicknessV, L1 + maxH + forceArrowRatioV    );
+    pathV.lineTo( pileCapCenter - arrowThicknessV, L1 + maxH + arrowHeadLengthV + forceArrowRatioV    );
+    pathV.lineTo( pileCapCenter + arrowThicknessV, L1 + maxH + arrowHeadLengthV + forceArrowRatioV    );
     pathV.lineTo( pileCapCenter + arrowThicknessV, L1 + maxH + arrowHeadLengthV    );
     pathV.lineTo( pileCapCenter + arrowHeadV     , L1 + maxH + arrowHeadLengthV    );
     pathV.lineTo( pileCapCenter                  , L1 + maxH                       );
