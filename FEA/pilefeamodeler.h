@@ -3,6 +3,7 @@
 
 //#include <QVector>
 #include <QMap>
+#include <QFile>
 
 #include "pilegrouptool_parameters.h"
 #include "soilmat.h"
@@ -24,6 +25,14 @@ enum class PilePlotData {
     Z50
 };
 
+enum class AnalysisState {
+    solutionAvailable,
+    solutionValid,
+    dataExtracted,
+    meshValid,
+    loadValid,
+    analysisValid
+};
 
 class Domain;
 class StaticAnalysis;
@@ -33,6 +42,27 @@ class PileFEAmodeler
 public:
     PileFEAmodeler();
     ~PileFEAmodeler();
+
+    class SoilMotionData
+    {
+    public:
+        SoilMotionData() { delta0=0.0; delta1=0.0;zmax=999999.0;};
+        SoilMotionData(double d0, double d1, double zm) { delta0=d0; delta1=d1;zmax=zm;};
+
+        double  delta0;
+        double  delta1;
+        double  zmax;
+    };
+
+    class SoilNodeData
+    {
+    public:
+        SoilNodeData() {ID=-1; depth=0;};
+        SoilNodeData(int id, double z) {ID=id; depth=z;};
+
+        int     ID;
+        double  depth;
+    };
 
     void updatePiles(QVector<PILE_INFO> &);
     void updateSwitches(bool useToe, bool assumeRigidHead);
@@ -44,13 +74,19 @@ public:
     void updateDispProfile(QVector<double> &);
     void setAnalysisType(QString);
     void setDefaultParameters(void);
-    void doAnalysis();
+    bool doAnalysis();
+
+    void writeFEMinput(QString filename);
+    void dumpDomain(QString filename);
 
     int  getExitStatus();
 
     void buildMesh();
     void buildLoad();
     void buildAnalysis();
+
+    void updateMotionData(void);
+    double shift(double z);
 
     QList<QVector<QVector<double> *> *> getLateralDisplacements();
     QList<QVector<QVector<double> *> *> getAxialDisplacements();
@@ -71,7 +107,7 @@ protected:
     // load control
     LoadControlType loadControlType;
 
-    QMap<QString, bool> modelState;
+    QMap<AnalysisState, bool> modelState;
 
     double P;     // lateral force on pile cap
     double PV;    // vertical force on pile cap
@@ -84,6 +120,9 @@ protected:
     double percentage12;   // percentage of surface displacement at 1st layer interface
     double percentage23;   // percentage of surface displacement at 2nd layer interface
     double percentageBase; // percentage of surface displacement at base of soil column
+
+    QVector<double> soilMotion = QVector<double>(MAXLAYERS+1, 0.0);
+    QVector<SoilMotionData> motionData = QVector<SoilMotionData>(MAXLAYERS);
 
     // get parameters
     double gwtDepth;  // depth of ground water table below the surface
@@ -111,16 +150,6 @@ protected:
     double pult, y50;     // lateral resistance
     double tult, z50;     // shaft friction
     double qult, z50q;    // toe resistance
-
-    // viewer settings
-    bool showDisplacements;
-    bool showPullOut;
-    bool showMoments;
-    bool showShear;
-    bool showAxial;
-    bool showStress;
-    bool showPultimate;
-    bool showY50;
 
     // meshing parameters
     int minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
@@ -153,10 +182,18 @@ protected:
     QVector<QVector<double> *> ShearList;
     QVector<QVector<double> *> AxialList;
     QVector<QVector<double> *> StressList;
+
     QVector<QVector<double> *> pultList;
     QVector<QVector<double> *> y50List;
     QVector<QVector<double> *> tultList;
     QVector<QVector<double> *> z50List;
+
+    QList<SoilNodeData> soilNodes;
+
+    //
+    // state switches
+    bool    dumpFEMinput;
+    QFile  *FEMfile = NULL;
 };
 
 #endif // PILEFEAMODELER_H

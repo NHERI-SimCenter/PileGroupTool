@@ -142,7 +142,7 @@ class Node : public DomainComponent
     double getDispSensitivity(int dof, int gradNum);
     double getVelSensitivity(int dof, int gradNum);
     double getAccSensitivity(int dof, int gradNum);
-    int setParameter(const char **argv, int argc, Parameter &param);
+    int    setParameter(const char **argv, int argc, Parameter &param);
     int    updateParameter(int parameterID, Information &info);
     int    activateParameter(int parameterID);
 

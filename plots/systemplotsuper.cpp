@@ -20,6 +20,12 @@ SystemPlotSuper::SystemPlotSuper(QWidget *parent) :
     data.zmax   = 0.0;
 
     motionData = QVector<SOIL_MOTION_DATA>(MAXLAYERS, data);
+
+    m_pos.clear();
+    m_dispU.clear();
+    m_dispV.clear();
+
+    mIsStable = false;
 }
 
 SystemPlotSuper::~SystemPlotSuper()
@@ -192,8 +198,32 @@ void SystemPlotSuper::updateDispProfile(double new_surfaceDisp,
     }
 }
 
-void SystemPlotSuper::updatePileDeformation(QVector<double> &, QVector<QVector<double> > &)
+void SystemPlotSuper::updatePileDeformation(QVector<QVector<double> *> &pos,
+                                            QVector<QVector<double> *> &dispU,
+                                            QVector<QVector<double> *> &dispV)
 {
+    if (pos.size() != numPiles || dispU.size() != numPiles || dispV.size() != numPiles )
+    {
+        qWarning() << "incompatible deformation data in SystemPlot -- ignoring data";
+
+        QVector<QVector<double> *> dummy;
+        dummy.clear();
+
+        m_pos   = dummy;
+        m_dispU = dummy;
+        m_dispV = dummy;
+
+        mIsStable = false;
+
+        return;
+    }
+
+    m_pos   = pos;
+    m_dispU = dispU;
+    m_dispV = dispV;
+
+    mIsStable = true;
+
     this->refresh();
 }
 
