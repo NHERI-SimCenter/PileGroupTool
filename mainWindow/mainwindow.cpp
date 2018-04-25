@@ -440,7 +440,7 @@ void MainWindow::fetchSettings()
     // general settings
     settings->beginGroup("general");
         useGraphicsLib    = settings->value("graphicsLibrary", QString("QCP")).toString();
-        if (useGraphicsLib == "Qwt") { useGraphicsLib = "QwtSystem"; }
+        if (useGraphicsLib == "Qwt") { useGraphicsLib = "QwtAll"; }
         useFEAnalyzer     = settings->value("femAnalyzer", QString("OpenSeesInt")).toString();
     settings->endGroup();
 

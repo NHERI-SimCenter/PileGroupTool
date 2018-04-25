@@ -4,6 +4,7 @@
 #include "resultplotsuper.h"
 
 class QwtPlot;
+class QwtPlotGrid;
 
 class ResultPlotQwt : public ResultPlotSuper
 {
@@ -14,6 +15,7 @@ public:
 
 protected:
     QwtPlot *plot;
+    QwtPlotGrid *grid;
 };
 
 #endif // RESULTPLOTQWT_H
