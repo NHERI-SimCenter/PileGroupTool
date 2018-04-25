@@ -42,7 +42,7 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     //Picker
     QwtPicker *picker = new QwtPicker(plot -> canvas());
     picker->setStateMachine(new QwtPickerClickPointMachine);
-    picker->setTrackerMode(QwtPicker::AlwaysOn);
+    picker->setTrackerMode(QwtPicker::AlwaysOff);
     picker->setRubberBand(QwtPicker::RectRubberBand);
 
     //connect(picker, SIGNAL(activated(bool)), this, SLOT(on_picker_activated(bool)));
@@ -393,11 +393,36 @@ void SystemPlotQwt::refresh()
 
         double D = pileDiameter[pileIdx];
         QPolygonF(pileCorners);
-        pileCorners << QPointF(xOffset[pileIdx] - D/2, L1)
-                    << QPointF(xOffset[pileIdx] - D/2, -L2[pileIdx])
-                    << QPointF(xOffset[pileIdx] + D/2, -L2[pileIdx])
-                    << QPointF(xOffset[pileIdx] + D/2, L1)
-                    << QPointF(xOffset[pileIdx] - D/2, L1);
+
+        //QVector<double> x;
+        //QVector<double> y;
+
+        if (m_pos.size() == numPiles)
+        {
+            // deformed pile
+
+            for (int i=0; i<m_pos[pileIdx]->size(); i++)
+            {
+                pileCorners << QPointF( xOffset[pileIdx]     + (*m_dispU[pileIdx])[i] + D/2.,
+                                        (*m_pos[pileIdx])[i] + (*m_dispV[pileIdx])[i] );
+            }
+
+            for (int i=m_pos[pileIdx]->size()-1; i>=0; i--)
+            {
+                pileCorners << QPointF( xOffset[pileIdx]     + (*m_dispU[pileIdx])[i] - D/2.,
+                                        (*m_pos[pileIdx])[i] + (*m_dispV[pileIdx])[i] );
+            }
+        }
+        else
+        {
+            // undeformed pile
+
+            pileCorners << QPointF(xOffset[pileIdx] - D/2, L1)
+                        << QPointF(xOffset[pileIdx] - D/2, -L2[pileIdx])
+                        << QPointF(xOffset[pileIdx] + D/2, -L2[pileIdx])
+                        << QPointF(xOffset[pileIdx] + D/2, L1)
+                        << QPointF(xOffset[pileIdx] - D/2, L1);
+        }
 
         QwtPlotShapeItem *pileII = new QwtPlotShapeItem();
         pileII->setPolygon(pileCorners);
@@ -555,6 +580,28 @@ void SystemPlotQwt::refresh()
     plotItemList.append(arrow);
     }
     */
+
+    // status info
+    if (!mIsStable)
+    {
+        //
+        // TODO:
+        //
+        //    write "unstable system" at center of the system plot
+        //
+
+        /*
+        // this is the code from QCP
+
+        QCPItemText *warning = new QCPItemText(plot);
+        warning->position->setType(QCPItemPosition::ptAxisRectRatio);
+        warning->position->setCoords(0.5,  0.5);
+        warning->setPositionAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+        warning->setText("unstable\nsystem");
+        warning->setFont(QFont(font().family(), 36));
+        warning->setPadding(QMargins(8, 0, 0, 0));
+        */
+    }
 
     plot->replot();
 

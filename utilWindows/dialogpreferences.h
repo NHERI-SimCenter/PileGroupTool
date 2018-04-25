@@ -28,6 +28,8 @@ private slots:
     void on_chkBx_stress_stateChanged(int arg1);
     void on_chkBx_pu_stateChanged(int arg1);
     void on_chkBx_y50_stateChanged(int arg1);
+    void on_chkBx_tu_stateChanged(int arg1);
+    void on_chkBx_z50_stateChanged(int arg1);
     void on_buttonBox_accepted();
     void on_rbtn_useQCP_clicked(bool checked);
     void on_rbtn_useQwt_clicked(bool checked);
@@ -53,6 +55,8 @@ private:
     int DLGshowStress;
     int DLGshowPultimate;
     int DLGshowY50;
+    int DLGshowTultimate;
+    int DLGshowZ50;
 
     // meshing parameters
     int DLGminElementsPerLayer = 15;

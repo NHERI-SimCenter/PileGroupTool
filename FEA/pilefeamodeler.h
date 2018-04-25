@@ -74,7 +74,7 @@ public:
     void updateDispProfile(QVector<double> &);
     void setAnalysisType(QString);
     void setDefaultParameters(void);
-    void doAnalysis();
+    bool doAnalysis();
 
     void writeFEMinput(QString filename);
     void dumpDomain(QString filename);
