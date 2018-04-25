@@ -7,6 +7,8 @@
 #include <qwt_plot_grid.h>
 #include <qwt_symbol.h>
 #include <qwt_plot_shapeitem.h>
+#include <qwt_plot_textlabel.h>
+#include <qwt_text.h>
 
 #include "qwt_picker.h"
 #include "qwt_plot_picker.h"
@@ -16,6 +18,7 @@
 
 #include <QDebug>
 #include <QTime>
+#include <QFont>
 
 
 SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
@@ -554,17 +557,22 @@ QwtLegend
         // TODO: write "unstable system" at center of the system plot
         //
 
-        /*
         // this is the code from QCP
 
-        QCPItemText *warning = new QCPItemText(plot);
-        warning->position->setType(QCPItemPosition::ptAxisRectRatio);
-        warning->position->setCoords(0.5,  0.5);
-        warning->setPositionAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
-        warning->setText("unstable\nsystem");
-        warning->setFont(QFont(font().family(), 36));
-        warning->setPadding(QMargins(8, 0, 0, 0));
-        */
+        QwtPlotTextLabel *warning = new QwtPlotTextLabel();
+
+        QwtText title("unstable\nsystem");
+        title.setFont(QFont(font().family(), 36));
+        warning->setText(title);
+        warning->setMargin(8);
+        warning->attach(plot);
+
+        PLOTOBJECT var;
+        var.itemPtr = warning;
+        var.type    = PLType::OTHER;
+        var.index   = 0;
+        plotItemList.append(var);
+
     }
 
     plot->replot();
