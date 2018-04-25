@@ -319,7 +319,7 @@ void PileFEAmodeler::setAnalysisType(QString)
     DISABLE_STATE(AnalysisState::analysisValid);
 }
 
-void PileFEAmodeler::doAnalysis()
+bool PileFEAmodeler::doAnalysis()
 {
     if (!CHECK_STATE(AnalysisState::meshValid))
     {
@@ -349,14 +349,20 @@ void PileFEAmodeler::doAnalysis()
     // the solution exists, but it may or may not be valid !
     ENABLE_STATE(AnalysisState::solutionAvailable);
 
+    bool isConverged;
+
     if (converged < 0)
     {
         DISABLE_STATE(AnalysisState::solutionValid);
+        isConverged = false;
     }
     else
     {
         ENABLE_STATE(AnalysisState::solutionValid);
+        isConverged = true;
     }
+
+    return isConverged;
 }
 
 void PileFEAmodeler::buildMesh()

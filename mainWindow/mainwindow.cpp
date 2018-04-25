@@ -322,7 +322,8 @@ void MainWindow::doAnalysis(void)
     //
     // run the analysis
     //
-    pileFEAmodel->doAnalysis();
+    bool converged = pileFEAmodel->doAnalysis();
+    systemPlot->setSystemStable(converged);
 
     //
     // plot results
@@ -340,12 +341,21 @@ void MainWindow::updateResultPlots()
 
     QList<QVector<QVector<double> *> *> list;
     list = pileFEAmodel->getLateralDisplacements();
-    QVector<QVector<double> *> &pos   = *list[0];
-    QVector<QVector<double> *> &dispU = *list[1];
-    list = pileFEAmodel->getAxialDisplacements();
-    QVector<QVector<double> *> &dispV = *list[1];
+    if (list.size() >= 2)
+    {
+        QVector<QVector<double> *> &pos   = *list[0];
+        QVector<QVector<double> *> &dispU = *list[1];
+        list = pileFEAmodel->getAxialDisplacements();
+        QVector<QVector<double> *> &dispV = *list[1];
 
-    this->systemPlot->updatePileDeformation(pos, dispU, dispV);
+        this->systemPlot->updatePileDeformation(pos, dispU, dispV);
+    }
+    else
+    {
+        QVector<QVector<double> *> dummy;
+        this->systemPlot->updatePileDeformation(dummy, dummy, dummy);
+    }
+
 
     //
     // plot results

@@ -43,6 +43,8 @@ public:
     virtual void setActiveLayer(int index) {activeLayerIdx = index;}
     virtual int  getActiveLayerIndex() {return activeLayerIdx;}
 
+    virtual void setSystemStable(bool status) { mIsStable = status; };
+
     virtual QList<QCPAbstractPlottable *> selectedPlottables();
 
 private:
@@ -104,6 +106,9 @@ protected:
     QVector<QVector<double> *> m_pos;
     QVector<QVector<double> *> m_dispU;
     QVector<QVector<double> *> m_dispV;
+
+    // system status info
+    bool    mIsStable = true;
 };
 
 #endif // SYSTEMPLOTSUPER_H

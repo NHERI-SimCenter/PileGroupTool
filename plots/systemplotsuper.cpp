@@ -24,6 +24,8 @@ SystemPlotSuper::SystemPlotSuper(QWidget *parent) :
     m_pos.clear();
     m_dispU.clear();
     m_dispV.clear();
+
+    mIsStable = false;
 }
 
 SystemPlotSuper::~SystemPlotSuper()
@@ -203,12 +205,24 @@ void SystemPlotSuper::updatePileDeformation(QVector<QVector<double> *> &pos,
     if (pos.size() != numPiles || dispU.size() != numPiles || dispV.size() != numPiles )
     {
         qWarning() << "incompatible deformation data in SystemPlot -- ignoring data";
+
+        QVector<QVector<double> *> dummy;
+        dummy.clear();
+
+        m_pos   = dummy;
+        m_dispU = dummy;
+        m_dispV = dummy;
+
+        mIsStable = false;
+
         return;
     }
 
     m_pos   = pos;
     m_dispU = dispU;
     m_dispV = dispV;
+
+    mIsStable = true;
 
     this->refresh();
 }

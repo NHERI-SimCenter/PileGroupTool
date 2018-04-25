@@ -299,6 +299,18 @@ void SystemPlotQCP::refresh()
         arrow->setHead(QCPLineEnding::esSpikeArrow);
     }
 
+    // status info
+    if (!mIsStable)
+    {
+        QCPItemText *warning = new QCPItemText(plot);
+        warning->position->setType(QCPItemPosition::ptAxisRectRatio);
+        warning->position->setCoords(0.5,  0.5);
+        warning->setPositionAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+        warning->setText("unstable\nsystem");
+        warning->setFont(QFont(font().family(), 36));
+        warning->setPadding(QMargins(8, 0, 0, 0));
+    }
+
     // plot scaling options
 
     plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
