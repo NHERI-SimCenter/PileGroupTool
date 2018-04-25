@@ -7,6 +7,8 @@
 #include <qwt_plot_grid.h>
 #include <qwt_symbol.h>
 #include <qwt_plot_shapeitem.h>
+#include <qwt_plot_textlabel.h>
+#include <qwt_text.h>
 
 #include "qwt_picker.h"
 #include "qwt_plot_picker.h"
@@ -16,6 +18,7 @@
 
 #include <QDebug>
 #include <QTime>
+#include <QFont>
 
 
 SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
@@ -42,7 +45,7 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     //Picker
     QwtPicker *picker = new QwtPicker(plot -> canvas());
     picker->setStateMachine(new QwtPickerClickPointMachine);
-    picker->setTrackerMode(QwtPicker::AlwaysOn);
+    picker->setTrackerMode(QwtPicker::AlwaysOff);
     picker->setRubberBand(QwtPicker::RectRubberBand);
 
     //connect(picker, SIGNAL(activated(bool)), this, SLOT(on_picker_activated(bool)));
@@ -51,30 +54,6 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     //connect(picker, SIGNAL(moved(const QPoint &)), this, SLOT(on_picker_moved(const QPoint &)));
     //connect(picker, SIGNAL(removed(const QPoint &)), this, SLOT(on_picker_removed(const QPoint &)));
     //connect(picker, SIGNAL(changed(const QPolygon &)), this, SLOT(on_picker_changed(const QPolygon &)));
-
-
-#if 0
-    //
-    // add legend
-    //
-    // now we move the legend from the inset layout of the axis rect into the main grid layout.
-    // We create a sub layout so we can generate a small gap between the plot layout cell border
-    // and the legend border:
-    QCPLayoutGrid *subLayout = new QCPLayoutGrid;
-    plot->plotLayout()->addElement(1, 0, subLayout);
-    subLayout->setMargins(QMargins(5, 0, 5, 5));
-    subLayout->addElement(0, 0, plot->legend);
-    //
-    // change the fill order of the legend, so it's filled left to right in columns:
-    plot->legend->setWrap(4);
-    plot->legend->setRowSpacing(1);
-    plot->legend->setColumnSpacing(2);
-
-    // set legend's row stretch factor very small so it ends up with minimum height:
-    plot->plotLayout()->setRowStretchFactor(1, 0.001);
-
-    QObject::connect(plot, SIGNAL(selectionChangedByUser()), this, SLOT(on_plot_selectionChangedByUser()));
-#endif
 
     //
     // default plot selection settings
@@ -282,11 +261,6 @@ void SystemPlotQwt::refresh()
     maxH = maxD;
     if (maxH > L1/2.) maxH = L1/2.;
 
-
-    //
-    // HERE IS WHERE TO START ...
-    //
-
     //
     // Plot Legend
     //
@@ -297,7 +271,6 @@ void SystemPlotQwt::refresh()
     // Adjust y-axis to match Ground Layer Depth and slightly above pilecap
     double heightAbovePileCap = 1;
     plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + maxH + heightAbovePileCap );
-
 
     //
     // Plot Ground Water Table
@@ -393,11 +366,33 @@ void SystemPlotQwt::refresh()
 
         double D = pileDiameter[pileIdx];
         QPolygonF(pileCorners);
-        pileCorners << QPointF(xOffset[pileIdx] - D/2, L1)
-                    << QPointF(xOffset[pileIdx] - D/2, -L2[pileIdx])
-                    << QPointF(xOffset[pileIdx] + D/2, -L2[pileIdx])
-                    << QPointF(xOffset[pileIdx] + D/2, L1)
-                    << QPointF(xOffset[pileIdx] - D/2, L1);
+
+        if (m_pos.size() == numPiles)
+        {
+            // deformed pile
+
+            for (int i=0; i<m_pos[pileIdx]->size(); i++)
+            {
+                pileCorners << QPointF( xOffset[pileIdx]     + (*m_dispU[pileIdx])[i] + D/2.,
+                                        (*m_pos[pileIdx])[i] + (*m_dispV[pileIdx])[i] );
+            }
+
+            for (int i=m_pos[pileIdx]->size()-1; i>=0; i--)
+            {
+                pileCorners << QPointF( xOffset[pileIdx]     + (*m_dispU[pileIdx])[i] - D/2.,
+                                        (*m_pos[pileIdx])[i] + (*m_dispV[pileIdx])[i] );
+            }
+        }
+        else
+        {
+            // undeformed pile
+
+            pileCorners << QPointF(xOffset[pileIdx] - D/2, L1)
+                        << QPointF(xOffset[pileIdx] - D/2, -L2[pileIdx])
+                        << QPointF(xOffset[pileIdx] + D/2, -L2[pileIdx])
+                        << QPointF(xOffset[pileIdx] + D/2, L1)
+                        << QPointF(xOffset[pileIdx] - D/2, L1);
+        }
 
         QwtPlotShapeItem *pileII = new QwtPlotShapeItem();
         pileII->setPolygon(pileCorners);
@@ -429,7 +424,7 @@ void SystemPlotQwt::refresh()
 
     QVector<double> x(5,0.0);
     QVector<double> y(5,0.0);
-
+QwtLegend
     x[0] = minX0 - maxD/2.; y[0] = L1 + maxH;
     x[1] = x[0];            y[1] = L1 - maxH;
     x[2] = maxX0 + maxD/2.; y[2] = y[1];
@@ -519,7 +514,6 @@ void SystemPlotQwt::refresh()
     }
 
 
-
     // Drawing Vertical Force Arrow using QwtPlotShapeItem
     /*
     QwtPlotShapeItem *arrowV = new QwtPlotShapeItem();
@@ -555,6 +549,31 @@ void SystemPlotQwt::refresh()
     plotItemList.append(arrow);
     }
     */
+
+    // status info
+    if (!mIsStable)
+    {
+        //
+        // TODO: write "unstable system" at center of the system plot
+        //
+
+        // this is the code from QCP
+
+        QwtPlotTextLabel *warning = new QwtPlotTextLabel();
+
+        QwtText title("unstable\nsystem");
+        title.setFont(QFont(font().family(), 36));
+        warning->setText(title);
+        warning->setMargin(8);
+        warning->attach(plot);
+
+        PLOTOBJECT var;
+        var.itemPtr = warning;
+        var.type    = PLType::OTHER;
+        var.index   = 0;
+        plotItemList.append(var);
+
+    }
 
     plot->replot();
 

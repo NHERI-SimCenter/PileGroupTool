@@ -27,6 +27,8 @@ DialogPreferences::DialogPreferences(QWidget *parent, QSettings *settings) :
 
     DLGsettings->beginGroup("general");
         DLGgraphicsLib       = DLGsettings->value("graphicsLibrary","QCP").toString();
+        //if (DLGgraphicsLib == "Qwt") { DLGgraphicsLib="QwtSystem"; }
+        if (DLGgraphicsLib == "Qwt") { DLGgraphicsLib="QwtAll"; }
         DLGfemAnalyzer       = DLGsettings->value("femAnalyzer","OpenSeesInt").toString();
     DLGsettings->endGroup();
 
@@ -39,6 +41,8 @@ DialogPreferences::DialogPreferences(QWidget *parent, QSettings *settings) :
         DLGshowStress        = DLGsettings->value("stress",1).toInt();
         DLGshowPultimate     = DLGsettings->value("pult",1).toInt();
         DLGshowY50           = DLGsettings->value("compliance",1).toInt();
+        DLGshowTultimate     = DLGsettings->value("tult",1).toInt();
+        DLGshowZ50           = DLGsettings->value("Zcompliance",1).toInt();
     DLGsettings->endGroup();
 
     // meshing parameters
@@ -63,7 +67,7 @@ DialogPreferences::~DialogPreferences()
 
 void DialogPreferences::InitGUI()
 {
-    if (DLGgraphicsLib == "Qwt")
+    if (DLGgraphicsLib == "QwtSystem" || DLGgraphicsLib == "QwtAll" || DLGgraphicsLib == "QwtResults" || DLGgraphicsLib == "Qwt")
         { ui->rbtn_useQwt->setChecked(true); }
     else
         { ui->rbtn_useQCP->setChecked(true); }  // default to QCP
@@ -79,6 +83,8 @@ void DialogPreferences::InitGUI()
     ui->chkBx_stress->setCheckState(DLGshowStress!=0?Qt::Checked:Qt::Unchecked);
     ui->chkBx_pu->setCheckState(DLGshowPultimate!=0?Qt::Checked:Qt::Unchecked);
     ui->chkBx_y50->setCheckState(DLGshowY50!=0?Qt::Checked:Qt::Unchecked);
+    ui->chkBx_tu->setCheckState(DLGshowTultimate!=0?Qt::Checked:Qt::Unchecked);
+    ui->chkBx_z50->setCheckState(DLGshowZ50!=0?Qt::Checked:Qt::Unchecked);
 
     ui->elementsAboveGround->setValue(DLGnumElementsInAir);
     ui->minElementsPerLayer->setValue(DLGminElementsPerLayer);
@@ -92,7 +98,8 @@ void DialogPreferences::on_buttonBox_clicked(QAbstractButton *button)
 
     DLGsettings->beginGroup("general");
         if (ui->rbtn_useQCP->isChecked()) {DLGgraphicsLib = QString("QCP");}
-        if (ui->rbtn_useQwt->isChecked()) {DLGgraphicsLib = QString("Qwt");}
+        //if (ui->rbtn_useQwt->isChecked()) {DLGgraphicsLib = QString("QwtSystem");}
+        if (ui->rbtn_useQwt->isChecked()) {DLGgraphicsLib = QString("QwtAll");}
 
         if (ui->rbtn_OpenSeesInt->isChecked()) {DLGfemAnalyzer = QString("OpenSeesInt");}
         if (ui->rbtn_OpenSeesExt->isChecked()) {DLGfemAnalyzer = QString("OpenSeesExt");}
@@ -110,6 +117,8 @@ void DialogPreferences::on_buttonBox_clicked(QAbstractButton *button)
         DLGshowStress        = 1;
         DLGshowPultimate     = 1;
         DLGshowY50           = 1;
+        DLGshowTultimate     = 1;
+        DLGshowZ50           = 1;
 
         DLGsettings->setValue("displacements",DLGshowDisplacements);
         DLGsettings->setValue("pullout",DLGshowPullOut);
@@ -119,6 +128,8 @@ void DialogPreferences::on_buttonBox_clicked(QAbstractButton *button)
         DLGsettings->setValue("stress",DLGshowStress);
         DLGsettings->setValue("pult",DLGshowPultimate);
         DLGsettings->setValue("compliance",DLGshowY50);
+        DLGsettings->setValue("tult",DLGshowTultimate);
+        DLGsettings->setValue("Zcompliance",DLGshowZ50);
     DLGsettings->endGroup();
 
     // meshing parameters
@@ -200,6 +211,22 @@ void DialogPreferences::on_chkBx_y50_stateChanged(int arg1)
     DLGsettings->endGroup();
 }
 
+void DialogPreferences::on_chkBx_tu_stateChanged(int arg1)
+{
+    DLGshowTultimate = arg1==Qt::Checked?1:0;
+    DLGsettings->beginGroup("viewer");
+        DLGsettings->setValue("tult",DLGshowTultimate);
+    DLGsettings->endGroup();
+}
+
+void DialogPreferences::on_chkBx_z50_stateChanged(int arg1)
+{
+    DLGshowZ50 = arg1==Qt::Checked?1:0;
+    DLGsettings->beginGroup("viewer");
+        DLGsettings->setValue("Zcompliance",DLGshowZ50);
+    DLGsettings->endGroup();
+}
+
 /* general settings block */
 
 void DialogPreferences::on_rbtn_useQCP_clicked(bool checked)
@@ -216,7 +243,8 @@ void DialogPreferences::on_rbtn_useQwt_clicked(bool checked)
 {
     if (!checked) return;
 
-    DLGgraphicsLib = QString("Qwt");
+    //DLGgraphicsLib = QString("QwtSystem");
+    DLGgraphicsLib = QString("QwtAll");
     DLGsettings->beginGroup("general");
         DLGsettings->setValue("graphicsLibrary",DLGgraphicsLib);
     DLGsettings->endGroup();

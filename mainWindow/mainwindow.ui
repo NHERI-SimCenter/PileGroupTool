@@ -27,24 +27,42 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_11">
-    <item row="0" column="0" colspan="5">
-     <widget class="HeaderWidget" name="headerWidget">
+    <item row="1" column="1">
+     <widget class="QTabWidget" name="tabWidget_system">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>3</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="minimumSize">
        <size>
         <width>0</width>
         <height>0</height>
        </size>
       </property>
-     </widget>
-    </item>
-    <item row="2" column="0" colspan="5">
-     <widget class="FooterWidget" name="footerWidget">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
+      <property name="currentIndex">
+       <number>0</number>
       </property>
+      <widget class="QWidget" name="systemTab">
+       <attribute name="title">
+        <string>System Plot</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+       </layout>
+      </widget>
      </widget>
     </item>
     <item row="1" column="0">
@@ -1309,7 +1327,7 @@ Layers 1 &amp; 2:</string>
       </item>
      </layout>
     </item>
-    <item row="1" column="4">
+    <item row="1" column="2">
      <widget class="QTabWidget" name="tabWidget">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -1327,7 +1345,7 @@ Layers 1 &amp; 2:</string>
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>9</number>
       </property>
       <widget class="QWidget" name="dispTab">
        <attribute name="title">
@@ -1481,44 +1499,64 @@ Layers 1 &amp; 2:</string>
         </property>
        </layout>
       </widget>
+      <widget class="QWidget" name="tultTab">
+       <attribute name="title">
+        <string>t_ult</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_21">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="z50Tab">
+       <attribute name="title">
+        <string>z50</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_22">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+       </layout>
+      </widget>
      </widget>
     </item>
-    <item row="1" column="3">
-     <widget class="QTabWidget" name="tabWidget_system">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>3</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
+    <item row="0" column="0" colspan="3">
+     <widget class="HeaderWidget" name="headerWidget">
       <property name="minimumSize">
        <size>
         <width>0</width>
         <height>0</height>
        </size>
       </property>
-      <property name="currentIndex">
-       <number>0</number>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="3">
+     <widget class="FooterWidget" name="footerWidget">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
       </property>
-      <widget class="QWidget" name="systemTab">
-       <attribute name="title">
-        <string>System Plot</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_2">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-       </layout>
-      </widget>
      </widget>
     </item>
    </layout>

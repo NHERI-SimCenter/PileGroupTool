@@ -319,7 +319,7 @@ void PileFEAmodeler::setAnalysisType(QString)
     DISABLE_STATE(AnalysisState::analysisValid);
 }
 
-void PileFEAmodeler::doAnalysis()
+bool PileFEAmodeler::doAnalysis()
 {
     if (!CHECK_STATE(AnalysisState::meshValid))
     {
@@ -349,14 +349,20 @@ void PileFEAmodeler::doAnalysis()
     // the solution exists, but it may or may not be valid !
     ENABLE_STATE(AnalysisState::solutionAvailable);
 
+    bool isConverged;
+
     if (converged < 0)
     {
         DISABLE_STATE(AnalysisState::solutionValid);
+        isConverged = false;
     }
     else
     {
         ENABLE_STATE(AnalysisState::solutionValid);
+        isConverged = true;
     }
+
+    return isConverged;
 }
 
 void PileFEAmodeler::buildMesh()
@@ -1288,7 +1294,7 @@ void PileFEAmodeler::buildAnalysis()
     //
 
     AnalysisModel     *theModel      = new AnalysisModel();
-    CTestNormDispIncr *theTest       = new CTestNormDispIncr(1.0e-3, 20, 0);
+    CTestNormDispIncr *theTest       = new CTestNormDispIncr(1.0e-3, 25, 0);
     EquiSolnAlgo      *theSolnAlgo   = new NewtonRaphson();
     StaticIntegrator  *theIntegrator = new LoadControl(0.05, 1, 0.05, 0.05);
     ConstraintHandler *theHandler    = new PenaltyConstraintHandler(1.0e14, 1.0e14);
@@ -1376,24 +1382,22 @@ void PileFEAmodeler::clearPlotBuffers()
 
 int PileFEAmodeler::extractPlotData()
 {
-    if ( CHECK_STATE(AnalysisState::dataExtracted)) return 0;
+    if ( CHECK_STATE(AnalysisState::solutionAvailable) && CHECK_STATE(AnalysisState::dataExtracted)) return 0;
 
     if (!CHECK_STATE(AnalysisState::solutionAvailable)) this->doAnalysis();
 
-    if (!CHECK_STATE(AnalysisState::solutionValid)) return -1;
-
     this->clearPlotBuffers();
 
-    int pileIdx;
-
-    for (pileIdx=0; pileIdx<numPiles; pileIdx++) {
+    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
         //
         // allocate storage for results from pile with pileIdx
         //
         locList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+
         lateralDispList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
         axialDispList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+
         MomentList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
         ShearList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
         AxialList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
@@ -1404,7 +1408,12 @@ int PileFEAmodeler::extractPlotData()
         //y50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
         //tultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
         //z50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
+    }
 
+    if (!CHECK_STATE(AnalysisState::solutionValid)) return -1;
+
+    for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
+    {
         //
         // collect nodal results
         //
@@ -1452,14 +1461,14 @@ int PileFEAmodeler::extractPlotData()
             const Vector &eleForces = theEle->getResistingForce();
 
             (*MomentList[pileIdx])[i] = eleForces(10);
-
-            (*ShearList[pileIdx])[i] = eleForces(6);
-
-            (*AxialList[pileIdx])[i] = eleForces(8);
+            (*ShearList[pileIdx])[i]  = eleForces(6);
+            (*AxialList[pileIdx])[i]  = eleForces(8);
         }
     }
 
     ENABLE_STATE(AnalysisState::dataExtracted);
+
+    return 0;
 }
 
 void PileFEAmodeler::dumpDomain(QString filename)

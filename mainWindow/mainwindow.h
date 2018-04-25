@@ -186,7 +186,7 @@ private:
     QSettings *settings = NULL;
 
     // general settings
-    QString useGraphicsLib;  // "QCP" or "Qwt"
+    QString useGraphicsLib;  // "QCP" or "QwtAll" or "QwtSystem" or "QwtResults"
     QString useFEAnalyzer;   // "OpenSeesInt" is currently the only implemented option
 
     // viewer settings
@@ -198,6 +198,8 @@ private:
     bool showStress;
     bool showPultimate;
     bool showY50;
+    bool showTultimate;
+    bool showZ50;
 
     // meshing parameters
     int minElementsPerLayer = MIN_ELEMENTS_PER_LAYER;
@@ -224,6 +226,8 @@ private:
      ResultPlotSuper *stressPlot;
      ResultPlotSuper *pultPlot;
      ResultPlotSuper *y50Plot;
+     ResultPlotSuper *tultPlot;
+     ResultPlotSuper *z50Plot;
 
 };
 
