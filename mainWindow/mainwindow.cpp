@@ -1070,6 +1070,17 @@ void MainWindow::updateSystemPlot()
     }
     systemPlot->updateSoil(layerDepth);
 
+    displPlot->updateSoil(layerDepth);
+    pullOutPlot->updateSoil(layerDepth);
+    momentPlot->updateSoil(layerDepth);
+    shearPlot->updateSoil(layerDepth);
+    axialPlot->updateSoil(layerDepth);
+    stressPlot->updateSoil(layerDepth);
+    pultPlot->updateSoil(layerDepth);
+    y50Plot->updateSoil(layerDepth);
+    tultPlot->updateSoil(layerDepth);
+    z50Plot->updateSoil(layerDepth);
+
     //
     // update ground water table
     //
