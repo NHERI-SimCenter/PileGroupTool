@@ -105,6 +105,7 @@ void ResultPlotQwt::plotResults(QVector<QVector<double> *> &y,
 
         layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
         layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
+        // layerII->setBrush(QBrush(BRUSH_COLOR[iLayer+12]));  // use for paler colors
         layerII->setZ(0);
 
         layerII->attach( plot );

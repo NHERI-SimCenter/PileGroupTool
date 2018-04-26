@@ -64,7 +64,13 @@ static QVector<QColor> BRUSH_COLOR({
                                        QColor( 63, 127, 255, 255),
                                        QColor(127, 255, 255, 127),
                                        QColor( 95, 191, 255, 127),
-                                       QColor( 63, 127, 255, 127)
+                                       QColor( 63, 127, 255, 127),
+                                       QColor(255, 127, 0, 63),
+                                       QColor(191,  95, 0, 63),
+                                       QColor(127,  63, 0, 63),
+                                       QColor(127, 255, 0, 63),
+                                       QColor( 95, 191, 0, 63),
+                                       QColor( 63, 127, 0, 63)
                                     });
 #define GROUND_WATER_BLUE QColor(127,127,255,192)
 
