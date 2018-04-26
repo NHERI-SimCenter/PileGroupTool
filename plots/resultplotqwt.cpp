@@ -2,6 +2,7 @@
 #include "qwt_plot.h"
 #include "qwt_plot_curve.h"
 #include "qwt_legend.h"
+#include <qwt_plot_shapeitem.h>
 #include <qwt_plot_grid.h>
 
 #include <QPolygonF>
@@ -82,6 +83,36 @@ void ResultPlotQwt::plotResults(QVector<QVector<double> *> &y,
     curve->setSamples(poly);
     curve->setItemAttribute(QwtPlotItem::Legend, false);
     curve->attach(plot);
+
+    //
+    // Plot Ground Layers
+    //
+    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
+
+        double xl = -50.;
+        double xr =  50.;
+
+        QPolygonF groundCorners;
+        groundCorners << QPointF(xl , -depthOfLayer[iLayer]  )
+                      << QPointF(xl , -depthOfLayer[iLayer+1])
+                      << QPointF(xr , -depthOfLayer[iLayer+1])
+                      << QPointF(xr , -depthOfLayer[iLayer]  )
+                      << QPointF(xl , -depthOfLayer[iLayer]  );
+
+        QwtPlotShapeItem *layerII = new QwtPlotShapeItem();
+
+        layerII->setPolygon(groundCorners);
+
+        layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
+        layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
+        layerII->setZ(0);
+
+        layerII->attach( plot );
+        layerII->setItemAttribute(QwtPlotItem::Legend, false);
+    }
+
+
+    // results curves
 
     for (int ii=0; ii<numPiles; ii++) {
         QwtPlotCurve *mCurve = new QwtPlotCurve();
