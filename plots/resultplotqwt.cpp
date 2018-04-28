@@ -73,11 +73,6 @@ void ResultPlotQwt::plotResults(QVector<QVector<double> *> &y,
     //
     plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
 
-    //plot->addGraph();
-    //plot->graph(0)->setData(QVector<double>(maxPts, 0.0),*xOffset);
-    //plot->graph(0)->setPen(QPen(Qt::black));
-    //plot->graph(0)->removeFromLegend();
-
     QwtPlotCurve *curve = new QwtPlotCurve();
     curve->setPen(Qt::black, 1);
     QPolygonF poly;
@@ -86,52 +81,14 @@ void ResultPlotQwt::plotResults(QVector<QVector<double> *> &y,
     curve->setItemAttribute(QwtPlotItem::Legend, false);
     curve->attach(plot);
 
-    //
-    // Plot Ground Layers
-    //
-    /*
-    for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
-
-        double xl = -50.;
-        double xr =  50.;
-        // Where is L1?
-        double L1 = 1.0;
-        double heightAbovePileCap = 1;
-        double maxH = 0.5;
-        //double maxD = 0.0;
-        //double D = pileDiameter[pileIdx];
-        //if (D>maxD) maxD = D;
-        //maxH = maxD;
-        //if (maxH > L1/2.) maxH = L1/2.;
-        // Adjust y-axis to match Ground Layer Depth and slightly above pilecap
-        plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + maxH + heightAbovePileCap );
-        //qWarning() << QString::number(L1 + maxH + heightAbovePileCap);
-
-        QPolygonF groundCorners;
-        groundCorners << QPointF(xl , -depthOfLayer[iLayer]  )
-                      << QPointF(xl , -depthOfLayer[iLayer+1])
-                      << QPointF(xr , -depthOfLayer[iLayer+1])
-                      << QPointF(xr , -depthOfLayer[iLayer]  )
-                      << QPointF(xl , -depthOfLayer[iLayer]  );
-
-        QwtPlotShapeItem *layerII = new QwtPlotShapeItem();
-
-        layerII->setPolygon(groundCorners);
-
-        layerII->setPen(QPen(BRUSH_COLOR[iLayer], 1));
-        layerII->setBrush(QBrush(BRUSH_COLOR[iLayer]));
-        layerII->setZ(0);
-
-        layerII->attach( plot );
-        layerII->setItemAttribute(QwtPlotItem::Legend, false);
-    }
-    */
 
     double xl =  99999.;
     double xr = -99999.;
-    double range = 0.0 ;
 
-    // results curves
+    //
+    // plot results curves
+    //
+
     for (int ii=0; ii<numPiles; ii++) {
 
         QwtPlotCurve *mCurve = new QwtPlotCurve();
@@ -147,26 +104,19 @@ void ResultPlotQwt::plotResults(QVector<QVector<double> *> &y,
         mCurve->setItemAttribute(QwtPlotItem::Legend, true);
 
         QRectF limits = mCurve->boundingRect();
-        if (range < (limits.right()-limits.left())) range = limits.right()-limits.left();
         if (xl > limits.left())  xl = limits.left();
         if (xr < limits.right()) xr = limits.right();
     }
 
+    //
+    // Plot Ground Layers
+    //
+
+    double range = (xr - xl) ;
     xl -= 0.1*range;
     xr += 0.1*range;
 
-    plot->setAxisScale( QwtPlot::xBottom, xl, xr);
-
     for (int iLayer=0; iLayer<MAXLAYERS; iLayer++) {
-
-        // These values should probably not be hard coded here
-        // but they should be shared with the system plot
-        double L1 = 1.0;
-        double heightAbovePileCap = 1;
-        double maxH = 0.5;
-
-        plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3],
-                L1 + maxH + heightAbovePileCap);
 
         QPolygonF groundCorners;
         groundCorners << QPointF(xl , -depthOfLayer[iLayer]  )
@@ -185,10 +135,13 @@ void ResultPlotQwt::plotResults(QVector<QVector<double> *> &y,
         layerII->setItemAttribute(QwtPlotItem::Legend, false);
     }
 
-    //plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    //plot->axisRect()->autoMargins();
-    //plot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignLeft|Qt::AlignBottom);
-    //plot->rescaleAxes();
+    //
+    // setting up plot dimensions
+    //
+    double L1 = (*x[0]).last();
+
+    plot->setAxisScale( QwtPlot::xBottom, xl, xr);
+    plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + 1.50);
 
     // Create Background Grid for Plot
     grid = new QwtPlotGrid();
