@@ -284,6 +284,7 @@ void SystemPlotQwt::refresh()
     // Adjust y-axis to match Ground Layer Depth and slightly above pilecap
     double heightAbovePileCap = 1;
     plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + maxH + heightAbovePileCap );
+    //qWarning() << QString::number(maxD);
 
     //
     // Plot Ground Water Table
