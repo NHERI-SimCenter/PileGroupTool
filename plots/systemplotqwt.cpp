@@ -168,9 +168,9 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 
     double coords[ QwtPlot::axisCnt ];
     coords[ QwtPlot::xBottom ] = plot->canvasMap( QwtPlot::xBottom ).invTransform( pos.x() );
-    coords[ QwtPlot::xTop ]    = plot->canvasMap( QwtPlot::xTop ).invTransform( pos.x() );
-    coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft ).invTransform( pos.y() );
-    coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight ).invTransform( pos.y() );
+    coords[ QwtPlot::xTop ]    = plot->canvasMap( QwtPlot::xTop    ).invTransform( pos.x() );
+    coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft   ).invTransform( pos.y() );
+    coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight  ).invTransform( pos.y() );
 
     PLOTOBJECT    obj = itemAt(pos);
     QwtPlotItem *item = obj.itemPtr;
@@ -404,40 +404,6 @@ void SystemPlotQwt::refresh()
         plotItemList.append(var);
     }
 
-    /*
-    // Testing percentage12 for deformation
-    double percentage12temp(P/MAX_H_FORCE);
-    QPolygonF testCorners;
-    testCorners   << QPointF(-2, -5)
-                  << QPointF(-2+ 0.75*percentage12temp,-4)
-                  << QPointF( 2+ 0.75*percentage12temp,-4)
-                  << QPointF( 2,-5)
-                  << QPointF(-2,-5);
-    QwtPlotShapeItem *testObject = new QwtPlotShapeItem();
-    testObject->setPolygon(testCorners);
-    testObject->setPen(QPen(Qt::black, 1));
-    testObject->setBrush(QBrush(Qt::blue));
-    testObject->setZ(10);
-    testObject->attach( plot );
-
-    PLOTOBJECT testsq;
-    testsq.itemPtr = testObject;
-    testsq.type    = PLType::OTHER;
-    testsq.index   = -1;
-    plotItemList.append(testsq);
-
-
-    qWarning() << "surfaceDisp = "    + QString::number(surfaceDisp);
-    qWarning() << "percentageBase = " + QString::number(percentageBase);
-    qWarning() << "percentage12 = "   + QString::number(percentage12);
-    qWarning() << "percentage23 = "   + QString::number(percentage23);
-    qWarning() << "percentage12temp = "   + QString::number(percentage12temp);
-    qWarning() << "P = "              + QString::number(P);
-    qWarning() << "PV = "             + QString::number(PV);
-
-    // Test end
-    */
-
     //
     // Plot PileCaps
     //
@@ -564,7 +530,102 @@ QwtLegend
     }
 #endif
 
+    // Plot Scaling Parameters
 
+    QPointF plotZero     = QPointF(0, 0);
+    QPointF deltaPoint   = QPointF(5, 5);
+    //QPointF deltaPoint2   = QPointF(10, 10);
+
+    double pileCapCenter = 0.5 * (minX0 + maxX0);
+    QPointF forceOrigin  = QPointF(pileCapCenter, L1 + maxH);
+
+    double deltaPointx   = plot->canvasMap( QwtPlot::xBottom ).transform(deltaPoint.x());
+    double zeroPointx    = plot->canvasMap( QwtPlot::xBottom).transform(plotZero.x());
+
+    double deltaPointy   = plot->canvasMap( QwtPlot::yLeft ).transform(deltaPoint.y());
+    double zeroPointy    = plot->canvasMap( QwtPlot::yLeft ).transform(plotZero.y());
+    //double deltaPoint2x   = plot->canvasMap( QwtPlot::xBottom ).transform(deltaPoint2.x());
+    //double deltaPoint2y   = plot->canvasMap( QwtPlot::yLeft ).transform(deltaPoint2.y());
+
+    double xScalar = 5/(deltaPointx-zeroPointx);
+    double yScalar = 5/(deltaPointy-zeroPointy);
+
+    double deltaPxInv = plot->canvasMap( QwtPlot::xTop  ).invTransform(deltaPoint.x());
+    double zeroPxInv  = plot->canvasMap( QwtPlot::xTop  ).invTransform(plotZero.x());
+    double deltaPyInv = plot->canvasMap( QwtPlot::yLeft ).invTransform(deltaPoint.y());
+    double zeroPyInv  = plot->canvasMap( QwtPlot::yLeft ).invTransform(plotZero.y());
+
+    //double xScalar = 5/(deltaPxInv-zeroPxInv);
+    //double yScalar = 5/(deltaPyInv-zeroPyInv);
+
+
+    qWarning() << "zeroPointx = "      + QString::number(zeroPointx);
+    qWarning() << "zeroPointy = "      + QString::number(zeroPointy);
+    qWarning() << "deltaPointx = "      + QString::number(deltaPointx);
+    qWarning() << "deltaPointy = "      + QString::number(deltaPointy);
+    qWarning() << " ";
+
+
+    //qWarning() << "deltaPxInv = "      + QString::number(deltaPxInv);
+    //qWarning() << "deltaPyInv = "      + QString::number(deltaPyInv);
+    //qWarning() << "zeroPxInv = "      + QString::number(zeroPxInv);
+    //qWarning() << "zeroPyInv = "      + QString::number(zeroPyInv);
+
+    qWarning() << "xScalar = "      + QString::number(xScalar);
+    qWarning() << "yScalar = "      + QString::number(yScalar);
+
+    // Test
+    QPolygonF testCorners;
+    double testLength(1); // in screen coordinates dimensions
+    testCorners   << forceOrigin
+                  << QPointF( testLength*xScalar, forceOrigin.y())
+                  << QPointF( testLength*xScalar,testLength*yScalar)
+                  << QPointF( forceOrigin.x(),testLength*yScalar)
+                  << forceOrigin;
+
+    QwtPlotShapeItem *testObject = new QwtPlotShapeItem();
+    testObject->setPolygon(testCorners);
+    testObject->setPen(QPen(Qt::black, 1));
+    testObject->setBrush(QBrush(Qt::blue));
+    testObject->setZ(10);
+    testObject->attach( plot );
+
+    PLOTOBJECT testsq;
+    testsq.itemPtr = testObject;
+    testsq.type    = PLType::OTHER;
+    testsq.index   = -1;
+    plotItemList.append(testsq);
+    // Test End
+
+    //
+    // Plotting the Applied Moment
+    //
+
+    QwtPlotCurve *moment = new QwtPlotCurve();
+    QPolygonF pointsOnMomentCurve;
+
+    double mR = 1; // Moment Radius in screen coordinates
+    double alpha = (1 - abs(PMom)/MAX_MOMENT) * (3.14159 / 2);
+    pointsOnMomentCurve << (forceOrigin + QPointF(mR*xScalar, 0))
+                        <<  forceOrigin;
+
+    moment->setSamples(pointsOnMomentCurve);
+    moment->setPen(QPen(Qt::red, 4));
+    // moment->setBrush(QBrush(Qt::blue));
+    //moment->setZ(10);
+
+    if (PMom != 0){
+        moment->attach( plot );
+
+        PLOTOBJECT var;
+        var.itemPtr = moment;
+        var.type    = PLType::LOAD;
+        var.index   = 2;
+        plotItemList.append(var);
+    }
+
+
+    //
     // Drawing Horizontal Force Arrow using QwtPlotShapeItem
     //
     QwtPlotShapeItem *arrow = new QwtPlotShapeItem();
@@ -584,10 +645,10 @@ QwtLegend
     arrow->setPen( pen );
     arrow->setBrush( Qt::red );
 
-    double pileCapCenter  = 0.5 * (minX0 + maxX0),
-           arrowThickness = 0.07,
-           arrowHead = 0.3,
-           arrowHeadLength = 0.8;
+    // Horizontal Force Arrow dimensions
+    double arrowThickness  = 0.3 * yScalar,
+           arrowHead       = 1   * yScalar,
+           arrowHeadLength = 0.3 * xScalar;
 
     if (forceArrowRatio < 0) {arrowHeadLength = -arrowHeadLength;}
 
@@ -605,16 +666,16 @@ QwtLegend
     if (forceArrowRatio != 0){
         arrow->attach( plot );
 
-    PLOTOBJECT var;
-    var.itemPtr = arrow;
-    var.type    = PLType::LOAD;
-    var.index   = 0;
-    plotItemList.append(var);
+        PLOTOBJECT var;
+        var.itemPtr = arrow;
+        var.type    = PLType::LOAD;
+        var.index   = 0;
+        plotItemList.append(var);
     }
 
 
     // Drawing Vertical Force Arrow using QwtPlotShapeItem
-
+    /*
     QwtPlotShapeItem *arrowV = new QwtPlotShapeItem();
 
     double forceArrowRatioV = PV/MAX_V_FORCE,
@@ -650,14 +711,15 @@ QwtLegend
     //arrowV->setZ	( 3 );
 
     if (forceArrowRatioV != 0){
-    arrowV->attach( plot );
+        arrowV->attach( plot );
 
-    PLOTOBJECT var2;
-    var2.itemPtr = arrowV;
-    var2.type    = PLType::LOAD;
-    var2.index   = 1;
-    plotItemList.append(var2);
+        PLOTOBJECT var2;
+        var2.itemPtr = arrowV;
+        var2.type    = PLType::LOAD;
+        var2.index   = 1;
+        plotItemList.append(var2);
     }
+    */
 
 
     // status info
