@@ -1070,6 +1070,19 @@ void MainWindow::updateSystemPlot()
     }
     systemPlot->updateSoil(layerDepth);
 
+    this->updateSoilResultPlots(layerDepth);
+
+    displPlot->updateSoil(layerDepth);
+    pullOutPlot->updateSoil(layerDepth);
+    momentPlot->updateSoil(layerDepth);
+    shearPlot->updateSoil(layerDepth);
+    axialPlot->updateSoil(layerDepth);
+    stressPlot->updateSoil(layerDepth);
+    pultPlot->updateSoil(layerDepth);
+    y50Plot->updateSoil(layerDepth);
+    tultPlot->updateSoil(layerDepth);
+    z50Plot->updateSoil(layerDepth);
+
     //
     // update ground water table
     //
@@ -1112,6 +1125,35 @@ void MainWindow::updateSystemPlot()
     // refresh the plot
     //
     systemPlot->refresh();
+    this->refreshResultPlots();
+}
+
+void MainWindow::updateSoilResultPlots(QVector<double> &layerDepth)
+{
+    displPlot->updateSoil(layerDepth);
+    pullOutPlot->updateSoil(layerDepth);
+    momentPlot->updateSoil(layerDepth);
+    shearPlot->updateSoil(layerDepth);
+    axialPlot->updateSoil(layerDepth);
+    stressPlot->updateSoil(layerDepth);
+    pultPlot->updateSoil(layerDepth);
+    y50Plot->updateSoil(layerDepth);
+    tultPlot->updateSoil(layerDepth);
+    z50Plot->updateSoil(layerDepth);
+}
+
+void MainWindow::refreshResultPlots()
+{
+    displPlot->refresh();
+    pullOutPlot->refresh();
+    momentPlot->refresh();
+    shearPlot->refresh();
+    axialPlot->refresh();
+    stressPlot->refresh();
+    pultPlot->refresh();
+    y50Plot->refresh();
+    tultPlot->refresh();
+    z50Plot->refresh();
 }
 
 void MainWindow::on_layerSelectedInSystemPlot(bool selected)

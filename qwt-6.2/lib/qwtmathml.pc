@@ -1,4 +1,4 @@
-prefix=/Users/pmackenz/Qt/5.10.0/clang_64
+prefix=/Users/tatsuhikosweet/Qt/5.9.2/clang_64
 exec_prefix=${prefix}
 libdir=./qwt-6.2.0/lib
 includedir=./qwt-6.2.0/include

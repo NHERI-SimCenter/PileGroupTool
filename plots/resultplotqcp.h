@@ -10,7 +10,7 @@ class ResultPlotQCP : public ResultPlotSuper
 public:
     ResultPlotQCP(QWidget *parent = nullptr);
     ~ResultPlotQCP();
-    void plotResults(QVector<QVector<double> *> &x, QVector<QVector<double> *> &y);
+    void refresh(void);
 
 protected:
     QCustomPlot *plot;
