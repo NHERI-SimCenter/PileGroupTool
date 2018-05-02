@@ -28,6 +28,7 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     // Create a QwtPlot
     //
     plot = new QwtPlot(this);
+    plot->setCanvasBackground(QBrush(Qt::white));
     plotItemList.clear();
 
     // Create Background Grid for Plot
@@ -43,7 +44,7 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     this->setLayout(lyt);
 
     //Picker
-    QwtPicker *picker = new QwtPicker(plot -> canvas());
+    QwtPicker *picker = new QwtPicker(plot->canvas());
     picker->setStateMachine(new QwtPickerClickPointMachine);
     picker->setTrackerMode(QwtPicker::AlwaysOff);
     picker->setRubberBand(QwtPicker::RectRubberBand);
@@ -513,57 +514,6 @@ void SystemPlotQwt::refresh()
         var.index   = pileIdx;
         plotItemList.append(var);
     }
-
-
-
-#if 0
-    // plot the pile cap
-
-    plot->setCurrentLayer("piles");
-
-    QVector<double> x(5,0.0);
-    QVector<double> y(5,0.0);
-QwtLegend
-    x[0] = minX0 - maxD/2.; y[0] = L1 + maxH;
-    x[1] = x[0];            y[1] = L1 - maxH;
-    x[2] = maxX0 + maxD/2.; y[2] = y[1];
-    x[3] = x[2];            y[3] = y[0];
-    x[4] = x[0];            y[4] = y[0];
-
-    QCPCurve *pileCap = new QCPCurve(plot->xAxis, plot->yAxis);
-    pileCap->setData(x,y);
-    pileCap->setPen(QPen(Qt::black, 1));
-    pileCap->setBrush(QBrush(Qt::gray));
-    pileCap->removeFromLegend();
-
-    // plot the piles
-    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
-
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        double D = pileDiameter[pileIdx];
-
-        x[0] = xOffset[pileIdx] - D/2.; y[0] = L1;
-        x[1] = x[0];                    y[1] = -L2[pileIdx];
-        x[2] = xOffset[pileIdx] + D/2.; y[2] = y[1];
-        x[3] = x[2];                    y[3] = y[0];
-        x[4] = x[0];                    y[4] = y[0];
-
-        QCPCurve *pileII = new QCPCurve(plot->xAxis, plot->yAxis);
-        pileII->setData(x,y);
-        if (pileIdx == activePileIdx) {
-            pileII->setPen(QPen(Qt::red, 2));
-            pileII->setBrush(QBrush(BRUSH_COLOR[9+pileIdx]));
-        }
-        else {
-            pileII->setPen(QPen(Qt::black, 1));
-            pileII->setBrush(QBrush(BRUSH_COLOR[6+pileIdx]));
-        }
-        pileII->setName(QString("Pile #%1").arg(pileIdx+1));
-    }
-#endif
-
 
     // Drawing Horizontal Force Arrow using QwtPlotShapeItem
     //

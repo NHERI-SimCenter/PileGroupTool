@@ -15,6 +15,7 @@ ResultPlotQwt::ResultPlotQwt(QWidget *parent) :
     ResultPlotSuper(parent)
 {
     plot = new QwtPlot(this);
+    plot->setCanvasBackground(QBrush(Qt::white));
     grid = NULL;
 
     QGridLayout *lyt = new QGridLayout(this);
@@ -29,14 +30,12 @@ ResultPlotQwt::~ResultPlotQwt()
     delete plot;
 }
 
-void ResultPlotQwt::plotResults(QVector<QVector<double> *> &y,
-                                QVector<QVector<double> *> &x)
+void ResultPlotQwt::refresh(void)
 {
-    /*
-     * MAKE SURE THE LENGTH OF THE VECTORS IN ALL PLOTS MATCHES THE ACTUAL PILE
-     *
-     * NO MORE RANGE CHECKING!
-     */
+    int numPiles = m_x.size();
+    if (m_y.size() < numPiles) numPiles = m_y.size();
+    if (numPiles < 1) return;
+
     if (grid)
     {
         delete grid;
@@ -45,16 +44,14 @@ void ResultPlotQwt::plotResults(QVector<QVector<double> *> &y,
 
     QVector<double> *xOffset;
 
-    int numPiles = x.size();
-
     int maxPts = -1;
 
     for (int i=0; i<numPiles; i++)
     {
-        if (x[i]->size() > maxPts)
+        if (m_x[i]->size() > maxPts)
         {
-            maxPts = x[i]->size();
-            xOffset = y[i];
+            maxPts = m_x[i]->size();
+            xOffset = m_y[i];
         }
     }
 
@@ -93,8 +90,8 @@ void ResultPlotQwt::plotResults(QVector<QVector<double> *> &y,
 
         QwtPlotCurve *mCurve = new QwtPlotCurve();
         QPolygonF points;
-        for (int j=0; j<x[ii]->length(); j++) {
-            points << QPointF( (*x[ii])[j],(*y[ii])[j] );
+        for (int j=0; j<m_x[ii]->length(); j++) {
+            points << QPointF( (*m_x[ii])[j],(*m_y[ii])[j] );
         }
 
         mCurve->setSamples(points);
@@ -138,7 +135,7 @@ void ResultPlotQwt::plotResults(QVector<QVector<double> *> &y,
     //
     // setting up plot dimensions
     //
-    double L1 = (*x[0]).last();
+    double L1 = (*m_x[0]).last();
 
     plot->setAxisScale( QwtPlot::xBottom, xl, xr);
     plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + 1.50);
