@@ -66,3 +66,12 @@ void ResultPlotSuper::updateSoil(QVector<double> &layerDepth)
         upToDate = false;
     }
 }
+
+void ResultPlotSuper::plotResults(QVector<QVector<double> *> &y,
+                                  QVector<QVector<double> *> &x)
+{
+    m_x = x;
+    m_y = y;
+
+    this->refresh();
+}
