@@ -269,11 +269,6 @@ void SystemPlotQwt::refresh()
     double xl = xbar - W/2;
     double xr = xbar + W/2;
 
-
-    //
-    // HERE IS WHERE TO START ...
-    //
-
     //
     // Plot Legend
     //
@@ -281,42 +276,14 @@ void SystemPlotQwt::refresh()
 
     // Adjust x-axis to match Ground Layer Width
     plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
+
     // Adjust y-axis to match Ground Layer Depth and slightly above pilecap
     double heightAbovePileCap = 1;
     plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + maxH + heightAbovePileCap );
-    //qWarning() << QString::number(maxD);
 
     //
     // Plot Ground Water Table
     //
-
-    //plot->setCurrentLayer("groundwater");
-    /*
-    if (gwtDepth < (H-L1)) {
-        QPolygonF(groundwaterCorners);
-        groundwaterCorners << QPointF(xl, -gwtDepth)
-                           << QPointF(xl, -(H - L1))
-                           << QPointF(xr, -(H - L1))
-                           << QPointF(xr, -gwtDepth)
-                           << QPointF(xl, -gwtDepth);
-
-        QwtPlotShapeItem *water = new QwtPlotShapeItem();
-        water->setPolygon(groundwaterCorners);
-
-        water->setPen(QPen(Qt::blue, 2));
-        water->setBrush(QBrush(GROUND_WATER_BLUE));
-
-        water->setTitle(QString("Groundwater"));
-        water->attach( plot );
-        water->setItemAttribute(QwtPlotItem::Legend, true);
-
-        PLOTOBJECT var;
-        var.itemPtr = water;
-        var.type    = PLType::WATER;
-        var.index   = -1;
-        plotItemList.append(var);
-    }
-    */
 
     if (gwtDepth < (H-L1)) {
         QPolygonF(groundwaterCorners);
