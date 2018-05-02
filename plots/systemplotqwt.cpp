@@ -534,53 +534,33 @@ QwtLegend
 
     QPointF plotZero     = QPointF(0, 0);
     QPointF deltaPoint   = QPointF(5, 5);
-    //QPointF deltaPoint2   = QPointF(10, 10);
 
     double pileCapCenter = 0.5 * (minX0 + maxX0);
     QPointF forceOrigin  = QPointF(pileCapCenter, L1 + maxH);
 
-    double deltaPointx   = plot->canvasMap( QwtPlot::xBottom ).transform(deltaPoint.x());
+    double deltaPointx   = plot->canvasMap( QwtPlot::xBottom).transform(deltaPoint.x());
     double zeroPointx    = plot->canvasMap( QwtPlot::xBottom).transform(plotZero.x());
-
-    double deltaPointy   = plot->canvasMap( QwtPlot::yLeft ).transform(deltaPoint.y());
-    double zeroPointy    = plot->canvasMap( QwtPlot::yLeft ).transform(plotZero.y());
-    //double deltaPoint2x   = plot->canvasMap( QwtPlot::xBottom ).transform(deltaPoint2.x());
-    //double deltaPoint2y   = plot->canvasMap( QwtPlot::yLeft ).transform(deltaPoint2.y());
+    double deltaPointy   = plot->canvasMap( QwtPlot::yLeft  ).transform(deltaPoint.y());
+    double zeroPointy    = plot->canvasMap( QwtPlot::yLeft  ).transform(plotZero.y());
 
     double xScalar = 5/(deltaPointx-zeroPointx);
     double yScalar = 5/(deltaPointy-zeroPointy);
-
-    double deltaPxInv = plot->canvasMap( QwtPlot::xTop  ).invTransform(deltaPoint.x());
-    double zeroPxInv  = plot->canvasMap( QwtPlot::xTop  ).invTransform(plotZero.x());
-    double deltaPyInv = plot->canvasMap( QwtPlot::yLeft ).invTransform(deltaPoint.y());
-    double zeroPyInv  = plot->canvasMap( QwtPlot::yLeft ).invTransform(plotZero.y());
-
-    //double xScalar = 5/(deltaPxInv-zeroPxInv);
-    //double yScalar = 5/(deltaPyInv-zeroPyInv);
-
 
     qWarning() << "zeroPointx = "      + QString::number(zeroPointx);
     qWarning() << "zeroPointy = "      + QString::number(zeroPointy);
     qWarning() << "deltaPointx = "      + QString::number(deltaPointx);
     qWarning() << "deltaPointy = "      + QString::number(deltaPointy);
-    qWarning() << " ";
-
-
-    //qWarning() << "deltaPxInv = "      + QString::number(deltaPxInv);
-    //qWarning() << "deltaPyInv = "      + QString::number(deltaPyInv);
-    //qWarning() << "zeroPxInv = "      + QString::number(zeroPxInv);
-    //qWarning() << "zeroPyInv = "      + QString::number(zeroPyInv);
-
     qWarning() << "xScalar = "      + QString::number(xScalar);
     qWarning() << "yScalar = "      + QString::number(yScalar);
 
     // Test
+    /*
     QPolygonF testCorners;
-    double testLength(1); // in screen coordinates dimensions
+    double testLength(100); // in screen coordinates dimensions
     testCorners   << forceOrigin
-                  << QPointF( testLength*xScalar, forceOrigin.y())
-                  << QPointF( testLength*xScalar,testLength*yScalar)
-                  << QPointF( forceOrigin.x(),testLength*yScalar)
+                  << QPointF( forceOrigin.x() + testLength*xScalar, forceOrigin.y())
+                  << QPointF( forceOrigin.x() + testLength*xScalar,forceOrigin.y() + testLength*yScalar)
+                  << QPointF( forceOrigin.x(),  forceOrigin.y() + testLength*yScalar)
                   << forceOrigin;
 
     QwtPlotShapeItem *testObject = new QwtPlotShapeItem();
@@ -596,6 +576,7 @@ QwtLegend
     testsq.index   = -1;
     plotItemList.append(testsq);
     // Test End
+    */
 
     //
     // Plotting the Applied Moment
@@ -604,10 +585,18 @@ QwtLegend
     QwtPlotCurve *moment = new QwtPlotCurve();
     QPolygonF pointsOnMomentCurve;
 
-    double mR = 1; // Moment Radius in screen coordinates
-    double alpha = (1 - abs(PMom)/MAX_MOMENT) * (3.14159 / 2);
-    pointsOnMomentCurve << (forceOrigin + QPointF(mR*xScalar, 0))
-                        <<  forceOrigin;
+    double mR = 25; // Moment Radius in screen coordinates
+    double alpha = (1 - 0.75*abs(PMom)/MAX_MOMENT) * (2*3.14159);
+    double nChords = 10;
+    double theta = (2*3.14159 - alpha) / (nChords-1);
+    if (PMom < 0){theta = -theta; }
+
+    for (int n=0; n<nChords; n++) {
+        pointsOnMomentCurve << (forceOrigin + QPointF(mR*sin(n*theta)*xScalar, mR*cos(n*theta)*yScalar));
+    }
+
+    //pointsOnMomentCurve << (forceOrigin + QPointF(mR*xScalar, mR*yScalar))
+    //                    <<  forceOrigin;
 
     moment->setSamples(pointsOnMomentCurve);
     moment->setPen(QPen(Qt::red, 4));
@@ -646,9 +635,14 @@ QwtLegend
     arrow->setBrush( Qt::red );
 
     // Horizontal Force Arrow dimensions
-    double arrowThickness  = 0.3 * yScalar,
-           arrowHead       = 1   * yScalar,
-           arrowHeadLength = 0.3 * xScalar;
+
+    double arrowThickness  = 0.1,
+           arrowHead       = 0.5  ,
+           arrowHeadLength = 0.3;
+
+    //double arrowThickness  = 0.3 * yScalar,
+    //      arrowHead       = 1   * yScalar,
+    //       arrowHeadLength = 0.3 * xScalar;
 
     if (forceArrowRatio < 0) {arrowHeadLength = -arrowHeadLength;}
 
