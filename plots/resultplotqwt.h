@@ -11,7 +11,7 @@ class ResultPlotQwt : public ResultPlotSuper
 public:
     ResultPlotQwt(QWidget *parent = nullptr);
     ~ResultPlotQwt();
-    void plotResults(QVector<QVector<double> *> &x, QVector<QVector<double> *> &y);
+    void refresh(void);
 
 protected:
     QwtPlot *plot;

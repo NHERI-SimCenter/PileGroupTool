@@ -35,6 +35,10 @@ public:
     int  findActiveLayer();
     int  adjustLayersToPiles();
     void updateResultPlots();
+    void updateSoilResultPlots(QVector<double> &);
+    void refreshResultPlots();
+
+
 
 private slots:
     //
