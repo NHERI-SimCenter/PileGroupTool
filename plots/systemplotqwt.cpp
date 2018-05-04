@@ -274,17 +274,13 @@ void SystemPlotQwt::refresh()
     // HERE IS WHERE TO START ...
     //
 
-    //
     // Plot Legend
-    //
     plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
 
-    // Adjust x-axis to match Ground Layer Width
-    plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
-    // Adjust y-axis to match Ground Layer Depth and slightly above pilecap
+    // Set x-axis and y-axis
     double heightAbovePileCap = 1;
+    plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
     plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + maxH + heightAbovePileCap );
-    //qWarning() << QString::number(maxD);
 
     //
     // Plot Ground Water Table
@@ -451,7 +447,6 @@ void SystemPlotQwt::refresh()
         else
         {
             // undeformed pile
-
             pileCorners << QPointF(xOffset[pileIdx] - D/2, L1)
                         << QPointF(xOffset[pileIdx] - D/2, -L2[pileIdx])
                         << QPointF(xOffset[pileIdx] + D/2, -L2[pileIdx])
@@ -540,16 +535,16 @@ QwtLegend
 
     double deltaPointx   = plot->canvasMap( QwtPlot::xBottom).transform(deltaPoint.x());
     double zeroPointx    = plot->canvasMap( QwtPlot::xBottom).transform(plotZero.x());
-    double deltaPointy   = plot->canvasMap( QwtPlot::yLeft  ).transform(deltaPoint.y());
-    double zeroPointy    = plot->canvasMap( QwtPlot::yLeft  ).transform(plotZero.y());
+    double deltaPointy   = plot->canvasMap( QwtPlot::yLeft).transform(deltaPoint.y());
+    double zeroPointy    = plot->canvasMap( QwtPlot::yLeft).transform(plotZero.y());
 
     double xScalar = 5/(deltaPointx-zeroPointx);
     double yScalar = 5/(deltaPointy-zeroPointy);
 
-    qWarning() << "zeroPointx = "      + QString::number(zeroPointx);
-    qWarning() << "zeroPointy = "      + QString::number(zeroPointy);
-    qWarning() << "deltaPointx = "      + QString::number(deltaPointx);
-    qWarning() << "deltaPointy = "      + QString::number(deltaPointy);
+    qWarning() << "zeroPointx = "   + QString::number(zeroPointx);
+    qWarning() << "zeroPointy = "   + QString::number(zeroPointy);
+    qWarning() << "deltaPointx = "  + QString::number(deltaPointx);
+    qWarning() << "deltaPointy = "  + QString::number(deltaPointy);
     qWarning() << "xScalar = "      + QString::number(xScalar);
     qWarning() << "yScalar = "      + QString::number(yScalar);
 
@@ -581,26 +576,37 @@ QwtLegend
     //
     // Plotting the Applied Moment
     //
-
     QwtPlotCurve *moment = new QwtPlotCurve();
     QPolygonF pointsOnMomentCurve;
 
     double mR = 25; // Moment Radius in screen coordinates
+    double nChords = 10;// Set the resolution of the moment curve
     double alpha = (1 - 0.75*abs(PMom)/MAX_MOMENT) * (2*3.14159);
-    double nChords = 10;
     double theta = (2*3.14159 - alpha) / (nChords-1);
-    if (PMom < 0){theta = -theta; }
+    double momentHeadLength = 15 * (3.14159/180);
+    double momentHeadWidth = 4;
 
-    for (int n=0; n<nChords; n++) {
-        pointsOnMomentCurve << (forceOrigin + QPointF(mR*sin(n*theta)*xScalar, mR*cos(n*theta)*yScalar));
+    if (PMom < 0){
+        theta = -theta;
+        momentHeadLength = -momentHeadLength;
     }
 
-    //pointsOnMomentCurve << (forceOrigin + QPointF(mR*xScalar, mR*yScalar))
-    //                    <<  forceOrigin;
+    for (int n=0; n<(nChords+1); n++) {
+        pointsOnMomentCurve << (forceOrigin + QPointF(mR*sin(n*theta)*xScalar, mR*cos(n*theta)*yScalar));
+    }
+    // Arrowhead
+    pointsOnMomentCurve << (forceOrigin + QPointF((mR-momentHeadWidth)*sin(nChords*theta-momentHeadLength)*xScalar,
+                                                  (mR-momentHeadWidth)*cos(nChords*theta-momentHeadLength)*yScalar))
+                        << (forceOrigin + QPointF((mR+momentHeadWidth)*sin(nChords*theta-momentHeadLength)*xScalar,
+                                                  (mR+momentHeadWidth)*cos(nChords*theta-momentHeadLength)*yScalar))
+                        << (forceOrigin + QPointF(mR*sin(nChords*theta)*xScalar, mR*cos(nChords*theta)*yScalar));
 
+    QPen mArrow( Qt::red, 4 );
+    mArrow.setJoinStyle( Qt::MiterJoin );
+    moment->setPen( mArrow );
     moment->setSamples(pointsOnMomentCurve);
-    moment->setPen(QPen(Qt::red, 4));
-    // moment->setBrush(QBrush(Qt::blue));
+    //moment->setPen(QPen(Qt::red, 4));
+    //moment->setBrush(QBrush(Qt::blue));
     //moment->setZ(10);
 
     if (PMom != 0){
@@ -635,14 +641,9 @@ QwtLegend
     arrow->setBrush( Qt::red );
 
     // Horizontal Force Arrow dimensions
-
-    double arrowThickness  = 0.1,
-           arrowHead       = 0.5  ,
-           arrowHeadLength = 0.3;
-
-    //double arrowThickness  = 0.3 * yScalar,
-    //      arrowHead       = 1   * yScalar,
-    //       arrowHeadLength = 0.3 * xScalar;
+    double arrowThickness  =  3 * yScalar,
+           arrowHead       = 10 * yScalar,
+           arrowHeadLength = 10 * xScalar;
 
     if (forceArrowRatio < 0) {arrowHeadLength = -arrowHeadLength;}
 
@@ -669,13 +670,77 @@ QwtLegend
 
 
     // Drawing Vertical Force Arrow using QwtPlotShapeItem
-    /*
+
+    //double heightAbovePileCap = 1;
+    //plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
+    //plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + maxH + heightAbovePileCap );
+
     QwtPlotShapeItem *arrowV = new QwtPlotShapeItem();
 
-    double forceArrowRatioV = PV/MAX_V_FORCE,
-           arrowHeadLengthV = 0.3,
-           arrowHeadV       = 1.5,
-           arrowThicknessV  = 0.3;
+    double forceArrowRatioV =  PV/MAX_V_FORCE;
+    double yLength          =  -depthOfLayer[3]/2;
+    double arrowHeadLengthV =  20 * yScalar;
+    double arrowHeadV       =  20 * xScalar;
+    double arrowWidthV      =   6 * xScalar;
+
+
+    if (( forceArrowRatioV < 0.3 ) && (forceArrowRatioV > 0)) {
+        forceArrowRatio = 0.3;
+    }
+    else if (( forceArrowRatioV > -0.3 ) && (forceArrowRatioV < 0)) {
+        forceArrowRatioV = -0.3;
+    }
+
+    arrowV->setPen( pen );
+    arrowV->setBrush( Qt::red );
+
+    QPainterPath pathV;
+    if (forceArrowRatioV < 0) {
+        pathV.moveTo( pileCapCenter + arrowWidthV/2, L1 + maxH);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter + arrowHeadV/2 , L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter                , L1 + maxH - yLength*forceArrowRatioV);
+        pathV.lineTo( pileCapCenter - arrowHeadV/2 , L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV );
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH);
+    }
+
+    if (forceArrowRatioV > 0) {
+        pathV.moveTo( pileCapCenter , L1 + maxH);
+        pathV.lineTo( pileCapCenter + arrowHeadV/2 , L1 + maxH + arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH + arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH + arrowHeadLengthV + yLength*forceArrowRatioV);
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH + arrowHeadLengthV + yLength*forceArrowRatioV);
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH + arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter - arrowHeadV/2 , L1 + maxH + arrowHeadLengthV);
+        pathV.moveTo( pileCapCenter , L1 + maxH);
+    }
+
+    arrowV->setShape( pathV );
+    //arrowV->setZ	( 3 );
+
+    if (PV != 0){
+        arrowV->attach( plot );
+
+        PLOTOBJECT var2;
+        var2.itemPtr = arrowV;
+        var2.type    = PLType::LOAD;
+        var2.index   = 1;
+        plotItemList.append(var2);
+    }
+
+    /* Old Version
+    //double forceArrowRatioV = PV/MAX_V_FORCE,
+    //       arrowHeadLengthV = 0.3,
+    //       arrowHeadV       = 1.5,
+    //      arrowThicknessV  = 0.3;
+
+    double forceArrowRatioV = -PV/MAX_V_FORCE,
+           arrowHeadLengthV = -10 * yScalar,
+           arrowHeadV       =  10 * xScalar,
+           arrowThicknessV  =   3 * xScalar;
+
 
     if (( forceArrowRatioV < 0.3 ) && (forceArrowRatioV > 0)) {
         forceArrowRatio = 0.3;
