@@ -169,9 +169,9 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 
     double coords[ QwtPlot::axisCnt ];
     coords[ QwtPlot::xBottom ] = plot->canvasMap( QwtPlot::xBottom ).invTransform( pos.x() );
-    coords[ QwtPlot::xTop ]    = plot->canvasMap( QwtPlot::xTop ).invTransform( pos.x() );
-    coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft ).invTransform( pos.y() );
-    coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight ).invTransform( pos.y() );
+    coords[ QwtPlot::xTop ]    = plot->canvasMap( QwtPlot::xTop    ).invTransform( pos.x() );
+    coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft   ).invTransform( pos.y() );
+    coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight  ).invTransform( pos.y() );
 
     PLOTOBJECT    obj = itemAt(pos);
     QwtPlotItem *item = obj.itemPtr;
@@ -270,11 +270,6 @@ void SystemPlotQwt::refresh()
     double xl = xbar - W/2;
     double xr = xbar + W/2;
 
-
-    //
-    // HERE IS WHERE TO START ...
-    //
-
     //
     // Plot Legend
     //
@@ -282,42 +277,14 @@ void SystemPlotQwt::refresh()
 
     // Adjust x-axis to match Ground Layer Width
     plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
+
     // Adjust y-axis to match Ground Layer Depth and slightly above pilecap
     double heightAbovePileCap = 1;
     plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + maxH + heightAbovePileCap );
-    //qWarning() << QString::number(maxD);
 
     //
     // Plot Ground Water Table
     //
-
-    //plot->setCurrentLayer("groundwater");
-    /*
-    if (gwtDepth < (H-L1)) {
-        QPolygonF(groundwaterCorners);
-        groundwaterCorners << QPointF(xl, -gwtDepth)
-                           << QPointF(xl, -(H - L1))
-                           << QPointF(xr, -(H - L1))
-                           << QPointF(xr, -gwtDepth)
-                           << QPointF(xl, -gwtDepth);
-
-        QwtPlotShapeItem *water = new QwtPlotShapeItem();
-        water->setPolygon(groundwaterCorners);
-
-        water->setPen(QPen(Qt::blue, 2));
-        water->setBrush(QBrush(GROUND_WATER_BLUE));
-
-        water->setTitle(QString("Groundwater"));
-        water->attach( plot );
-        water->setItemAttribute(QwtPlotItem::Legend, true);
-
-        PLOTOBJECT var;
-        var.itemPtr = water;
-        var.type    = PLType::WATER;
-        var.index   = -1;
-        plotItemList.append(var);
-    }
-    */
 
     if (gwtDepth < (H-L1)) {
         QPolygonF(groundwaterCorners);
@@ -405,42 +372,8 @@ void SystemPlotQwt::refresh()
         plotItemList.append(var);
     }
 
-    /*
-    // Testing percentage12 for deformation
-    double percentage12temp(P/MAX_H_FORCE);
-    QPolygonF testCorners;
-    testCorners   << QPointF(-2, -5)
-                  << QPointF(-2+ 0.75*percentage12temp,-4)
-                  << QPointF( 2+ 0.75*percentage12temp,-4)
-                  << QPointF( 2,-5)
-                  << QPointF(-2,-5);
-    QwtPlotShapeItem *testObject = new QwtPlotShapeItem();
-    testObject->setPolygon(testCorners);
-    testObject->setPen(QPen(Qt::black, 1));
-    testObject->setBrush(QBrush(Qt::blue));
-    testObject->setZ(10);
-    testObject->attach( plot );
-
-    PLOTOBJECT testsq;
-    testsq.itemPtr = testObject;
-    testsq.type    = PLType::OTHER;
-    testsq.index   = -1;
-    plotItemList.append(testsq);
-
-
-    qWarning() << "surfaceDisp = "    + QString::number(surfaceDisp);
-    qWarning() << "percentageBase = " + QString::number(percentageBase);
-    qWarning() << "percentage12 = "   + QString::number(percentage12);
-    qWarning() << "percentage23 = "   + QString::number(percentage23);
-    qWarning() << "percentage12temp = "   + QString::number(percentage12temp);
-    qWarning() << "P = "              + QString::number(P);
-    qWarning() << "PV = "             + QString::number(PV);
-
-    // Test end
-    */
-
     //
-    // Plot PileCaps
+    // Plot the Pile Cap
     //
     QRectF capCorners(QPointF(minX0 - maxD/2, L1 + maxH), QSizeF(maxX0 + maxD - minX0, -maxH));
 
@@ -458,10 +391,10 @@ void SystemPlotQwt::refresh()
 
     pileCap->setItemAttribute(QwtPlotItem::Legend, false);
 
-
     //
     // Plot Piles
     //
+
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
         double D = pileDiameter[pileIdx];
@@ -515,6 +448,82 @@ void SystemPlotQwt::refresh()
         plotItemList.append(var);
     }
 
+    double pileCapCenter = 0.5 * (minX0 + maxX0);
+    QPointF forceOrigin  = QPointF(pileCapCenter, L1 + maxH);
+
+    //
+    // Plot Scaling Parameters
+    //
+
+    QPointF plotZero     = QPointF(0.0, 0.0);
+    QPointF deltaPoint   = QPointF(5.0, 5.0);
+
+    double deltaPointx   = plot->canvasMap( QwtPlot::xBottom).transform(deltaPoint.x());
+    double zeroPointx    = plot->canvasMap( QwtPlot::xBottom).transform(plotZero.x());
+    double deltaPointy   = plot->canvasMap( QwtPlot::yLeft  ).transform(deltaPoint.y());
+    double zeroPointy    = plot->canvasMap( QwtPlot::yLeft  ).transform(plotZero.y());
+
+    double xScalar = 5.0/(deltaPointx-zeroPointx);
+    double yScalar = 5.0/(deltaPointy-zeroPointy);
+
+    //qDebug()   << "zeroPoint  (x,y) = (" << zeroPointx << "," << zeroPointy << ")\n"
+    //           << "deltaPoint (x,y) = (" << deltaPointx << "," << deltaPointy << ")\n"
+    //           << "Scalar     (x,y) = (" << xScalar << "," << yScalar << ")\n";
+
+    //
+    // Plotting the Applied Moment Symbol
+    //
+
+    double alpha;
+    double dTheta;
+    double theta;
+
+    double mR = 25.0; // Moment Radius in screen coordinates
+    double nChords = 20;
+
+    double Rx = mR*xScalar;
+    double Ry = mR*yScalar;
+
+    QwtPlotCurve *moment = new QwtPlotCurve();
+    QPolygonF pointsOnMomentCurve;
+
+    if (PMom < 0)
+    {
+        alpha = (1.0 + 0.75*(PMom)/MAX_MOMENT) * (2*3.1415927);
+        dTheta = (alpha - 2*3.1415927) / (nChords-1);
+        theta = 0.5*(3.1415927 - alpha);
+    }
+    else
+    {
+        alpha = (1.0 - 0.75*(PMom)/MAX_MOMENT) * (2*3.1415927);
+        dTheta = (2*3.1415927 - alpha) / (nChords-1);
+        theta = 0.5*(alpha + 3.1415927);
+    }
+
+    for (int n=0; n<=nChords; n++)
+    {
+        pointsOnMomentCurve << (forceOrigin + QPointF(Rx*cos(theta), Ry*sin(theta)));
+        theta += dTheta;
+    }
+    theta -= dTheta;
+    pointsOnMomentCurve << (forceOrigin + QPointF(0.8*Rx*cos(theta-3*dTheta), 0.8*Ry*sin(theta-3*dTheta)));
+    pointsOnMomentCurve << (forceOrigin + QPointF(1.2*Rx*cos(theta-3*dTheta), 1.2*Ry*sin(theta-3*dTheta)));
+    pointsOnMomentCurve << (forceOrigin + QPointF(Rx*cos(theta), Ry*sin(theta)));
+
+    moment->setSamples(pointsOnMomentCurve);
+    moment->setPen(QPen(Qt::red, 3));
+
+    if (PMom != 0){
+        moment->attach( plot );
+
+        PLOTOBJECT var;
+        var.itemPtr = moment;
+        var.type    = PLType::LOAD;
+        var.index   = 2;
+        plotItemList.append(var);
+    }
+
+    //
     // Drawing Horizontal Force Arrow using QwtPlotShapeItem
     //
     QwtPlotShapeItem *arrow = new QwtPlotShapeItem();
@@ -534,10 +543,15 @@ void SystemPlotQwt::refresh()
     arrow->setPen( pen );
     arrow->setBrush( Qt::red );
 
-    double pileCapCenter  = 0.5 * (minX0 + maxX0),
-           arrowThickness = 0.07,
-           arrowHead = 0.3,
-           arrowHeadLength = 0.8;
+    // Horizontal Force Arrow dimensions
+
+    double arrowThickness  = 0.1,
+           arrowHead       = 0.5  ,
+           arrowHeadLength = 0.3;
+
+    //double arrowThickness  = 0.3 * yScalar,
+    //      arrowHead       = 1   * yScalar,
+    //       arrowHeadLength = 0.3 * xScalar;
 
     if (forceArrowRatio < 0) {arrowHeadLength = -arrowHeadLength;}
 
@@ -555,16 +569,15 @@ void SystemPlotQwt::refresh()
     if (forceArrowRatio != 0){
         arrow->attach( plot );
 
-    PLOTOBJECT var;
-    var.itemPtr = arrow;
-    var.type    = PLType::LOAD;
-    var.index   = 0;
-    plotItemList.append(var);
+        PLOTOBJECT var;
+        var.itemPtr = arrow;
+        var.type    = PLType::LOAD;
+        var.index   = 0;
+        plotItemList.append(var);
     }
 
 
     // Drawing Vertical Force Arrow using QwtPlotShapeItem
-
     QwtPlotShapeItem *arrowV = new QwtPlotShapeItem();
 
     double forceArrowRatioV = PV/MAX_V_FORCE,
@@ -600,15 +613,14 @@ void SystemPlotQwt::refresh()
     //arrowV->setZ	( 3 );
 
     if (forceArrowRatioV != 0){
-    arrowV->attach( plot );
+        arrowV->attach( plot );
 
-    PLOTOBJECT var2;
-    var2.itemPtr = arrowV;
-    var2.type    = PLType::LOAD;
-    var2.index   = 1;
-    plotItemList.append(var2);
+        PLOTOBJECT var2;
+        var2.itemPtr = arrowV;
+        var2.type    = PLType::LOAD;
+        var2.index   = 1;
+        plotItemList.append(var2);
     }
-
 
     // status info
     if (!mIsStable)
