@@ -270,16 +270,12 @@ void SystemPlotQwt::refresh()
     double xl = xbar - W/2;
     double xr = xbar + W/2;
 
-    //
     // Plot Legend
-    //
     plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
 
-    // Adjust x-axis to match Ground Layer Width
-    plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
-
-    // Adjust y-axis to match Ground Layer Depth and slightly above pilecap
+    // Set x-axis and y-axis
     double heightAbovePileCap = 1;
+    plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
     plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + maxH + heightAbovePileCap );
 
     //
@@ -419,7 +415,6 @@ void SystemPlotQwt::refresh()
         else
         {
             // undeformed pile
-
             pileCorners << QPointF(xOffset[pileIdx] - D/2, L1)
                         << QPointF(xOffset[pileIdx] - D/2, -L2[pileIdx])
                         << QPointF(xOffset[pileIdx] + D/2, -L2[pileIdx])
@@ -460,8 +455,8 @@ void SystemPlotQwt::refresh()
 
     double deltaPointx   = plot->canvasMap( QwtPlot::xBottom).transform(deltaPoint.x());
     double zeroPointx    = plot->canvasMap( QwtPlot::xBottom).transform(plotZero.x());
-    double deltaPointy   = plot->canvasMap( QwtPlot::yLeft  ).transform(deltaPoint.y());
-    double zeroPointy    = plot->canvasMap( QwtPlot::yLeft  ).transform(plotZero.y());
+    double deltaPointy   = plot->canvasMap( QwtPlot::yLeft).transform(deltaPoint.y());
+    double zeroPointy    = plot->canvasMap( QwtPlot::yLeft).transform(plotZero.y());
 
     double xScalar = 5.0/(deltaPointx-zeroPointx);
     double yScalar = 5.0/(deltaPointy-zeroPointy);
@@ -473,7 +468,6 @@ void SystemPlotQwt::refresh()
     //
     // Plotting the Applied Moment Symbol
     //
-
     double alpha;
     double dTheta;
     double theta;
@@ -544,14 +538,9 @@ void SystemPlotQwt::refresh()
     arrow->setBrush( Qt::red );
 
     // Horizontal Force Arrow dimensions
-
-    double arrowThickness  = 0.1,
-           arrowHead       = 0.5  ,
-           arrowHeadLength = 0.3;
-
-    //double arrowThickness  = 0.3 * yScalar,
-    //      arrowHead       = 1   * yScalar,
-    //       arrowHeadLength = 0.3 * xScalar;
+    double arrowThickness  =  3 * yScalar,
+           arrowHead       = 10 * yScalar,
+           arrowHeadLength = 10 * xScalar;
 
     if (forceArrowRatio < 0) {arrowHeadLength = -arrowHeadLength;}
 
@@ -580,10 +569,12 @@ void SystemPlotQwt::refresh()
     // Drawing Vertical Force Arrow using QwtPlotShapeItem
     QwtPlotShapeItem *arrowV = new QwtPlotShapeItem();
 
-    double forceArrowRatioV = PV/MAX_V_FORCE,
-           arrowHeadLengthV = 0.3,
-           arrowHeadV       = 1.5,
-           arrowThicknessV  = 0.3;
+    double forceArrowRatioV =  PV/MAX_V_FORCE;
+    double yLength          =  -depthOfLayer[3]/2;
+    double arrowHeadLengthV =  20 * yScalar;
+    double arrowHeadV       =  20 * xScalar;
+    double arrowWidthV      =   6 * xScalar;
+
 
     if (( forceArrowRatioV < 0.3 ) && (forceArrowRatioV > 0)) {
         forceArrowRatio = 0.3;
@@ -592,9 +583,64 @@ void SystemPlotQwt::refresh()
         forceArrowRatioV = -0.3;
     }
 
+    arrowV->setPen( pen );
+    arrowV->setBrush( Qt::red );
 
-    //QPen pen( Qt::black, 2 );
-    //pen.setJoinStyle( Qt::MiterJoin );
+    QPainterPath pathV;
+    if (forceArrowRatioV < 0) {
+        pathV.moveTo( pileCapCenter + arrowWidthV/2, L1 + maxH);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter + arrowHeadV/2 , L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter                , L1 + maxH - yLength*forceArrowRatioV);
+        pathV.lineTo( pileCapCenter - arrowHeadV/2 , L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV );
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH);
+    }
+
+    if (forceArrowRatioV > 0) {
+        pathV.moveTo( pileCapCenter , L1 + maxH);
+        pathV.lineTo( pileCapCenter + arrowHeadV/2 , L1 + maxH + arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH + arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH + arrowHeadLengthV + yLength*forceArrowRatioV);
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH + arrowHeadLengthV + yLength*forceArrowRatioV);
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH + arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter - arrowHeadV/2 , L1 + maxH + arrowHeadLengthV);
+        pathV.moveTo( pileCapCenter , L1 + maxH);
+    }
+
+    arrowV->setShape( pathV );
+    //arrowV->setZ	( 3 );
+
+    if (PV != 0){
+        arrowV->attach( plot );
+
+        PLOTOBJECT var2;
+        var2.itemPtr = arrowV;
+        var2.type    = PLType::LOAD;
+        var2.index   = 1;
+        plotItemList.append(var2);
+    }
+
+    /* Old Version
+    //double forceArrowRatioV = PV/MAX_V_FORCE,
+    //       arrowHeadLengthV = 0.3,
+    //       arrowHeadV       = 1.5,
+    //      arrowThicknessV  = 0.3;
+
+    double forceArrowRatioV = -PV/MAX_V_FORCE,
+           arrowHeadLengthV = -10 * yScalar,
+           arrowHeadV       =  10 * xScalar,
+           arrowThicknessV  =   3 * xScalar;
+
+
+    if (( forceArrowRatioV < 0.3 ) && (forceArrowRatioV > 0)) {
+        forceArrowRatio = 0.3;
+    }
+    else if (( forceArrowRatioV > -0.3 ) && (forceArrowRatioV < 0)) {
+        forceArrowRatioV = -0.3;
+    }
+
     arrowV->setPen( pen );
     arrowV->setBrush( Qt::red );
 
