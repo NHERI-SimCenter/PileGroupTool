@@ -34,6 +34,13 @@ typedef struct {
     double reductionFactorRightMovement;
 } HEAD_NODE_TYPE;
 
+typedef struct {
+    int    pileIdx;
+    int    nodeIdx;
+    double x;
+    double z;
+} CAP_NODE_TYPE;
+
 struct PILE_INFO {
     double L1;            // pile length above ground (all the same)
     double L2;            // embedded length of pile
@@ -47,6 +54,10 @@ struct PILE_FEA_INFO : PILE_INFO {
     int maxLayers;
     int nodeIDoffset;
     int elemIDoffset;
+    int firstNodeTag;
+    int lastNodeTag;
+    int firstElementTag;
+    int lastElementTag;
 };
 
 #define SWAP(X,Y) {HEAD_NODE_TYPE tmp=Y; Y=X, Y=tmp; }
