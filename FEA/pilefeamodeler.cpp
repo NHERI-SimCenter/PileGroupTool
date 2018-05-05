@@ -397,6 +397,8 @@ void PileFEAmodeler::buildMesh()
     OPS_clearAllUniaxialMaterial();
     ops_Dt = 0.0;
 
+    capNodeList.clear();
+
     //
     // find meshing parameters
     //
@@ -411,6 +413,10 @@ void PileFEAmodeler::buildMesh()
         pileInfo[k].maxLayers    = MAXLAYERS;
         pileInfo[k].nodeIDoffset = 0;
         pileInfo[k].elemIDoffset = 0;
+        pileInfo[k].firstNodeTag = -1;    // for error detection
+        pileInfo[k].lastNodeTag  = -1;    // for error detection
+        pileInfo[k].firstElementTag = -1; // for error detection
+        pileInfo[k].lastElementTag  = -1; // for error detection
     }
 
     /* ******** sizing and adjustments ******** */
@@ -593,6 +599,8 @@ void PileFEAmodeler::buildMesh()
         nodeTag = numNode+ioffset2;
 
         theNode = new Node(nodeTag, 6, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
+        pileInfo[pileIdx].firstNodeTag = nodeTag;
+
         if (dumpFEMinput)
         {
             SET_6_NDOF
@@ -944,6 +952,7 @@ void PileFEAmodeler::buildMesh()
 
 
         headNodeList[pileIdx] = {pileIdx, nodeTag, pileInfo[pileIdx].xOffset};
+        pileInfo[pileIdx].lastNodeTag = nodeTag;
 
         //
         // create pile elements
@@ -963,6 +972,8 @@ void PileFEAmodeler::buildMesh()
             for (int k=0; k<crdV.Size(); k++) { out << " " << crdV(k); }
             out << " ;" << endl;
         }
+
+        pileInfo[pileIdx].firstElementTag = numElem+1;
 
         for (int i=0; i<pileInfo[pileIdx].numNodePile-1; i++) {
             numElem++;
@@ -994,10 +1005,12 @@ void PileFEAmodeler::buildMesh()
                         << " ;" << endl;
             }
         }
+
+        pileInfo[pileIdx].lastElementTag = numElem;
     }
 
     //
-    // *** construct the pile head ***
+    // *** construct the pile cap ***
     //
     if (numPiles > 0) {
 
@@ -1057,6 +1070,7 @@ void PileFEAmodeler::buildMesh()
             int nodeTag = numNode + ioffset5;
 
             Node *theNode = new Node(nodeTag, 6, headNodeList[pileIdx].x, 0., pileInfo[pileIdx].L1);  theDomain->addNode(theNode);
+            capNodeList.append({pileIdx, nodeTag, headNodeList[pileIdx].x, pileInfo[pileIdx].L1});
 
             if (dumpFEMinput)
             {
@@ -1147,7 +1161,8 @@ void PileFEAmodeler::buildMesh()
         }
     }
 
-    numLoadedNode = headNodeList[0].nodeIdx;
+    //numLoadedNode = headNodeList[0].nodeIdx;
+    numLoadedNode = capNodeList.first().nodeIdx;
 
     /* *** done with the pile head *** */
 
@@ -1165,12 +1180,12 @@ void PileFEAmodeler::buildMesh()
         out << "# node recorder for pile cap" << endl;
         out << "recorder Node -file PileCap.txt -time -node " << numLoadedNode << " -dof 1 3 5 disp" << endl;
         out << "recorder Node -file Pile1_Disp.txt -time "
-            << " -nodeRange " << 105 << " " << 155
+            << " -nodeRange " << pileInfo[0].firstNodeTag << " " << pileInfo[0].lastNodeTag
             << " -dof 1 3 5 disp" << endl;
         out << endl;
         out << "# element recorder" << endl;
         out << "recorder Element -file Pile1_Forces.txt -time "
-            << " -eleRange " << 105 << " " << 154
+            << " -eleRange " << pileInfo[0].firstElementTag << " " << pileInfo[0].lastElementTag
             << " -dT 9.95 forces" << endl;
         out << endl;
     }
@@ -1391,18 +1406,6 @@ void PileFEAmodeler::clearPlotBuffers()
 
     foreach (QVector<double> *ptr, StressList) { if (ptr != NULL) delete ptr; }
     StressList.clear();
-
-    //foreach (QVector<double> *ptr, pultList) { if (ptr != NULL) delete ptr; }
-    //pultList.clear();
-
-    //foreach (QVector<double> *ptr, y50List) { if (ptr != NULL) delete ptr; }
-    //y50List.clear();
-
-    //foreach (QVector<double> *ptr, tultList) { if (ptr != NULL) delete ptr; }
-    //tultList.clear();
-
-    //foreach (QVector<double> *ptr, z50List) { if (ptr != NULL) delete ptr; }
-    //z50List.clear();
 }
 
 int PileFEAmodeler::extractPlotData()
@@ -1428,11 +1431,6 @@ int PileFEAmodeler::extractPlotData()
         AxialList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
 
         StressList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-
-        //pultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        //y50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
-        //tultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        //z50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
     }
 
     if (!CHECK_STATE(AnalysisState::solutionValid)) return -1;
