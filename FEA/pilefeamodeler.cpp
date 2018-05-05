@@ -61,8 +61,8 @@ extern int getPyParam(double pyDepth,
 #include <QDebug>
 
 
-#define SET_3_NDOF if (nDOFs != 3) { nDOFs = 3; out << "model BasicBuilder -ndm 3 - ndf " << nDOFs << " ;" << endl; }
-#define SET_6_NDOF if (nDOFs != 6) { nDOFs = 6; out << "model BasicBuilder -ndm 3 - ndf " << nDOFs << " ;" << endl; }
+#define SET_3_NDOF if (nDOFs != 3) { nDOFs = 3; out << "model BasicBuilder -ndm 3 -ndf " << nDOFs << " ;" << endl; }
+#define SET_6_NDOF if (nDOFs != 6) { nDOFs = 6; out << "model BasicBuilder -ndm 3 -ndf " << nDOFs << " ;" << endl; }
 
 PileFEAmodeler::PileFEAmodeler()
 {
@@ -504,6 +504,7 @@ void PileFEAmodeler::buildMesh()
         out << "#----------------------------------------------------------" << endl;
         out << "#   creating the FE model                                  " << endl;
         out << "#----------------------------------------------------------" << endl;
+        SET_3_NDOF
     }
 
     //
@@ -665,13 +666,13 @@ void PileFEAmodeler::buildMesh()
             if (dumpFEMinput)
             {
                 out << "uniaxialMaterial QzSimple1 " << numNode << " "
-                    << 2 << " " << qult << " " << z50q << " 0.0, 0.0 ;" << endl;
+                    << 2 << " " << qult << " " << z50q << " 0.0 0.0 ;" << endl;
 
                 out << "element zeroLength "
                     << 1+pileIdx+ioffset4 << " " << numNode << " " << numNode+ioffset
                     << " -mat " << numNode
                     << " -dir ";
-                for (int k=0; k<Onedirection.Size(); k++) { out << Onedirection(k) << " "; }
+                for (int k=0; k<Onedirection.Size(); k++) { out << Onedirection(k)+1 << " "; }
                 out << " -orient ";
                 for (int k=0; k<x.Size(); k++) { out << x(k) << " "; }
                 for (int k=0; k<y.Size(); k++) { out << y(k) << " "; }
@@ -873,7 +874,7 @@ void PileFEAmodeler::buildMesh()
                         << numNode+ioffset3 << " " << numNode << " " << numNode+ioffset
                         << " -mat " << numNode << " " << numNode+ioffset
                         << " -dir ";
-                    for (int k=0; k<direction.Size(); k++) { out << direction(k) << " "; }
+                    for (int k=0; k<direction.Size(); k++) { out << direction(k)+1 << " "; }
                     out << " -orient ";
                     for (int k=0; k<x.Size(); k++) { out << x(k) << " "; }
                     for (int k=0; k<y.Size(); k++) { out << y(k) << " "; }
