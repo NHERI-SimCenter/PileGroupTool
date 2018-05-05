@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
    // splash.exec();
 
     MainWindow w;
+    w.setWindowIcon(QIcon(":/resources/NHERI-PGT-Icon.icns"));
     w.show();
 
     QFile file(":/style.qss");

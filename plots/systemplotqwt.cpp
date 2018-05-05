@@ -28,6 +28,7 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     // Create a QwtPlot
     //
     plot = new QwtPlot(this);
+    plot->setCanvasBackground(QBrush(Qt::white));
     plotItemList.clear();
 
     // Create Background Grid for Plot
@@ -43,7 +44,7 @@ SystemPlotQwt::SystemPlotQwt(QWidget *parent) :
     this->setLayout(lyt);
 
     //Picker
-    QwtPicker *picker = new QwtPicker(plot -> canvas());
+    QwtPicker *picker = new QwtPicker(plot->canvas());
     picker->setStateMachine(new QwtPickerClickPointMachine);
     picker->setTrackerMode(QwtPicker::AlwaysOff);
     picker->setRubberBand(QwtPicker::RectRubberBand);
@@ -372,7 +373,7 @@ void SystemPlotQwt::refresh()
     }
 
     //
-    // Plot PileCaps
+    // Plot the Pile Cap
     //
     QRectF capCorners(QPointF(minX0 - maxD/2, L1 + maxH), QSizeF(maxX0 + maxD - minX0, -maxH));
 
@@ -390,10 +391,10 @@ void SystemPlotQwt::refresh()
 
     pileCap->setItemAttribute(QwtPlotItem::Legend, false);
 
-
     //
     // Plot Piles
     //
+
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
         double D = pileDiameter[pileIdx];
@@ -447,115 +448,44 @@ void SystemPlotQwt::refresh()
         plotItemList.append(var);
     }
 
-
-
-#if 0
-    // plot the pile cap
-
-    plot->setCurrentLayer("piles");
-
-    QVector<double> x(5,0.0);
-    QVector<double> y(5,0.0);
-QwtLegend
-    x[0] = minX0 - maxD/2.; y[0] = L1 + maxH;
-    x[1] = x[0];            y[1] = L1 - maxH;
-    x[2] = maxX0 + maxD/2.; y[2] = y[1];
-    x[3] = x[2];            y[3] = y[0];
-    x[4] = x[0];            y[4] = y[0];
-
-    QCPCurve *pileCap = new QCPCurve(plot->xAxis, plot->yAxis);
-    pileCap->setData(x,y);
-    pileCap->setPen(QPen(Qt::black, 1));
-    pileCap->setBrush(QBrush(Qt::gray));
-    pileCap->removeFromLegend();
-
-    // plot the piles
-    for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
-
-        QVector<double> x(5,0.0);
-        QVector<double> y(5,0.0);
-
-        double D = pileDiameter[pileIdx];
-
-        x[0] = xOffset[pileIdx] - D/2.; y[0] = L1;
-        x[1] = x[0];                    y[1] = -L2[pileIdx];
-        x[2] = xOffset[pileIdx] + D/2.; y[2] = y[1];
-        x[3] = x[2];                    y[3] = y[0];
-        x[4] = x[0];                    y[4] = y[0];
-
-        QCPCurve *pileII = new QCPCurve(plot->xAxis, plot->yAxis);
-        pileII->setData(x,y);
-        if (pileIdx == activePileIdx) {
-            pileII->setPen(QPen(Qt::red, 2));
-            pileII->setBrush(QBrush(BRUSH_COLOR[9+pileIdx]));
-        }
-        else {
-            pileII->setPen(QPen(Qt::black, 1));
-            pileII->setBrush(QBrush(BRUSH_COLOR[6+pileIdx]));
-        }
-        pileII->setName(QString("Pile #%1").arg(pileIdx+1));
-    }
-#endif
-
-    // Plot Scaling Parameters
-
-    QPointF plotZero     = QPointF(0, 0);
-    QPointF deltaPoint   = QPointF(5, 5);
-
     double pileCapCenter = 0.5 * (minX0 + maxX0);
     QPointF forceOrigin  = QPointF(pileCapCenter, L1 + maxH);
+
+    //
+    // Plot Scaling Parameters
+    //
+
+    QPointF plotZero     = QPointF(0.0, 0.0);
+    QPointF deltaPoint   = QPointF(5.0, 5.0);
 
     double deltaPointx   = plot->canvasMap( QwtPlot::xBottom).transform(deltaPoint.x());
     double zeroPointx    = plot->canvasMap( QwtPlot::xBottom).transform(plotZero.x());
     double deltaPointy   = plot->canvasMap( QwtPlot::yLeft  ).transform(deltaPoint.y());
     double zeroPointy    = plot->canvasMap( QwtPlot::yLeft  ).transform(plotZero.y());
 
-    double xScalar = 5/(deltaPointx-zeroPointx);
-    double yScalar = 5/(deltaPointy-zeroPointy);
+    double xScalar = 5.0/(deltaPointx-zeroPointx);
+    double yScalar = 5.0/(deltaPointy-zeroPointy);
 
-    qDebug()   << "zeroPoint  (x,y) = (" << zeroPointx << "," << zeroPointy << ")\n"
-               << "deltaPoint (x,y) = (" << deltaPointx << "," << deltaPointy << ")\n"
-               << "Scalar     (x,y) = (" << xScalar << "," << yScalar << ")\n";
-
-    // Test
-    /*
-    QPolygonF testCorners;
-    double testLength(100); // in screen coordinates dimensions
-    testCorners   << forceOrigin
-                  << QPointF( forceOrigin.x() + testLength*xScalar, forceOrigin.y())
-                  << QPointF( forceOrigin.x() + testLength*xScalar,forceOrigin.y() + testLength*yScalar)
-                  << QPointF( forceOrigin.x(),  forceOrigin.y() + testLength*yScalar)
-                  << forceOrigin;
-
-    QwtPlotShapeItem *testObject = new QwtPlotShapeItem();
-    testObject->setPolygon(testCorners);
-    testObject->setPen(QPen(Qt::black, 1));
-    testObject->setBrush(QBrush(Qt::blue));
-    testObject->setZ(10);
-    testObject->attach( plot );
-
-    PLOTOBJECT testsq;
-    testsq.itemPtr = testObject;
-    testsq.type    = PLType::OTHER;
-    testsq.index   = -1;
-    plotItemList.append(testsq);
-    // Test End
-    */
+    //qDebug()   << "zeroPoint  (x,y) = (" << zeroPointx << "," << zeroPointy << ")\n"
+    //           << "deltaPoint (x,y) = (" << deltaPointx << "," << deltaPointy << ")\n"
+    //           << "Scalar     (x,y) = (" << xScalar << "," << yScalar << ")\n";
 
     //
     // Plotting the Applied Moment Symbol
     //
 
-    QwtPlotCurve *moment = new QwtPlotCurve();
-    QPolygonF pointsOnMomentCurve;
-
-    double mR = 25.0; // Moment Radius in screen coordinates
-    double nChords = 20;
     double alpha;
     double dTheta;
     double theta;
+
+    double mR = 25.0; // Moment Radius in screen coordinates
+    double nChords = 20;
+
     double Rx = mR*xScalar;
     double Ry = mR*yScalar;
+
+    QwtPlotCurve *moment = new QwtPlotCurve();
+    QPolygonF pointsOnMomentCurve;
 
     if (PMom < 0)
     {
@@ -592,7 +522,6 @@ QwtLegend
         var.index   = 2;
         plotItemList.append(var);
     }
-
 
     //
     // Drawing Horizontal Force Arrow using QwtPlotShapeItem
