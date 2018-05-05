@@ -1155,6 +1155,26 @@ void PileFEAmodeler::buildMesh()
         qDebug() << "ERROR: " << numNode << " nodes generated but " << numNodePiles << "expected" << endln;
     }
 
+    if (dumpFEMinput)
+    {
+        out << endl;
+        out << "#----------------------------------------------------------" << endl;
+        out << "#   create recorders                                       " << endl;
+        out << "#----------------------------------------------------------" << endl;
+        out << endl;
+        out << "# node recorder for pile cap" << endl;
+        out << "recorder Node -file PileCap.txt -time -node " << numLoadedNode << " -dof 1 3 5 disp" << endl;
+        out << "recorder Node -file Pile1_Disp.txt -time "
+            << " -nodeRange " << 105 << " " << 155
+            << " -dof 1 3 5 disp" << endl;
+        out << endl;
+        out << "# element recorder" << endl;
+        out << "recorder Element -file Pile1_Forces.txt -time "
+            << " -eleRange " << 105 << " " << 154
+            << " -dT 9.95 forces" << endl;
+        out << endl;
+    }
+
     ENABLE_STATE(AnalysisState::meshValid);
     DISABLE_STATE(AnalysisState::solutionAvailable);
 }
@@ -1331,7 +1351,7 @@ void PileFEAmodeler::buildAnalysis()
         out << "# analysis commands"                                         << endl;
         out << "    integrator LoadControl  0.05 ;"                          << endl;
         out << "    numberer RCM ;"                                          << endl;
-        out << "	system BandGeneral ;"                                    << endl;
+        out << "    system BandGeneral ;"                                    << endl;
         out << "    constraints Penalty   1.0e14  1.0e14 ;"                  << endl;
         out << "    test NormDispIncr 1e-5      20      1 ;"                 << endl;
         out << "    algorithm Newton ;"                                      << endl;
