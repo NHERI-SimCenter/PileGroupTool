@@ -32,8 +32,8 @@ ResultPlotQwt::~ResultPlotQwt()
 
 void ResultPlotQwt::refresh(void)
 {
-    int numPiles = m_x.size();
-    if (m_y.size() < numPiles) numPiles = m_y.size();
+    int numPiles = m_pos.size();
+    if (m_data.size() < numPiles) numPiles = m_data.size();
     if (numPiles < 1) return;
 
     if (grid)
@@ -48,10 +48,10 @@ void ResultPlotQwt::refresh(void)
 
     for (int i=0; i<numPiles; i++)
     {
-        if (m_x[i]->size() > maxPts)
+        if (m_pos[i]->size() > maxPts)
         {
-            maxPts = m_x[i]->size();
-            xOffset = m_y[i];
+            maxPts = m_pos[i]->size();
+            xOffset = m_pos[i];
         }
     }
 
@@ -90,8 +90,8 @@ void ResultPlotQwt::refresh(void)
 
         QwtPlotCurve *mCurve = new QwtPlotCurve();
         QPolygonF points;
-        for (int j=0; j<m_x[ii]->length(); j++) {
-            points << QPointF( (*m_x[ii])[j],(*m_y[ii])[j] );
+        for (int j=0; j<m_pos[ii]->length(); j++) {
+            points << QPointF( (*m_data[ii])[j],(*m_pos[ii])[j] );
         }
 
         mCurve->setSamples(points);
@@ -135,7 +135,7 @@ void ResultPlotQwt::refresh(void)
     //
     // setting up plot dimensions
     //
-    double L1 = (*m_x[0]).last();
+    double L1 = (*m_pos[0]).last();
 
     plot->setAxisScale( QwtPlot::xBottom, xl, xr);
     plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + 1.50);

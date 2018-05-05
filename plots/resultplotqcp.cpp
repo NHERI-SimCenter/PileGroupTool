@@ -20,8 +20,8 @@ ResultPlotQCP::~ResultPlotQCP()
 
 void ResultPlotQCP::refresh(void)
 {
-    int numPiles = m_x.size();
-    if (m_y.size() < numPiles) numPiles = m_y.size();
+    int numPiles = m_pos.size();
+    if (m_data.size() < numPiles) numPiles = m_data.size();
     if (numPiles < 1) return;
 
     QVector<double> *xOffset;
@@ -30,12 +30,10 @@ void ResultPlotQCP::refresh(void)
 
     for (int i=0; i<numPiles; i++)
     {
-        // qDebug() << m_x << m_x[i] << *m_x[i];
-
-        if (m_x[i] && m_x[i]->size() > maxPts)
+        if (m_pos[i] && m_pos[i]->size() > maxPts)
         {
-            maxPts = m_x[i]->size();
-            xOffset = m_y[i];
+            maxPts = m_pos[i]->size();
+            xOffset = m_pos[i];
         }
     }
 
@@ -54,7 +52,7 @@ void ResultPlotQCP::refresh(void)
 
     for (int ii=0; ii<numPiles; ii++) {
         QCPCurve *mCurve = new QCPCurve(plot->xAxis, plot->yAxis);
-        mCurve->setData(*m_x[ii],*m_y[ii]);
+        mCurve->setData(*m_data[ii],*m_pos[ii]);
         mCurve->setPen(QPen(LINE_COLOR[ii], 3));
         mCurve->setName(QString("Pile #%1").arg(ii+1));
 
@@ -96,7 +94,7 @@ void ResultPlotQCP::refresh(void)
     //
     // setting up plot dimensions
     //
-    double L1 = (*m_x[0]).last();
+    double L1 = (*m_pos[0]).last();
 
     //plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + 1.5);
     //plot->setAxisScale( QwtPlot::xBottom, xl, xr);
