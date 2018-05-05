@@ -167,6 +167,7 @@ protected:
 
     // others
     QVector<HEAD_NODE_TYPE> headNodeList = QVector<HEAD_NODE_TYPE>(MAXPILES, {-1,-1,0.0, 1.0, 1.0});
+    QList<CAP_NODE_TYPE>    capNodeList;
 
     Domain *theDomain;
     StaticAnalysis *theAnalysis = NULL;
