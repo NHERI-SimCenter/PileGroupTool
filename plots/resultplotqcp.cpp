@@ -30,7 +30,9 @@ void ResultPlotQCP::refresh(void)
 
     for (int i=0; i<numPiles; i++)
     {
-        if (m_x[i]->size() > maxPts)
+        // qDebug() << m_x << m_x[i] << *m_x[i];
+
+        if (m_x[i] && m_x[i]->size() > maxPts)
         {
             maxPts = m_x[i]->size();
             xOffset = m_y[i];
