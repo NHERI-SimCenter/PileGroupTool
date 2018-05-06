@@ -138,7 +138,7 @@ void ResultPlotQwt::refresh(void)
     double L1 = (*m_pos[0]).last();
 
     plot->setAxisScale( QwtPlot::xBottom, xl, xr);
-    plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + 1.50);
+    plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + 1.75);
 
     // Create Background Grid for Plot
     grid = new QwtPlotGrid();

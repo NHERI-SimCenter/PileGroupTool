@@ -274,9 +274,15 @@ void SystemPlotQwt::refresh()
     plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
 
     // Set x-axis and y-axis
-    double heightAbovePileCap = 1;
-    plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
-    plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + maxH + heightAbovePileCap );
+    if (loadControlType == LoadControlType::SoilMotion)
+    {
+        plot->setAxisScale( QwtPlot::xBottom, xl-1.0, xr+1.0 );
+    }
+    else
+    {
+        plot->setAxisScale( QwtPlot::xBottom, xl, xr );
+    }
+    plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + 1.75);
 
     //
     // Plot Ground Water Table
