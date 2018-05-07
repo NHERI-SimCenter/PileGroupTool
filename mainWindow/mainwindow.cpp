@@ -36,7 +36,7 @@ OPS_Stream *opserrPtr = &sserr;
 
 //SimulationInformation simulationInfo;
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(bool graphicsModeQCP, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
@@ -46,30 +46,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->fetchSettings();
 
-    if (useGraphicsLib == "QwtAll" || useGraphicsLib == "QwtSystem")
-    {
-        systemPlot  = new SystemPlotQwt(ui->systemTab);
-    }
-    else
+    if (graphicsModeQCP || useGraphicsLib == "QCP")
     {
         systemPlot  = new SystemPlotQCP(ui->systemTab);
-    }
-
-    if (useGraphicsLib == "QwtAll" || useGraphicsLib == "QwtResults")
-    {
-        displPlot   = new ResultPlotQwt(ui->dispTab);
-        pullOutPlot = new ResultPlotQwt(ui->pulloutTab);
-        momentPlot  = new ResultPlotQwt(ui->momentTab);
-        shearPlot   = new ResultPlotQwt(ui->shearTab);
-        axialPlot   = new ResultPlotQwt(ui-> axialTab);
-        stressPlot  = new ResultPlotQwt(ui->stressTab);
-        pultPlot    = new ResultPlotQwt(ui->pultTab);
-        y50Plot     = new ResultPlotQwt(ui->y50Tab);
-        tultPlot    = new ResultPlotQwt(ui->tultTab);
-        z50Plot     = new ResultPlotQwt(ui->z50Tab);
-    }
-    else
-    {
         displPlot   = new ResultPlotQCP(ui->dispTab);
         pullOutPlot = new ResultPlotQCP(ui->pulloutTab);
         momentPlot  = new ResultPlotQCP(ui->momentTab);
@@ -80,6 +59,20 @@ MainWindow::MainWindow(QWidget *parent) :
         y50Plot     = new ResultPlotQCP(ui->y50Tab);
         tultPlot    = new ResultPlotQCP(ui->tultTab);
         z50Plot     = new ResultPlotQCP(ui->z50Tab);
+    }
+    else
+    {
+        systemPlot  = new SystemPlotQwt(ui->systemTab);
+        displPlot   = new ResultPlotQwt(ui->dispTab);
+        pullOutPlot = new ResultPlotQwt(ui->pulloutTab);
+        momentPlot  = new ResultPlotQwt(ui->momentTab);
+        shearPlot   = new ResultPlotQwt(ui->shearTab);
+        axialPlot   = new ResultPlotQwt(ui-> axialTab);
+        stressPlot  = new ResultPlotQwt(ui->stressTab);
+        pultPlot    = new ResultPlotQwt(ui->pultTab);
+        y50Plot     = new ResultPlotQwt(ui->y50Tab);
+        tultPlot    = new ResultPlotQwt(ui->tultTab);
+        z50Plot     = new ResultPlotQwt(ui->z50Tab);
     }
 
     //

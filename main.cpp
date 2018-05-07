@@ -7,10 +7,20 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    //surveySplashScreen splash;
-   // splash.exec();
+    bool graphicModeQCP = false;
 
-    MainWindow w;
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i],"-useQCP") == 0
+                || strcmp(argv[i],"-QCP") == 0
+                || strcmp(argv[i],"-useqcp") == 0
+                || strcmp(argv[i],"-qcp") == 0)
+        {
+            graphicModeQCP = true;
+        }
+    }
+
+    MainWindow w(graphicModeQCP);
     w.setWindowIcon(QIcon(":/resources/NHERI-PGT-Icon.icns"));
     w.show();
 
