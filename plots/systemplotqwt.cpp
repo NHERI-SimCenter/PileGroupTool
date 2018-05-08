@@ -163,8 +163,6 @@ PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
 
 void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 {
-    qWarning() << "picker appended " << pos;
-
     SystemPlotQwt::refresh();
 
     double coords[ QwtPlot::axisCnt ];
@@ -178,17 +176,6 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 
     if ( item )
     {
-        /*if ( item->rtti() == QwtPlotItem::Rtti_PlotShape )
-        {
-            QwtPlotShapeItem *theShape = static_cast<QwtPlotShapeItem *>(item);
-            theShape->setPen(Qt::red, 3);
-            QBrush brush = theShape->brush();
-            QColor color = brush.color();
-            color.setAlpha(64);
-            brush.setColor(color);
-            theShape->setBrush(brush);
-        }*/
-
         plot->replot();
 
         switch (obj.type) {
@@ -212,7 +199,6 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 
 void SystemPlotQwt::refresh()
 {  
-    //qDebug() << "entering SystemPlotQwt::refresh()" << QTime::currentTime();
     foreach (PLOTOBJECT item, plotItemList) {
         item.itemPtr->detach();
         delete item.itemPtr;
@@ -626,10 +612,8 @@ void SystemPlotQwt::refresh()
     if (!mIsStable)
     {
         //
-        // TODO: write "unstable system" at center of the system plot
+        // write "unstable system" at center of the system plot
         //
-
-        // this is the code from QCP
 
         QwtPlotTextLabel *warning = new QwtPlotTextLabel();
 
