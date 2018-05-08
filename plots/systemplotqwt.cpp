@@ -633,8 +633,9 @@ void SystemPlotQwt::refresh()
 
         QwtPlotTextLabel *warning = new QwtPlotTextLabel();
 
-        QwtText title("unstable\nsystem");
+        QwtText title("unstable\nsystem\n\nanalysis\ndid not\nconverge");
         title.setFont(QFont(font().family(), 36));
+        title.setColor(Qt::magenta);
         warning->setText(title);
         warning->setMargin(8);
         warning->attach(plot);

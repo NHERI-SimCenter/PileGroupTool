@@ -1341,11 +1341,17 @@ Layers 1 &amp; 2:</string>
         <height>0</height>
        </size>
       </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
       <property name="tabPosition">
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>9</number>
+       <number>0</number>
+      </property>
+      <property name="usesScrollButtons">
+       <bool>false</bool>
       </property>
       <widget class="QWidget" name="dispTab">
        <attribute name="title">

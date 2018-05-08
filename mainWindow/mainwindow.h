@@ -24,7 +24,7 @@ class MainWindow : public QMainWindow
 {
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(bool graphicsModeQCP = false, QWidget *parent = 0);
     ~MainWindow();
 
     void doAnalysis(void);
