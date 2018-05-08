@@ -171,8 +171,6 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 {
     //SystemPlotQwt::refresh();
 
-    //qDebug() << "SystemPlotQwt::on_picker_appended (" << pos << ")";
-
     PLOTOBJECT    obj = itemAt(pos);
     QwtPlotItem *item = obj.itemPtr;
 
@@ -265,12 +263,15 @@ void SystemPlotQwt::refresh()
     if (loadControlType == LoadControlType::SoilMotion)
     {
         plot->setAxisScale( QwtPlot::xBottom, xl-1.0, xr+1.0 );
+        plot->setAxisScale( QwtPlot::xTop, xl-1.0, xr+1.0 );
     }
     else
     {
         plot->setAxisScale( QwtPlot::xBottom, xl, xr );
+        plot->setAxisScale( QwtPlot::xTop, xl, xr );
     }
     plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + 1.75);
+    plot->setAxisScale( QwtPlot::yRight, -depthOfLayer[3], L1 + 1.75);
 
     //
     // Plot Ground Water Table
