@@ -43,6 +43,7 @@ MainWindow::MainWindow(bool graphicsModeQCP, QWidget *parent) :
     inSetupState = true;
 
     ui->setupUi(this);
+    ui->tabWidget->tabBar()->setUsesScrollButtons(true);
 
     this->fetchSettings();
 

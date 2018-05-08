@@ -1411,7 +1411,6 @@ void PileFEAmodeler::clearPlotBuffers()
 int PileFEAmodeler::extractPlotData()
 {
     if ( CHECK_STATE(AnalysisState::solutionAvailable) && CHECK_STATE(AnalysisState::dataExtracted)) return 0;
-
     if (!CHECK_STATE(AnalysisState::solutionAvailable)) this->doAnalysis();
 
     this->clearPlotBuffers();
@@ -1421,19 +1420,16 @@ int PileFEAmodeler::extractPlotData()
         //
         // allocate storage for results from pile with pileIdx
         //
-        locList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-
+        locList.append        (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
         lateralDispList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        axialDispList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-
-        MomentList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        ShearList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        AxialList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-
-        StressList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        axialDispList.append  (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        MomentList.append     (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        ShearList.append      (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        AxialList.append      (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        StressList.append     (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
     }
 
-    if (!CHECK_STATE(AnalysisState::solutionValid)) return -1;
+    if (!CHECK_STATE(AnalysisState::solutionValid)) { return -1; }
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
@@ -1444,6 +1440,7 @@ int PileFEAmodeler::extractPlotData()
             Node *theNode = theDomain->getNode(i+pileInfo[pileIdx].nodeIDoffset+1);
             const Vector &nodeCoord = theNode->getCrds();
             (*locList[pileIdx])[i] = nodeCoord(2);
+
             int iLayer;
             for (iLayer=0; iLayer<pileInfo[pileIdx].maxLayers; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
             (*StressList[pileIdx])[i] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
@@ -1451,8 +1448,7 @@ int PileFEAmodeler::extractPlotData()
             const Vector &nodeDisp = theNode->getDisp();
 
             (*lateralDispList[pileIdx])[i] = nodeDisp(0);
-
-            (*axialDispList[pileIdx])[i] = nodeDisp(2);
+            (*axialDispList[pileIdx])[i]   = nodeDisp(2);
         }
 
         /* during initialization, the list can contain zero elements and the next 2 lines will crash */
