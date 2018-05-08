@@ -86,6 +86,12 @@ PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
     coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft ).invTransform( pos.y() );
     coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight ).invTransform( pos.y() );
 
+    //qDebug() << "Pos: " << pos
+    //         << " coord: " << coords[ QwtPlot::xBottom ]
+    //         << "/" << coords[ QwtPlot::xTop ]
+    //         << "/" << coords[ QwtPlot::yLeft ]
+    //         << "/" << coords[ QwtPlot::yRight ];
+
     for ( int i = plotItemList.size() - 1; i >= 0; i-- )
     {
         PLOTOBJECT obj = plotItemList[i];
@@ -97,7 +103,7 @@ PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
             QwtPlotCurve *curveItem = static_cast<QwtPlotCurve *>( item );
             const QPointF p( coords[ item->xAxis() ], coords[ item->yAxis() ] );
 
-            if ( curveItem->boundingRect().contains( p ) || true )
+            if ( curveItem->boundingRect().contains( p ) )
             {
                 // trace curves ...
                 dist = 1000.;
@@ -163,13 +169,9 @@ PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
 
 void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 {
-    SystemPlotQwt::refresh();
+    //SystemPlotQwt::refresh();
 
-    double coords[ QwtPlot::axisCnt ];
-    coords[ QwtPlot::xBottom ] = plot->canvasMap( QwtPlot::xBottom ).invTransform( pos.x() );
-    coords[ QwtPlot::xTop ]    = plot->canvasMap( QwtPlot::xTop    ).invTransform( pos.x() );
-    coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft   ).invTransform( pos.y() );
-    coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight  ).invTransform( pos.y() );
+    //qDebug() << "SystemPlotQwt::on_picker_appended (" << pos << ")";
 
     PLOTOBJECT    obj = itemAt(pos);
     QwtPlotItem *item = obj.itemPtr;
