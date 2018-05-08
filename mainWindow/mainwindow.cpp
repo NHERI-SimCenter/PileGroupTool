@@ -123,16 +123,16 @@ MainWindow::MainWindow(bool graphicsModeQCP, QWidget *parent) :
 
     // setup data
     numPiles = 1;
-    P        = MAX_H_FORCE/10.;
-    PV       =    0.0;
-    PMom     =    0.0;
+    P        = MAX_H_FORCE/10.0;
+    PV       = MAX_V_FORCE/10.0;
+    PMom     = 0.0;
 
-    HDisp = 0.0; // prescribed horizontal displacement
-    VDisp = 0.0; // prescriber vertical displacement
+    HDisp = 0.10; // prescribed horizontal displacement
+    VDisp = 0.01; // prescriber vertical displacement
 
-    surfaceDisp = 0.0;    // prescribed soil surface displacement
-    percentage12 = 1.0;   // percentage of surface displacement at 1st layer interface
-    percentage23 = 0.0;   // percentage of surface displacement at 2nd layer interface
+    surfaceDisp    = 0.1; // prescribed soil surface displacement
+    percentage12   = 1.0; // percentage of surface displacement at 1st layer interface
+    percentage23   = 0.0; // percentage of surface displacement at 2nd layer interface
     percentageBase = 0.0; // percentage of surface displacement at base of soil column
 
     L1                       = 1.0;
@@ -631,14 +631,14 @@ void MainWindow::on_actionReset_triggered()
 
     // setup data
     numPiles = 1;
-    P        = 1000.0;
-    PV       =    0.0;
-    PMom     =    0.0;
+    P        = MAX_H_FORCE/10.0;
+    PV       = MAX_V_FORCE/10.0;
+    PMom     = 0.0;
 
-    HDisp = 0.0; // prescribed horizontal displacement
-    VDisp = 0.0; // prescriber vertical displacement
+    HDisp = 0.10; // prescribed horizontal displacement
+    VDisp = 0.01; // prescriber vertical displacement
 
-    surfaceDisp    = 0.0; // prescribed soil surface displacement
+    surfaceDisp    = 0.1; // prescribed soil surface displacement
     percentage12   = 1.0; // percentage of surface displacement at 1st layer interface
     percentage23   = 0.0; // percentage of surface displacement at 2nd layer interface
     percentageBase = 0.0; // percentage of surface displacement at base of soil column
@@ -656,7 +656,7 @@ void MainWindow::on_actionReset_triggered()
     gwtSwitch= 1;
 
      // set initial state of check boxes
-    useToeResistance              = false;
+    useToeResistance              = true;
     assumeRigidPileHeadConnection = false;
 
     // meshing parameters
@@ -1066,16 +1066,16 @@ void MainWindow::updateSystemPlot()
 
     this->updateSoilResultPlots(layerDepth);
 
-    displPlot->updateSoil(layerDepth);
-    pullOutPlot->updateSoil(layerDepth);
-    momentPlot->updateSoil(layerDepth);
-    shearPlot->updateSoil(layerDepth);
-    axialPlot->updateSoil(layerDepth);
-    stressPlot->updateSoil(layerDepth);
-    pultPlot->updateSoil(layerDepth);
-    y50Plot->updateSoil(layerDepth);
-    tultPlot->updateSoil(layerDepth);
-    z50Plot->updateSoil(layerDepth);
+    //displPlot->updateSoil(layerDepth);
+    //pullOutPlot->updateSoil(layerDepth);
+    //momentPlot->updateSoil(layerDepth);
+    //shearPlot->updateSoil(layerDepth);
+    //axialPlot->updateSoil(layerDepth);
+    //stressPlot->updateSoil(layerDepth);
+    //pultPlot->updateSoil(layerDepth);
+    //y50Plot->updateSoil(layerDepth);
+    //tultPlot->updateSoil(layerDepth);
+    //z50Plot->updateSoil(layerDepth);
 
     //
     // update ground water table
@@ -1547,14 +1547,40 @@ void MainWindow::replyFinished(QNetworkReply *pReply)
 }
 
 
-
 void MainWindow::on_forceTypeSelector_activated(int index)
 {
     ui->loadTypesStack->setCurrentIndex(index);
 
-    if (index == 0) { loadControlType = LoadControlType::ForceControl; }
-    if (index == 1) { loadControlType = LoadControlType::PushOver;     }
-    if (index == 2) { loadControlType = LoadControlType::SoilMotion;   }
+    if (index == 0)
+    {
+        loadControlType = LoadControlType::ForceControl;
+        ui->appliedHorizontalForce->setValue(P);
+        this->on_appliedHorizontalForce_editingFinished();
+        ui->appliedVerticalForce->setValue(P);
+        this->on_appliedVerticalForce_editingFinished();
+        ui->appliedMoment->setValue(P);
+        this->on_appliedMoment_editingFinished();
+    }
+    if (index == 1)
+    {
+        loadControlType = LoadControlType::PushOver;
+        ui->pushoverDisplacement->setValue(HDisp);
+        this->on_pushoverDisplacement_editingFinished();
+        ui->pulloutDisplacement->setValue(VDisp);
+        this->on_pulloutDisplacement_editingFinished();
+    }
+    if (index == 2)
+    {
+        loadControlType = LoadControlType::SoilMotion;
+        ui->surfaceDisplacement->setValue(surfaceDisp);
+        this->on_surfaceDisplacement_editingFinished();
+        ui->Interface12->setValue(100.0*percentage12);
+        this->on_Interface12_editingFinished();
+        ui->Interface23->setValue(100.0*percentage23);
+        this->on_Interface23_editingFinished();
+        ui->BaseDisplacement->setValue(100.0*percentageBase);
+        this->on_BaseDisplacement_editingFinished();
+    }
 
     systemPlot->setLoadType(loadControlType);
     pileFEAmodel->setLoadType(loadControlType);
