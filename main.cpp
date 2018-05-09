@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     bool graphicModeQCP = false;
-
+#ifdef USEQCP
     for (int i = 0; i < argc; i++)
     {
         if (strcmp(argv[i],"-useQCP") == 0
@@ -19,6 +19,9 @@ int main(int argc, char *argv[])
             graphicModeQCP = true;
         }
     }
+#else
+    graphicModeQCP = false;
+#endif
 
     MainWindow w(graphicModeQCP);
     w.setWindowIcon(QIcon(":/resources/NHERI-PGT-Icon.icns"));
