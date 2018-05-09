@@ -87,6 +87,7 @@ unix: {
 
 SOURCES += main.cpp\
         mainWindow/mainwindow.cpp \
+        qcp/qcustomplot.cpp \
         FEA/getPyParam.cpp \
         FEA/getQzParam.cpp \
         FEA/getTZParam.cpp \
@@ -99,8 +100,10 @@ SOURCES += main.cpp\
         utilWindows/dialogpreferences.cpp \
         utilWindows/dialogfuturefeature.cpp \
         plots/systemplotsuper.cpp \
+        plots/systemplotqcp.cpp \
         plots/systemplotqwt.cpp \
         plots/resultplotsuper.cpp \
+        plots/resultplotqcp.cpp \
         plots/resultplotqwt.cpp \
         ../widgets/Common/FooterWidget.cpp \
         ../widgets/Common/HeaderWidget.cpp
@@ -108,6 +111,7 @@ SOURCES += main.cpp\
 HEADERS  += \
         mainWindow/mainwindow.h \
         includes/pilegrouptool_parameters.h \
+        qcp/qcustomplot.h \
         FEA/soilmat.h \
         FEA/pilefeamodeler.h \
         dialogs/materialdbinterface.h \
@@ -117,8 +121,10 @@ HEADERS  += \
         utilWindows/dialogpreferences.h \
         utilWindows/dialogfuturefeature.h \
         plots/systemplotsuper.h \
+        plots/systemplotqcp.h \
         plots/systemplotqwt.h \
         plots/resultplotsuper.h \
+        plots/resultplotqcp.h \
         plots/resultplotqwt.h \
         ../widgets/Common/FooterWidget.h \
         ../widgets/Common/HeaderWidget.h

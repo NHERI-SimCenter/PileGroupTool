@@ -10,12 +10,12 @@ MAKEFILE      = Makefile
 
 ####### Compiler, tools and options
 
-CC            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
-CXX           = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
-DEFINES       = -DAPP_VERSION=\"1.99\" -DQWT_DLL -D_bool_h -D_MacOSX -DQT_NO_DEBUG -DQT_PRINTSUPPORT_LIB -DQT_SVG_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
-CFLAGS        = -pipe -O2 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wall -W -fPIC $(DEFINES)
-CXXFLAGS      = -pipe -stdlib=libc++ -O2 -std=gnu++11 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wall -Wno-unused-variable -std=c++11 -fPIC $(DEFINES)
-INCPATH       = -I. -I./qwt-6.2.0/lib/qwt.framework/Headers -I.include -Iops -I../../../Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I../../../Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I../../../Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I. -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/OpenGL.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/AGL.framework/Headers -I. -I../../../Qt/5.10.0/clang_64/mkspecs/macx-clang -F/Users/pmackenz/Qt/5.10.0/clang_64/lib
+CC            = /Library/Developer/CommandLineTools/usr/bin/clang
+CXX           = /Library/Developer/CommandLineTools/usr/bin/clang++
+DEFINES       = -DAPP_VERSION=\"1.99.2\" -D_bool_h -D_MacOSX -DQT_NO_DEBUG -DQT_PRINTSUPPORT_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
+CFLAGS        = -pipe -O2 $(EXPORT_ARCH_ARGS) -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wall -W -fPIC $(DEFINES)
+CXXFLAGS      = -pipe -stdlib=libc++ -O2 -std=gnu++11 $(EXPORT_ARCH_ARGS) -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wall -Wno-unused-variable -std=c++11 -fPIC $(DEFINES)
+INCPATH       = -I. -I.include -Iops -Iqwt-6.2/src -Iincludes -ImainWindow -Idialogs -Iplots -IFEA -Iqwt-6.2/src -I../../../Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I../../../Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/OpenGL.framework/Headers -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/AGL.framework/Headers -I. -I../../../Qt/5.10.0/clang_64/mkspecs/macx-clang -F/Users/pmackenz/Qt/5.10.0/clang_64/lib
 QMAKE         = /Users/pmackenz/Qt/5.10.0/clang_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -34,13 +34,13 @@ DEL_DIR       = rmdir
 MOVE          = mv -f
 TAR           = tar -cf
 COMPRESS      = gzip -9f
-DISTNAME      = PileGroupTool1.99
-DISTDIR = /Users/pmackenz/Development/SimCenter/PileGroupTool/.tmp/PileGroupTool1.99
-LINK          = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
-LFLAGS        = -stdlib=libc++ -headerpad_max_install_names $(EXPORT_ARCH_ARGS) -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wl,-rpath,@executable_path/Frameworks -Wl,-rpath,/Users/pmackenz/Qt/5.10.0/clang_64/lib
-LIBS          = $(SUBLIBS) -F/Users/pmackenz/Qt/5.10.0/clang_64/lib -F./qwt-6.2.0/lib -framework qwt -llapack -lblas -framework QtPrintSupport -framework QtWidgets -framework QtGui -framework QtCore -framework DiskArbitration -framework IOKit -framework QtSvg -framework QtNetwork -framework OpenGL -framework AGL 
-AR            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq
-RANLIB        = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib -s
+DISTNAME      = PileGroupTool1.99.2
+DISTDIR = /Users/pmackenz/Development/SimCenter/PileGroupTool/.tmp/PileGroupTool1.99.2
+LINK          = /Library/Developer/CommandLineTools/usr/bin/clang++
+LFLAGS        = -stdlib=libc++ -headerpad_max_install_names $(EXPORT_ARCH_ARGS) -Wl,-syslibroot,/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wl,-rpath,@executable_path/Frameworks -Wl,-rpath,/Users/pmackenz/Qt/5.10.0/clang_64/lib
+LIBS          = $(SUBLIBS) -F/Users/pmackenz/Qt/5.10.0/clang_64/lib -llapack -lblas -L$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib -L$(HOME)/Documents/GitHub/PileGroupTool/qwt-6.2/lib -lqwt -framework QtPrintSupport -framework QtWidgets -framework QtGui -framework QtCore -framework DiskArbitration -framework IOKit -framework QtNetwork -framework OpenGL -framework AGL 
+AR            = /Library/Developer/CommandLineTools/usr/bin/ar cq
+RANLIB        = /Library/Developer/CommandLineTools/usr/bin/ranlib -s
 SED           = sed
 STRIP         = strip
 
@@ -142,40 +142,35 @@ SOURCES       = ops/Domain.cpp \
 		ops/DummyElementAPI.cpp \
 		ops/OPS_Stream.cpp \
 		main.cpp \
-		mainwindow.cpp \
-		getPyParam.cpp \
-		getQzParam.cpp \
-		getTZParam.cpp \
-		qcustomplot.cpp \
-		materialdbinterface.cpp \
-		surveysplashscreen.cpp \
-		soilmat.cpp \
+		mainWindow/mainwindow.cpp \
+		FEA/getPyParam.cpp \
+		FEA/getQzParam.cpp \
+		FEA/getTZParam.cpp \
+		FEA/soilmat.cpp \
+		FEA/pilefeamodeler.cpp \
+		dialogs/materialdbinterface.cpp \
+		dialogs/surveysplashscreen.cpp \
 		utilWindows/copyrightdialog.cpp \
 		utilWindows/dialogabout.cpp \
 		utilWindows/dialogpreferences.cpp \
 		utilWindows/dialogfuturefeature.cpp \
+		plots/systemplotsuper.cpp \
+		plots/systemplotqwt.cpp \
+		plots/resultplotsuper.cpp \
+		plots/resultplotqwt.cpp \
 		../widgets/Common/FooterWidget.cpp \
-		../widgets/Common/HeaderWidget.cpp \
-		pilefeamodeler.cpp \
-		systemplotqwt.cpp \
-		systemplotsuper.cpp \
-		systemplotqcp.cpp \
-		resultplotsuper.cpp \
-		resultplotqcp.cpp \
-		resultplotqwt.cpp qrc_qtpileresources.cpp \
+		../widgets/Common/HeaderWidget.cpp qrc_qtpileresources.cpp \
 		moc_mainwindow.cpp \
-		moc_qcustomplot.cpp \
 		moc_materialdbinterface.cpp \
 		moc_surveysplashscreen.cpp \
 		moc_copyrightdialog.cpp \
 		moc_dialogabout.cpp \
 		moc_dialogpreferences.cpp \
 		moc_dialogfuturefeature.cpp \
-		moc_FooterWidget.cpp \
-		moc_HeaderWidget.cpp \
 		moc_systemplotqwt.cpp \
-		moc_systemplotqcp.cpp \
-		moc_resultplotsuper.cpp
+		moc_resultplotsuper.cpp \
+		moc_FooterWidget.cpp \
+		moc_HeaderWidget.cpp
 OBJECTS       = Domain.o \
 		Subdomain.o \
 		DomainComponent.o \
@@ -272,37 +267,32 @@ OBJECTS       = Domain.o \
 		getPyParam.o \
 		getQzParam.o \
 		getTZParam.o \
-		qcustomplot.o \
+		soilmat.o \
+		pilefeamodeler.o \
 		materialdbinterface.o \
 		surveysplashscreen.o \
-		soilmat.o \
 		copyrightdialog.o \
 		dialogabout.o \
 		dialogpreferences.o \
 		dialogfuturefeature.o \
+		systemplotsuper.o \
+		systemplotqwt.o \
+		resultplotsuper.o \
+		resultplotqwt.o \
 		FooterWidget.o \
 		HeaderWidget.o \
-		pilefeamodeler.o \
-		systemplotqwt.o \
-		systemplotsuper.o \
-		systemplotqcp.o \
-		resultplotsuper.o \
-		resultplotqcp.o \
-		resultplotqwt.o \
 		qrc_qtpileresources.o \
 		moc_mainwindow.o \
-		moc_qcustomplot.o \
 		moc_materialdbinterface.o \
 		moc_surveysplashscreen.o \
 		moc_copyrightdialog.o \
 		moc_dialogabout.o \
 		moc_dialogpreferences.o \
 		moc_dialogfuturefeature.o \
-		moc_FooterWidget.o \
-		moc_HeaderWidget.o \
 		moc_systemplotqwt.o \
-		moc_systemplotqcp.o \
-		moc_resultplotsuper.o
+		moc_resultplotsuper.o \
+		moc_FooterWidget.o \
+		moc_HeaderWidget.o
 DIST          = ../../../Qt/5.10.0/clang_64/mkspecs/features/spec_pre.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/qdevice.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/device_config.prf \
@@ -379,8 +369,6 @@ DIST          = ../../../Qt/5.10.0/clang_64/mkspecs/features/spec_pre.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_multimediawidgets_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_network.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_network_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_networkauth.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_networkauth_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_nfc.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_nfc_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_opengl.pri \
@@ -393,8 +381,6 @@ DIST          = ../../../Qt/5.10.0/clang_64/mkspecs/features/spec_pre.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_positioning_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_printsupport.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_printsupport_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_purchasing.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_purchasing_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_qml.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_qml_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_qmldebug_private.pri \
@@ -410,14 +396,6 @@ DIST          = ../../../Qt/5.10.0/clang_64/mkspecs/features/spec_pre.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_quicktemplates2_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_quickwidgets.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_quickwidgets_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_remoteobjects.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_remoteobjects_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_repparser.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_repparser_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_script.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_script_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scripttools.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scripttools_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scxml.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scxml_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_sensors.pri \
@@ -461,16 +439,12 @@ DIST          = ../../../Qt/5.10.0/clang_64/mkspecs/features/spec_pre.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/qt_config.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake.conf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/spec_post.prf \
-		.qmake.stash \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/exclusive_builds.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/mac/sdk.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/toolchain.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/mac/toolchain.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/default_pre.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/mac/default_pre.prf \
-		qwt-6.2/qwtconfig.pri \
-		qwt-6.2/qwtfunctions.pri \
-		qwt-6.2/qwt.prf \
 		OPS_includes.pro \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/resolve_config.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/default_post.prf \
@@ -628,25 +602,22 @@ DIST          = ../../../Qt/5.10.0/clang_64/mkspecs/features/spec_pre.prf \
 		ops/ZeroLength.h \
 		ops/classTags.h \
 		ops/elementAPI.h \
-		mainwindow.h \
-		qcustomplot.h \
-		materialdbinterface.h \
-		surveysplashscreen.h \
-		soilmat.h \
+		mainWindow/mainwindow.h \
+		includes/pilegrouptool_parameters.h \
+		FEA/soilmat.h \
+		FEA/pilefeamodeler.h \
+		dialogs/materialdbinterface.h \
+		dialogs/surveysplashscreen.h \
 		utilWindows/copyrightdialog.h \
 		utilWindows/dialogabout.h \
 		utilWindows/dialogpreferences.h \
 		utilWindows/dialogfuturefeature.h \
+		plots/systemplotsuper.h \
+		plots/systemplotqwt.h \
+		plots/resultplotsuper.h \
+		plots/resultplotqwt.h \
 		../widgets/Common/FooterWidget.h \
-		../widgets/Common/HeaderWidget.h \
-		pilefeamodeler.h \
-		pilegrouptool_parameters.h \
-		systemplotqwt.h \
-		systemplotsuper.h \
-		systemplotqcp.h \
-		resultplotsuper.h \
-		resultplotqcp.h \
-		resultplotqwt.h ops/Domain.cpp \
+		../widgets/Common/HeaderWidget.h ops/Domain.cpp \
 		ops/Subdomain.cpp \
 		ops/DomainComponent.cpp \
 		ops/ArrayOfTaggedObjects.cpp \
@@ -738,27 +709,24 @@ DIST          = ../../../Qt/5.10.0/clang_64/mkspecs/features/spec_pre.prf \
 		ops/DummyElementAPI.cpp \
 		ops/OPS_Stream.cpp \
 		main.cpp \
-		mainwindow.cpp \
-		getPyParam.cpp \
-		getQzParam.cpp \
-		getTZParam.cpp \
-		qcustomplot.cpp \
-		materialdbinterface.cpp \
-		surveysplashscreen.cpp \
-		soilmat.cpp \
+		mainWindow/mainwindow.cpp \
+		FEA/getPyParam.cpp \
+		FEA/getQzParam.cpp \
+		FEA/getTZParam.cpp \
+		FEA/soilmat.cpp \
+		FEA/pilefeamodeler.cpp \
+		dialogs/materialdbinterface.cpp \
+		dialogs/surveysplashscreen.cpp \
 		utilWindows/copyrightdialog.cpp \
 		utilWindows/dialogabout.cpp \
 		utilWindows/dialogpreferences.cpp \
 		utilWindows/dialogfuturefeature.cpp \
+		plots/systemplotsuper.cpp \
+		plots/systemplotqwt.cpp \
+		plots/resultplotsuper.cpp \
+		plots/resultplotqwt.cpp \
 		../widgets/Common/FooterWidget.cpp \
-		../widgets/Common/HeaderWidget.cpp \
-		pilefeamodeler.cpp \
-		systemplotqwt.cpp \
-		systemplotsuper.cpp \
-		systemplotqcp.cpp \
-		resultplotsuper.cpp \
-		resultplotqcp.cpp \
-		resultplotqwt.cpp
+		../widgets/Common/HeaderWidget.cpp
 QMAKE_TARGET  = PileGroupTool
 DESTDIR       = 
 TARGET        = PileGroupTool.app/Contents/MacOS/PileGroupTool
@@ -852,8 +820,6 @@ Makefile: PileGroupTool.pro ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_multimediawidgets_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_network.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_network_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_networkauth.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_networkauth_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_nfc.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_nfc_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_opengl.pri \
@@ -866,8 +832,6 @@ Makefile: PileGroupTool.pro ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_positioning_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_printsupport.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_printsupport_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_purchasing.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_purchasing_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_qml.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_qml_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_qmldebug_private.pri \
@@ -883,14 +847,6 @@ Makefile: PileGroupTool.pro ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_quicktemplates2_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_quickwidgets.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_quickwidgets_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_remoteobjects.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_remoteobjects_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_repparser.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_repparser_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_script.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_script_private.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scripttools.pri \
-		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scripttools_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scxml.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scxml_private.pri \
 		../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_sensors.pri \
@@ -934,16 +890,12 @@ Makefile: PileGroupTool.pro ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake
 		../../../Qt/5.10.0/clang_64/mkspecs/features/qt_config.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake.conf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/spec_post.prf \
-		.qmake.stash \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/exclusive_builds.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/mac/sdk.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/toolchain.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/mac/toolchain.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/default_pre.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/mac/default_pre.prf \
-		qwt-6.2/qwtconfig.pri \
-		qwt-6.2/qwtfunctions.pri \
-		qwt-6.2/qwt.prf \
 		OPS_includes.pro \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/resolve_config.prf \
 		../../../Qt/5.10.0/clang_64/mkspecs/features/default_post.prf \
@@ -968,7 +920,6 @@ Makefile: PileGroupTool.pro ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake
 		PileGroupTool.pro \
 		qtpileresources.qrc \
 		../../../Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/QtPrintSupport.prl \
-		../../../Qt/5.10.0/clang_64/lib/QtSvg.framework/QtSvg.prl \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/QtWidgets.prl \
 		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/QtGui.prl \
 		../../../Qt/5.10.0/clang_64/lib/QtNetwork.framework/QtNetwork.prl \
@@ -1050,8 +1001,6 @@ Makefile: PileGroupTool.pro ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_multimediawidgets_private.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_network.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_network_private.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_networkauth.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_networkauth_private.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_nfc.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_nfc_private.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_opengl.pri:
@@ -1064,8 +1013,6 @@ Makefile: PileGroupTool.pro ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_positioning_private.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_printsupport.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_printsupport_private.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_purchasing.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_purchasing_private.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_qml.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_qml_private.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_qmldebug_private.pri:
@@ -1081,14 +1028,6 @@ Makefile: PileGroupTool.pro ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_quicktemplates2_private.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_quickwidgets.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_quickwidgets_private.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_remoteobjects.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_remoteobjects_private.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_repparser.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_repparser_private.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_script.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_script_private.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scripttools.pri:
-../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scripttools_private.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scxml.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_scxml_private.pri:
 ../../../Qt/5.10.0/clang_64/mkspecs/modules/qt_lib_sensors.pri:
@@ -1132,16 +1071,12 @@ Makefile: PileGroupTool.pro ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake
 ../../../Qt/5.10.0/clang_64/mkspecs/features/qt_config.prf:
 ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/qmake.conf:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/spec_post.prf:
-.qmake.stash:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/exclusive_builds.prf:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/mac/sdk.prf:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/toolchain.prf:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/mac/toolchain.prf:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/default_pre.prf:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/mac/default_pre.prf:
-qwt-6.2/qwtconfig.pri:
-qwt-6.2/qwtfunctions.pri:
-qwt-6.2/qwt.prf:
 OPS_includes.pro:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/resolve_config.prf:
 ../../../Qt/5.10.0/clang_64/mkspecs/features/default_post.prf:
@@ -1166,7 +1101,6 @@ OPS_includes.pro:
 PileGroupTool.pro:
 qtpileresources.qrc:
 ../../../Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/QtPrintSupport.prl:
-../../../Qt/5.10.0/clang_64/lib/QtSvg.framework/QtSvg.prl:
 ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/QtWidgets.prl:
 ../../../Qt/5.10.0/clang_64/lib/QtGui.framework/QtGui.prl:
 ../../../Qt/5.10.0/clang_64/lib/QtNetwork.framework/QtNetwork.prl:
@@ -1187,7 +1121,7 @@ PileGroupTool.app/Contents/Resources/empty.lproj:
 PileGroupTool.app/Contents/Info.plist: 
 	@test -d PileGroupTool.app/Contents || mkdir -p PileGroupTool.app/Contents
 	@$(DEL_FILE) PileGroupTool.app/Contents/Info.plist
-	@sed -e "s,@SHORT_VERSION@,1.99,g" -e "s,@FULL_VERSION@,1.99.0,g" -e "s,@TYPEINFO@,????,g" -e "s,@BUNDLEIDENTIFIER@,Private.PileGroupTool,g" -e "s,@ICON@,,g" -e "s,@EXECUTABLE@,PileGroupTool,g" -e "s,@LIBRARY@,PileGroupTool,g" -e "s,@TYPEINFO@,????,g" ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/Info.plist.app >PileGroupTool.app/Contents/Info.plist
+	@sed -e "s,@SHORT_VERSION@,1.99,g" -e "s,@FULL_VERSION@,1.99.2,g" -e "s,@TYPEINFO@,????,g" -e "s,@BUNDLEIDENTIFIER@,com.yourcompany.PileGroupTool,g" -e "s,@ICON@,,g" -e "s,@EXECUTABLE@,PileGroupTool,g" -e "s,@LIBRARY@,PileGroupTool,g" -e "s,@TYPEINFO@,????,g" ../../../Qt/5.10.0/clang_64/mkspecs/macx-clang/Info.plist.app >PileGroupTool.app/Contents/Info.plist
 
 all: Makefile \
 		PileGroupTool.app/Contents/PkgInfo \
@@ -1202,9 +1136,9 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents qtpileresources.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents ../../../Qt/5.10.0/clang_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ops/Analysis.h ops/AnalysisModel.h ops/ArrayOfTaggedObjects.h ops/ArrayOfTaggedObjectsIter.h ops/BandGenLinLapackSolver.h ops/BandGenLinSOE.h ops/BandGenLinSolver.h ops/BeamFiberMaterial.h ops/BeamFiberMaterial2d.h ops/BeamIntegration.h ops/BinaryFileStream.h ops/CTestNormDispIncr.h ops/Channel.h ops/ColorMap.h ops/CompositeResponse.h ops/ConstraintHandler.h ops/ConvergenceTest.h ops/CrdTransf.h ops/DOF_Group.h ops/DOF_GrpIter.h ops/DOF_Numberer.h ops/DataFileStream.h ops/DispBeamColumn3d.h ops/DispBeamColumn3dWithSensitivity.h ops/Domain.h ops/DomainComponent.h ops/DomainDecompositionAnalysis.h ops/DummyStream.h ops/EigenSOE.h ops/EigenSolver.h ops/ElasticSection3d.h ops/Element.h ops/ElementIter.h ops/ElementResponse.h ops/ElementalLoad.h ops/ElementalLoadIter.h ops/EquiSolnAlgo.h ops/FEM_ObjectBroker.h ops/FE_Datastore.h ops/FE_EleIter.h ops/FE_Element.h ops/Fiber.h ops/FiberResponse.h ops/File.h ops/FileIter.h ops/FrictionModel.h ops/FrictionResponse.h ops/G3Globals.h ops/Graph.h ops/GraphNumberer.h ops/ID.h ops/IncrementalIntegrator.h ops/Information.h ops/Integrator.h ops/LegendreBeamIntegration.h ops/LinearCrdTransf3d.h ops/LinearSOE.h ops/LinearSOESolver.h ops/LinearSeries.h ops/Load.h ops/LoadControl.h ops/LoadPattern.h ops/LoadPatternIter.h ops/MP_Constraint.h ops/MP_ConstraintIter.h ops/MapOfTaggedObjects.h ops/MapOfTaggedObjectsIter.h ops/Material.h ops/MaterialResponse.h ops/Matrix.h ops/MatrixUtil.h ops/MeshRegion.h ops/Message.h ops/MovableObject.h ops/NDMaterial.h ops/NewtonRaphson.h ops/NodalLoad.h ops/NodalLoadIter.h ops/Node.h ops/NodeIter.h ops/OPS_Globals.h ops/OPS_Stream.h ops/ObjectBroker.h ops/Parameter.h ops/ParameterIter.h ops/PenaltyConstraintHandler.h ops/PenaltyMP_FE.h ops/PenaltySP_FE.h ops/PlainMap.h ops/PlainNumberer.h ops/PlaneStrainMaterial.h ops/PlaneStressMaterial.h ops/PlateFiberMaterial.h ops/Pressure_Constraint.h ops/Pressure_ConstraintIter.h ops/PySimple1.h ops/QzSimple1.h ops/RCM.h ops/Recorder.h ops/Renderer.h ops/Response.h ops/SP_Constraint.h ops/SP_ConstraintIter.h ops/SectionForceDeformation.h ops/SimulationInformation.h ops/SingleDomAllSP_Iter.h ops/SingleDomEleIter.h ops/SingleDomLC_Iter.h ops/SingleDomMP_Iter.h ops/SingleDomNodIter.h ops/SingleDomPC_Iter.h ops/SingleDomParamIter.h ops/SingleDomSP_Iter.h ops/SolutionAlgorithm.h ops/StandardStream.h ops/StaticAnalysis.h ops/StaticIntegrator.h ops/StringContainer.h ops/Subdomain.h ops/SubdomainNodIter.h ops/TaggedObject.h ops/TaggedObjectIter.h ops/TaggedObjectStorage.h ops/TimeSeries.h ops/TransformationConstraintHandler.h ops/TransformationDOF_Group.h ops/TransformationFE.h ops/TransientIntegrator.h ops/TzSimple1.h ops/UniaxialMaterial.h ops/Vector.h ops/Vertex.h ops/VertexIter.h ops/ZeroLength.h ops/classTags.h ops/elementAPI.h mainwindow.h qcustomplot.h materialdbinterface.h surveysplashscreen.h soilmat.h utilWindows/copyrightdialog.h utilWindows/dialogabout.h utilWindows/dialogpreferences.h utilWindows/dialogfuturefeature.h ../widgets/Common/FooterWidget.h ../widgets/Common/HeaderWidget.h pilefeamodeler.h pilegrouptool_parameters.h systemplotqwt.h systemplotsuper.h systemplotqcp.h resultplotsuper.h resultplotqcp.h resultplotqwt.h $(DISTDIR)/
-	$(COPY_FILE) --parents ops/Domain.cpp ops/Subdomain.cpp ops/DomainComponent.cpp ops/ArrayOfTaggedObjects.cpp ops/ArrayOfTaggedObjectsIter.cpp ops/MapOfTaggedObjects.cpp ops/MapOfTaggedObjectsIter.cpp ops/SingleDomSP_Iter.cpp ops/SingleDomMP_Iter.cpp ops/SingleDomNodIter.cpp ops/SubdomainNodIter.cpp ops/SingleDomEleIter.cpp ops/SingleDomParamIter.cpp ops/SingleDomAllSP_Iter.cpp ops/SingleDomPC_Iter.cpp ops/LoadPatternIter.cpp ops/NodalLoadIter.cpp ops/FE_EleIter.cpp ops/DOF_GrpIter.cpp ops/ElementalLoadIter.cpp ops/SP_Constraint.cpp ops/MP_Constraint.cpp ops/TaggedObject.cpp ops/ZeroLength.cpp ops/Element.cpp ops/Information.cpp ops/ElasticSection3d.cpp ops/SectionForceDeformation.cpp ops/LinearSeries.cpp ops/TimeSeries.cpp ops/MovableObject.cpp ops/Channel.cpp ops/Node.cpp ops/NodalLoad.cpp ops/Load.cpp ops/LoadPattern.cpp ops/DispBeamColumn3d.cpp ops/CrdTransf.cpp ops/LinearCrdTransf3d.cpp ops/LegendreBeamIntegration.cpp ops/BeamIntegration.cpp ops/Response.cpp ops/ElementResponse.cpp ops/MaterialResponse.cpp ops/CompositeResponse.cpp ops/Matrix.cpp ops/MatrixUtil.cpp ops/ID.cpp ops/Vector.cpp ops/Graph.cpp ops/Vertex.cpp ops/VertexIter.cpp ops/RCM.cpp ops/GraphNumberer.cpp ops/LoadControl.cpp ops/PenaltyConstraintHandler.cpp ops/TransformationConstraintHandler.cpp ops/TransformationDOF_Group.cpp ops/TransformationFE.cpp ops/PenaltySP_FE.cpp ops/PenaltyMP_FE.cpp ops/ConstraintHandler.cpp ops/IncrementalIntegrator.cpp ops/StaticIntegrator.cpp ops/Integrator.cpp ops/PlainNumberer.cpp ops/DOF_Numberer.cpp ops/StaticAnalysis.cpp ops/Analysis.cpp ops/NewtonRaphson.cpp ops/EquiSolnAlgo.cpp ops/SolutionAlgorithm.cpp ops/AnalysisModel.cpp ops/CTestNormDispIncr.cpp ops/ConvergenceTest.cpp ops/LinearSOE.cpp ops/LinearSOESolver.cpp ops/BandGenLinSOE.cpp ops/BandGenLinSolver.cpp ops/BandGenLinLapackSolver.cpp ops/FE_Element.cpp ops/DOF_Group.cpp ops/PySimple1.cpp ops/TzSimple1.cpp ops/QzSimple1.cpp ops/UniaxialMaterial.cpp ops/Material.cpp ops/StandardStream.cpp ops/DummyStream.cpp ops/DummyElementAPI.cpp ops/OPS_Stream.cpp main.cpp mainwindow.cpp getPyParam.cpp getQzParam.cpp getTZParam.cpp qcustomplot.cpp materialdbinterface.cpp surveysplashscreen.cpp soilmat.cpp utilWindows/copyrightdialog.cpp utilWindows/dialogabout.cpp utilWindows/dialogpreferences.cpp utilWindows/dialogfuturefeature.cpp ../widgets/Common/FooterWidget.cpp ../widgets/Common/HeaderWidget.cpp pilefeamodeler.cpp systemplotqwt.cpp systemplotsuper.cpp systemplotqcp.cpp resultplotsuper.cpp resultplotqcp.cpp resultplotqwt.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents mainwindow.ui materialdbinterface.ui surveysplashscreen.ui utilWindows/copyrightdialog.ui utilWindows/dialogabout.ui utilWindows/dialogpreferences.ui utilWindows/dialogfuturefeature.ui $(DISTDIR)/
+	$(COPY_FILE) --parents ops/Analysis.h ops/AnalysisModel.h ops/ArrayOfTaggedObjects.h ops/ArrayOfTaggedObjectsIter.h ops/BandGenLinLapackSolver.h ops/BandGenLinSOE.h ops/BandGenLinSolver.h ops/BeamFiberMaterial.h ops/BeamFiberMaterial2d.h ops/BeamIntegration.h ops/BinaryFileStream.h ops/CTestNormDispIncr.h ops/Channel.h ops/ColorMap.h ops/CompositeResponse.h ops/ConstraintHandler.h ops/ConvergenceTest.h ops/CrdTransf.h ops/DOF_Group.h ops/DOF_GrpIter.h ops/DOF_Numberer.h ops/DataFileStream.h ops/DispBeamColumn3d.h ops/DispBeamColumn3dWithSensitivity.h ops/Domain.h ops/DomainComponent.h ops/DomainDecompositionAnalysis.h ops/DummyStream.h ops/EigenSOE.h ops/EigenSolver.h ops/ElasticSection3d.h ops/Element.h ops/ElementIter.h ops/ElementResponse.h ops/ElementalLoad.h ops/ElementalLoadIter.h ops/EquiSolnAlgo.h ops/FEM_ObjectBroker.h ops/FE_Datastore.h ops/FE_EleIter.h ops/FE_Element.h ops/Fiber.h ops/FiberResponse.h ops/File.h ops/FileIter.h ops/FrictionModel.h ops/FrictionResponse.h ops/G3Globals.h ops/Graph.h ops/GraphNumberer.h ops/ID.h ops/IncrementalIntegrator.h ops/Information.h ops/Integrator.h ops/LegendreBeamIntegration.h ops/LinearCrdTransf3d.h ops/LinearSOE.h ops/LinearSOESolver.h ops/LinearSeries.h ops/Load.h ops/LoadControl.h ops/LoadPattern.h ops/LoadPatternIter.h ops/MP_Constraint.h ops/MP_ConstraintIter.h ops/MapOfTaggedObjects.h ops/MapOfTaggedObjectsIter.h ops/Material.h ops/MaterialResponse.h ops/Matrix.h ops/MatrixUtil.h ops/MeshRegion.h ops/Message.h ops/MovableObject.h ops/NDMaterial.h ops/NewtonRaphson.h ops/NodalLoad.h ops/NodalLoadIter.h ops/Node.h ops/NodeIter.h ops/OPS_Globals.h ops/OPS_Stream.h ops/ObjectBroker.h ops/Parameter.h ops/ParameterIter.h ops/PenaltyConstraintHandler.h ops/PenaltyMP_FE.h ops/PenaltySP_FE.h ops/PlainMap.h ops/PlainNumberer.h ops/PlaneStrainMaterial.h ops/PlaneStressMaterial.h ops/PlateFiberMaterial.h ops/Pressure_Constraint.h ops/Pressure_ConstraintIter.h ops/PySimple1.h ops/QzSimple1.h ops/RCM.h ops/Recorder.h ops/Renderer.h ops/Response.h ops/SP_Constraint.h ops/SP_ConstraintIter.h ops/SectionForceDeformation.h ops/SimulationInformation.h ops/SingleDomAllSP_Iter.h ops/SingleDomEleIter.h ops/SingleDomLC_Iter.h ops/SingleDomMP_Iter.h ops/SingleDomNodIter.h ops/SingleDomPC_Iter.h ops/SingleDomParamIter.h ops/SingleDomSP_Iter.h ops/SolutionAlgorithm.h ops/StandardStream.h ops/StaticAnalysis.h ops/StaticIntegrator.h ops/StringContainer.h ops/Subdomain.h ops/SubdomainNodIter.h ops/TaggedObject.h ops/TaggedObjectIter.h ops/TaggedObjectStorage.h ops/TimeSeries.h ops/TransformationConstraintHandler.h ops/TransformationDOF_Group.h ops/TransformationFE.h ops/TransientIntegrator.h ops/TzSimple1.h ops/UniaxialMaterial.h ops/Vector.h ops/Vertex.h ops/VertexIter.h ops/ZeroLength.h ops/classTags.h ops/elementAPI.h mainWindow/mainwindow.h includes/pilegrouptool_parameters.h FEA/soilmat.h FEA/pilefeamodeler.h dialogs/materialdbinterface.h dialogs/surveysplashscreen.h utilWindows/copyrightdialog.h utilWindows/dialogabout.h utilWindows/dialogpreferences.h utilWindows/dialogfuturefeature.h plots/systemplotsuper.h plots/systemplotqwt.h plots/resultplotsuper.h plots/resultplotqwt.h ../widgets/Common/FooterWidget.h ../widgets/Common/HeaderWidget.h $(DISTDIR)/
+	$(COPY_FILE) --parents ops/Domain.cpp ops/Subdomain.cpp ops/DomainComponent.cpp ops/ArrayOfTaggedObjects.cpp ops/ArrayOfTaggedObjectsIter.cpp ops/MapOfTaggedObjects.cpp ops/MapOfTaggedObjectsIter.cpp ops/SingleDomSP_Iter.cpp ops/SingleDomMP_Iter.cpp ops/SingleDomNodIter.cpp ops/SubdomainNodIter.cpp ops/SingleDomEleIter.cpp ops/SingleDomParamIter.cpp ops/SingleDomAllSP_Iter.cpp ops/SingleDomPC_Iter.cpp ops/LoadPatternIter.cpp ops/NodalLoadIter.cpp ops/FE_EleIter.cpp ops/DOF_GrpIter.cpp ops/ElementalLoadIter.cpp ops/SP_Constraint.cpp ops/MP_Constraint.cpp ops/TaggedObject.cpp ops/ZeroLength.cpp ops/Element.cpp ops/Information.cpp ops/ElasticSection3d.cpp ops/SectionForceDeformation.cpp ops/LinearSeries.cpp ops/TimeSeries.cpp ops/MovableObject.cpp ops/Channel.cpp ops/Node.cpp ops/NodalLoad.cpp ops/Load.cpp ops/LoadPattern.cpp ops/DispBeamColumn3d.cpp ops/CrdTransf.cpp ops/LinearCrdTransf3d.cpp ops/LegendreBeamIntegration.cpp ops/BeamIntegration.cpp ops/Response.cpp ops/ElementResponse.cpp ops/MaterialResponse.cpp ops/CompositeResponse.cpp ops/Matrix.cpp ops/MatrixUtil.cpp ops/ID.cpp ops/Vector.cpp ops/Graph.cpp ops/Vertex.cpp ops/VertexIter.cpp ops/RCM.cpp ops/GraphNumberer.cpp ops/LoadControl.cpp ops/PenaltyConstraintHandler.cpp ops/TransformationConstraintHandler.cpp ops/TransformationDOF_Group.cpp ops/TransformationFE.cpp ops/PenaltySP_FE.cpp ops/PenaltyMP_FE.cpp ops/ConstraintHandler.cpp ops/IncrementalIntegrator.cpp ops/StaticIntegrator.cpp ops/Integrator.cpp ops/PlainNumberer.cpp ops/DOF_Numberer.cpp ops/StaticAnalysis.cpp ops/Analysis.cpp ops/NewtonRaphson.cpp ops/EquiSolnAlgo.cpp ops/SolutionAlgorithm.cpp ops/AnalysisModel.cpp ops/CTestNormDispIncr.cpp ops/ConvergenceTest.cpp ops/LinearSOE.cpp ops/LinearSOESolver.cpp ops/BandGenLinSOE.cpp ops/BandGenLinSolver.cpp ops/BandGenLinLapackSolver.cpp ops/FE_Element.cpp ops/DOF_Group.cpp ops/PySimple1.cpp ops/TzSimple1.cpp ops/QzSimple1.cpp ops/UniaxialMaterial.cpp ops/Material.cpp ops/StandardStream.cpp ops/DummyStream.cpp ops/DummyElementAPI.cpp ops/OPS_Stream.cpp main.cpp mainWindow/mainwindow.cpp FEA/getPyParam.cpp FEA/getQzParam.cpp FEA/getTZParam.cpp FEA/soilmat.cpp FEA/pilefeamodeler.cpp dialogs/materialdbinterface.cpp dialogs/surveysplashscreen.cpp utilWindows/copyrightdialog.cpp utilWindows/dialogabout.cpp utilWindows/dialogpreferences.cpp utilWindows/dialogfuturefeature.cpp plots/systemplotsuper.cpp plots/systemplotqwt.cpp plots/resultplotsuper.cpp plots/resultplotqwt.cpp ../widgets/Common/FooterWidget.cpp ../widgets/Common/HeaderWidget.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents mainWindow/mainwindow.ui dialogs/materialdbinterface.ui dialogs/surveysplashscreen.ui utilWindows/copyrightdialog.ui utilWindows/dialogabout.ui utilWindows/dialogpreferences.ui utilWindows/dialogfuturefeature.ui $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -1214,7 +1148,6 @@ clean: compiler_clean
 
 distclean: clean 
 	-$(DEL_FILE) -r PileGroupTool.app
-	-$(DEL_FILE) .qmake.stash
 	-$(DEL_FILE) Makefile
 
 
@@ -1239,6 +1172,7 @@ qrc_qtpileresources.cpp: qtpileresources.qrc \
 		images/LayerSchematic@1x.png \
 		images/PileSchematic@1x.png \
 		images/PileSchematic.png \
+		resources/NHERI-PGT-Icon.icns \
 		imagesCommon/sim_logo_footer.png \
 		imagesCommon/nsf.gif
 	/Users/pmackenz/Qt/5.10.0/clang_64/bin/rcc -name qtpileresources qtpileresources.qrc -o qrc_qtpileresources.cpp
@@ -1247,58 +1181,50 @@ compiler_moc_predefs_make_all: moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) moc_predefs.h
 moc_predefs.h: ../../../Qt/5.10.0/clang_64/mkspecs/features/data/dummy.cpp
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -pipe -stdlib=libc++ -O2 -std=gnu++11 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wall -Wno-unused-variable -std=c++11 -dM -E -o moc_predefs.h ../../../Qt/5.10.0/clang_64/mkspecs/features/data/dummy.cpp
+	/Library/Developer/CommandLineTools/usr/bin/clang++ -pipe -stdlib=libc++ -O2 -std=gnu++11 $(EXPORT_ARCH_ARGS) -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.10 -Wall -Wno-unused-variable -std=c++11 -dM -E -o moc_predefs.h ../../../Qt/5.10.0/clang_64/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_mainwindow.cpp moc_qcustomplot.cpp moc_materialdbinterface.cpp moc_surveysplashscreen.cpp moc_copyrightdialog.cpp moc_dialogabout.cpp moc_dialogpreferences.cpp moc_dialogfuturefeature.cpp moc_FooterWidget.cpp moc_HeaderWidget.cpp moc_systemplotqwt.cpp moc_systemplotqcp.cpp moc_resultplotsuper.cpp
+compiler_moc_header_make_all: moc_mainwindow.cpp moc_materialdbinterface.cpp moc_surveysplashscreen.cpp moc_copyrightdialog.cpp moc_dialogabout.cpp moc_dialogpreferences.cpp moc_dialogfuturefeature.cpp moc_systemplotqwt.cpp moc_resultplotsuper.cpp moc_FooterWidget.cpp moc_HeaderWidget.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_mainwindow.cpp moc_qcustomplot.cpp moc_materialdbinterface.cpp moc_surveysplashscreen.cpp moc_copyrightdialog.cpp moc_dialogabout.cpp moc_dialogpreferences.cpp moc_dialogfuturefeature.cpp moc_FooterWidget.cpp moc_HeaderWidget.cpp moc_systemplotqwt.cpp moc_systemplotqcp.cpp moc_resultplotsuper.cpp
+	-$(DEL_FILE) moc_mainwindow.cpp moc_materialdbinterface.cpp moc_surveysplashscreen.cpp moc_copyrightdialog.cpp moc_dialogabout.cpp moc_dialogpreferences.cpp moc_dialogfuturefeature.cpp moc_systemplotqwt.cpp moc_resultplotsuper.cpp moc_FooterWidget.cpp moc_HeaderWidget.cpp
 moc_mainwindow.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
-		pilegrouptool_parameters.h \
+		includes/pilegrouptool_parameters.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
 		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
 		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
-		mainwindow.h \
+		mainWindow/mainwindow.h \
 		moc_predefs.h \
 		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib mainwindow.h -o moc_mainwindow.cpp
-
-moc_qcustomplot.cpp: ../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric \
-		qcustomplot.h \
-		moc_predefs.h \
-		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib qcustomplot.h -o moc_qcustomplot.cpp
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Development/SimCenter/PileGroupTool/includes -I/Users/pmackenz/Development/SimCenter/PileGroupTool/mainWindow -I/Users/pmackenz/Development/SimCenter/PileGroupTool/dialogs -I/Users/pmackenz/Development/SimCenter/PileGroupTool/plots -I/Users/pmackenz/Development/SimCenter/PileGroupTool/FEA -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include -I/Library/Developer/CommandLineTools/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib mainWindow/mainwindow.h -o moc_mainwindow.cpp
 
 moc_materialdbinterface.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		materialdbinterface.h \
+		dialogs/materialdbinterface.h \
 		moc_predefs.h \
 		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib materialdbinterface.h -o moc_materialdbinterface.cpp
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Development/SimCenter/PileGroupTool/includes -I/Users/pmackenz/Development/SimCenter/PileGroupTool/mainWindow -I/Users/pmackenz/Development/SimCenter/PileGroupTool/dialogs -I/Users/pmackenz/Development/SimCenter/PileGroupTool/plots -I/Users/pmackenz/Development/SimCenter/PileGroupTool/FEA -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include -I/Library/Developer/CommandLineTools/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib dialogs/materialdbinterface.h -o moc_materialdbinterface.cpp
 
 moc_surveysplashscreen.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QDialog \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qdialog.h \
-		surveysplashscreen.h \
+		dialogs/surveysplashscreen.h \
 		moc_predefs.h \
 		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib surveysplashscreen.h -o moc_surveysplashscreen.cpp
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Development/SimCenter/PileGroupTool/includes -I/Users/pmackenz/Development/SimCenter/PileGroupTool/mainWindow -I/Users/pmackenz/Development/SimCenter/PileGroupTool/dialogs -I/Users/pmackenz/Development/SimCenter/PileGroupTool/plots -I/Users/pmackenz/Development/SimCenter/PileGroupTool/FEA -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include -I/Library/Developer/CommandLineTools/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib dialogs/surveysplashscreen.h -o moc_surveysplashscreen.cpp
 
 moc_copyrightdialog.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QDialog \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qdialog.h \
 		utilWindows/copyrightdialog.h \
 		moc_predefs.h \
 		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib utilWindows/copyrightdialog.h -o moc_copyrightdialog.cpp
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Development/SimCenter/PileGroupTool/includes -I/Users/pmackenz/Development/SimCenter/PileGroupTool/mainWindow -I/Users/pmackenz/Development/SimCenter/PileGroupTool/dialogs -I/Users/pmackenz/Development/SimCenter/PileGroupTool/plots -I/Users/pmackenz/Development/SimCenter/PileGroupTool/FEA -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include -I/Library/Developer/CommandLineTools/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib utilWindows/copyrightdialog.h -o moc_copyrightdialog.cpp
 
 moc_dialogabout.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QDialog \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qdialog.h \
 		utilWindows/dialogabout.h \
 		moc_predefs.h \
 		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib utilWindows/dialogabout.h -o moc_dialogabout.cpp
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Development/SimCenter/PileGroupTool/includes -I/Users/pmackenz/Development/SimCenter/PileGroupTool/mainWindow -I/Users/pmackenz/Development/SimCenter/PileGroupTool/dialogs -I/Users/pmackenz/Development/SimCenter/PileGroupTool/plots -I/Users/pmackenz/Development/SimCenter/PileGroupTool/FEA -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include -I/Library/Developer/CommandLineTools/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib utilWindows/dialogabout.h -o moc_dialogabout.cpp
 
 moc_dialogpreferences.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QDialog \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qdialog.h \
@@ -1309,21 +1235,50 @@ moc_dialogpreferences.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/H
 		utilWindows/dialogpreferences.h \
 		moc_predefs.h \
 		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib utilWindows/dialogpreferences.h -o moc_dialogpreferences.cpp
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Development/SimCenter/PileGroupTool/includes -I/Users/pmackenz/Development/SimCenter/PileGroupTool/mainWindow -I/Users/pmackenz/Development/SimCenter/PileGroupTool/dialogs -I/Users/pmackenz/Development/SimCenter/PileGroupTool/plots -I/Users/pmackenz/Development/SimCenter/PileGroupTool/FEA -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include -I/Library/Developer/CommandLineTools/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib utilWindows/dialogpreferences.h -o moc_dialogpreferences.cpp
 
 moc_dialogfuturefeature.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QDialog \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qdialog.h \
 		utilWindows/dialogfuturefeature.h \
 		moc_predefs.h \
 		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib utilWindows/dialogfuturefeature.h -o moc_dialogfuturefeature.cpp
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Development/SimCenter/PileGroupTool/includes -I/Users/pmackenz/Development/SimCenter/PileGroupTool/mainWindow -I/Users/pmackenz/Development/SimCenter/PileGroupTool/dialogs -I/Users/pmackenz/Development/SimCenter/PileGroupTool/plots -I/Users/pmackenz/Development/SimCenter/PileGroupTool/FEA -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include -I/Library/Developer/CommandLineTools/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib utilWindows/dialogfuturefeature.h -o moc_dialogfuturefeature.cpp
+
+moc_systemplotqwt.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
+		includes/pilegrouptool_parameters.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
+		plots/systemplotsuper.h \
+		qcp/qcustomplot.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric \
+		plots/systemplotqwt.h \
+		moc_predefs.h \
+		../../../Qt/5.10.0/clang_64/bin/moc
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Development/SimCenter/PileGroupTool/includes -I/Users/pmackenz/Development/SimCenter/PileGroupTool/mainWindow -I/Users/pmackenz/Development/SimCenter/PileGroupTool/dialogs -I/Users/pmackenz/Development/SimCenter/PileGroupTool/plots -I/Users/pmackenz/Development/SimCenter/PileGroupTool/FEA -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include -I/Library/Developer/CommandLineTools/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib plots/systemplotqwt.h -o moc_systemplotqwt.cpp
+
+moc_resultplotsuper.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
+		includes/pilegrouptool_parameters.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
+		plots/resultplotsuper.h \
+		moc_predefs.h \
+		../../../Qt/5.10.0/clang_64/bin/moc
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Development/SimCenter/PileGroupTool/includes -I/Users/pmackenz/Development/SimCenter/PileGroupTool/mainWindow -I/Users/pmackenz/Development/SimCenter/PileGroupTool/dialogs -I/Users/pmackenz/Development/SimCenter/PileGroupTool/plots -I/Users/pmackenz/Development/SimCenter/PileGroupTool/FEA -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include -I/Library/Developer/CommandLineTools/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib plots/resultplotsuper.h -o moc_resultplotsuper.cpp
 
 moc_FooterWidget.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QGroupBox \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qgroupbox.h \
 		../widgets/Common/FooterWidget.h \
 		moc_predefs.h \
 		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib ../widgets/Common/FooterWidget.h -o moc_FooterWidget.cpp
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Development/SimCenter/PileGroupTool/includes -I/Users/pmackenz/Development/SimCenter/PileGroupTool/mainWindow -I/Users/pmackenz/Development/SimCenter/PileGroupTool/dialogs -I/Users/pmackenz/Development/SimCenter/PileGroupTool/plots -I/Users/pmackenz/Development/SimCenter/PileGroupTool/FEA -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include -I/Library/Developer/CommandLineTools/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib ../widgets/Common/FooterWidget.h -o moc_FooterWidget.cpp
 
 moc_HeaderWidget.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QGroupBox \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qgroupbox.h \
@@ -1332,53 +1287,7 @@ moc_HeaderWidget.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Header
 		../widgets/Common/HeaderWidget.h \
 		moc_predefs.h \
 		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib ../widgets/Common/HeaderWidget.h -o moc_HeaderWidget.cpp
-
-moc_systemplotqwt.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		pilegrouptool_parameters.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
-		systemplotsuper.h \
-		qcustomplot.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric \
-		systemplotqwt.h \
-		moc_predefs.h \
-		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib systemplotqwt.h -o moc_systemplotqwt.cpp
-
-moc_systemplotqcp.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		pilegrouptool_parameters.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
-		systemplotsuper.h \
-		qcustomplot.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric \
-		systemplotqcp.h \
-		moc_predefs.h \
-		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib systemplotqcp.h -o moc_systemplotqcp.cpp
-
-moc_resultplotsuper.cpp: ../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		pilegrouptool_parameters.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
-		resultplotsuper.h \
-		moc_predefs.h \
-		../../../Qt/5.10.0/clang_64/bin/moc
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2.0/lib/qwt.framework/Headers -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtSvg.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib resultplotsuper.h -o moc_resultplotsuper.cpp
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/Users/pmackenz/Qt/5.10.0/clang_64/mkspecs/macx-clang -I/Users/pmackenz/Development/SimCenter/PileGroupTool -I/Users/pmackenz/Development/SimCenter/PileGroupTool/.include -I/Users/pmackenz/Development/SimCenter/PileGroupTool/ops -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Development/SimCenter/PileGroupTool/includes -I/Users/pmackenz/Development/SimCenter/PileGroupTool/mainWindow -I/Users/pmackenz/Development/SimCenter/PileGroupTool/dialogs -I/Users/pmackenz/Development/SimCenter/PileGroupTool/plots -I/Users/pmackenz/Development/SimCenter/PileGroupTool/FEA -I/Users/pmackenz/Development/SimCenter/PileGroupTool/qwt-6.2/src -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtGui.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/pmackenz/Qt/5.10.0/clang_64/lib/QtCore.framework/Headers -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include -I/Library/Developer/CommandLineTools/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.13.sdk/usr/include -F/Users/pmackenz/Qt/5.10.0/clang_64/lib ../widgets/Common/HeaderWidget.h -o moc_HeaderWidget.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -1387,7 +1296,7 @@ compiler_moc_source_clean:
 compiler_uic_make_all: ui_mainwindow.h ui_materialdbinterface.h ui_surveysplashscreen.h ui_copyrightdialog.h ui_dialogabout.h ui_dialogpreferences.h ui_dialogfuturefeature.h
 compiler_uic_clean:
 	-$(DEL_FILE) ui_mainwindow.h ui_materialdbinterface.h ui_surveysplashscreen.h ui_copyrightdialog.h ui_dialogabout.h ui_dialogpreferences.h ui_dialogfuturefeature.h
-ui_mainwindow.h: mainwindow.ui \
+ui_mainwindow.h: mainWindow/mainwindow.ui \
 		../../../Qt/5.10.0/clang_64/bin/uic \
 		../widgets/Common/HeaderWidget.h \
 		../widgets/Common/FooterWidget.h \
@@ -1397,15 +1306,15 @@ ui_mainwindow.h: mainwindow.ui \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qstring.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QGroupBox \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qgroupbox.h
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/uic mainwindow.ui -o ui_mainwindow.h
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/uic mainWindow/mainwindow.ui -o ui_mainwindow.h
 
-ui_materialdbinterface.h: materialdbinterface.ui \
+ui_materialdbinterface.h: dialogs/materialdbinterface.ui \
 		../../../Qt/5.10.0/clang_64/bin/uic
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/uic materialdbinterface.ui -o ui_materialdbinterface.h
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/uic dialogs/materialdbinterface.ui -o ui_materialdbinterface.h
 
-ui_surveysplashscreen.h: surveysplashscreen.ui \
+ui_surveysplashscreen.h: dialogs/surveysplashscreen.ui \
 		../../../Qt/5.10.0/clang_64/bin/uic
-	/Users/pmackenz/Qt/5.10.0/clang_64/bin/uic surveysplashscreen.ui -o ui_surveysplashscreen.h
+	/Users/pmackenz/Qt/5.10.0/clang_64/bin/uic dialogs/surveysplashscreen.ui -o ui_surveysplashscreen.h
 
 ui_copyrightdialog.h: utilWindows/copyrightdialog.ui \
 		../../../Qt/5.10.0/clang_64/bin/uic
@@ -1441,6 +1350,8 @@ Domain.o: ops/Domain.cpp ops/OPS_Globals.h \
 		ops/classTags.h \
 		ops/Domain.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/DummyStream.h \
 		ops/ElementIter.h \
 		ops/NodeIter.h \
@@ -1495,6 +1406,8 @@ Subdomain.o: ops/Subdomain.cpp ops/Subdomain.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Element.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h \
@@ -1530,6 +1443,8 @@ DomainComponent.o: ops/DomainComponent.cpp ops/Domain.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DomainComponent.o ops/DomainComponent.cpp
@@ -1586,6 +1501,8 @@ SingleDomSP_Iter.o: ops/SingleDomSP_Iter.cpp ops/SingleDomSP_Iter.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObjectIter.h \
 		ops/TaggedObjectStorage.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SingleDomSP_Iter.o ops/SingleDomSP_Iter.cpp
@@ -1600,6 +1517,8 @@ SingleDomMP_Iter.o: ops/SingleDomMP_Iter.cpp ops/SingleDomMP_Iter.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObjectIter.h \
 		ops/TaggedObjectStorage.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SingleDomMP_Iter.o ops/SingleDomMP_Iter.cpp
@@ -1614,6 +1533,8 @@ SingleDomNodIter.o: ops/SingleDomNodIter.cpp ops/SingleDomNodIter.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObjectIter.h \
 		ops/TaggedObjectStorage.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SingleDomNodIter.o ops/SingleDomNodIter.cpp
@@ -1627,6 +1548,8 @@ SubdomainNodIter.o: ops/SubdomainNodIter.cpp ops/SubdomainNodIter.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Element.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h \
@@ -1648,6 +1571,8 @@ SingleDomEleIter.o: ops/SingleDomEleIter.cpp ops/SingleDomEleIter.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/ID.h \
 		ops/TaggedObjectIter.h \
 		ops/TaggedObjectStorage.h
@@ -1674,6 +1599,8 @@ SingleDomAllSP_Iter.o: ops/SingleDomAllSP_Iter.cpp ops/SingleDomAllSP_Iter.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/LoadPattern.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h \
@@ -1693,6 +1620,8 @@ SingleDomPC_Iter.o: ops/SingleDomPC_Iter.cpp ops/SingleDomPC_Iter.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/ID.h \
 		ops/TaggedObjectIter.h \
 		ops/TaggedObjectStorage.h
@@ -1707,6 +1636,8 @@ LoadPatternIter.o: ops/LoadPatternIter.cpp ops/LoadPatternIter.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObjectIter.h \
 		ops/TaggedObjectStorage.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LoadPatternIter.o ops/LoadPatternIter.cpp
@@ -1722,6 +1653,8 @@ NodalLoadIter.o: ops/NodalLoadIter.cpp ops/NodalLoadIter.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Node.h \
 		ops/TaggedObjectIter.h \
 		ops/TaggedObjectStorage.h
@@ -1736,6 +1669,8 @@ FE_EleIter.o: ops/FE_EleIter.cpp ops/FE_EleIter.h \
 		ops/classTags.h \
 		ops/Matrix.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObject.h \
 		ops/TaggedObjectIter.h \
 		ops/TaggedObjectStorage.h
@@ -1764,6 +1699,8 @@ ElementalLoadIter.o: ops/ElementalLoadIter.cpp ops/ElementalLoadIter.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObjectIter.h \
 		ops/TaggedObjectStorage.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ElementalLoadIter.o ops/ElementalLoadIter.cpp
@@ -1776,6 +1713,8 @@ SP_Constraint.o: ops/SP_Constraint.cpp ops/SP_Constraint.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Channel.h \
 		ops/FEM_ObjectBroker.h \
 		ops/elementAPI.h \
@@ -1792,6 +1731,8 @@ MP_Constraint.o: ops/MP_Constraint.cpp ops/MP_Constraint.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Matrix.h \
 		ops/ID.h \
 		ops/Channel.h \
@@ -1815,6 +1756,8 @@ ZeroLength.o: ops/ZeroLength.cpp ops/ZeroLength.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/ID.h \
 		ops/Matrix.h \
 		ops/Information.h \
@@ -1838,6 +1781,8 @@ Element.o: ops/Element.cpp ops/Element.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/ID.h \
 		ops/ElementResponse.h \
 		ops/Response.h \
@@ -1854,6 +1799,8 @@ Information.o: ops/Information.cpp ops/Information.h \
 		ops/classTags.h \
 		ops/ID.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Matrix.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Information.o ops/Information.cpp
 
@@ -1867,11 +1814,13 @@ ElasticSection3d.o: ops/ElasticSection3d.cpp ops/ElasticSection3d.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Matrix.h \
 		ops/ID.h \
 		ops/Channel.h \
 		ops/FEM_ObjectBroker.h \
-		MatrixUtil.h \
+		ops/MatrixUtil.h \
 		ops/Parameter.h \
 		ops/Information.h \
 		ops/elementAPI.h
@@ -1886,6 +1835,8 @@ SectionForceDeformation.o: ops/SectionForceDeformation.cpp ops/SectionForceDefor
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Matrix.h \
 		ops/ID.h \
 		ops/Information.h \
@@ -1906,6 +1857,8 @@ LinearSeries.o: ops/LinearSeries.cpp ops/LinearSeries.h \
 		ops/OPS_Globals.h \
 		ops/Information.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Channel.h \
 		ops/elementAPI.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LinearSeries.o ops/LinearSeries.cpp
@@ -1944,6 +1897,8 @@ Node.o: ops/Node.cpp ops/Node.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Element.h \
 		ops/ID.h \
 		ops/Matrix.h \
@@ -1970,6 +1925,8 @@ NodalLoad.o: ops/NodalLoad.cpp ops/NodalLoad.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Node.h \
 		ops/Domain.h \
 		ops/Channel.h \
@@ -1986,7 +1943,9 @@ Load.o: ops/Load.cpp ops/Load.h \
 		ops/classTags.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h \
-		ops/Vector.h
+		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Load.o ops/Load.cpp
 
 LoadPattern.o: ops/LoadPattern.cpp ops/LoadPattern.h \
@@ -1997,6 +1956,8 @@ LoadPattern.o: ops/LoadPattern.cpp ops/LoadPattern.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/ID.h \
 		ops/TimeSeries.h \
 		ops/Information.h \
@@ -2027,6 +1988,8 @@ DispBeamColumn3d.o: ops/DispBeamColumn3d.cpp ops/DispBeamColumn3d.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/ID.h \
 		ops/Matrix.h \
 		ops/Node.h \
@@ -2055,6 +2018,8 @@ CrdTransf.o: ops/CrdTransf.cpp ops/CrdTransf.h \
 		ops/OPS_Stream.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/MapOfTaggedObjects.h \
 		ops/TaggedObjectStorage.h \
 		ops/MapOfTaggedObjectsIter.h \
@@ -2066,6 +2031,8 @@ LinearCrdTransf3d.o: ops/LinearCrdTransf3d.cpp ops/Vector.h \
 		ops/OPS_Stream.h \
 		ops/MovableObject.h \
 		ops/classTags.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Matrix.h \
 		ops/Node.h \
 		ops/DomainComponent.h \
@@ -2120,6 +2087,8 @@ ElementResponse.o: ops/ElementResponse.cpp ops/ElementResponse.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/ID.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ElementResponse.o ops/ElementResponse.cpp
 
@@ -2133,7 +2102,9 @@ MaterialResponse.o: ops/MaterialResponse.cpp ops/MaterialResponse.h \
 		ops/Material.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h \
-		ops/Vector.h
+		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MaterialResponse.o ops/MaterialResponse.cpp
 
 CompositeResponse.o: ops/CompositeResponse.cpp ops/CompositeResponse.h \
@@ -2144,6 +2115,8 @@ CompositeResponse.o: ops/CompositeResponse.cpp ops/CompositeResponse.h \
 		ops/MovableObject.h \
 		ops/classTags.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/ID.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o CompositeResponse.o ops/CompositeResponse.cpp
 
@@ -2153,6 +2126,8 @@ Matrix.o: ops/Matrix.cpp ops/Matrix.h \
 		ops/MovableObject.h \
 		ops/classTags.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/ID.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Matrix.o ops/Matrix.cpp
 
@@ -2161,7 +2136,9 @@ MatrixUtil.o: ops/MatrixUtil.cpp ops/Vector.h \
 		ops/OPS_Stream.h \
 		ops/MovableObject.h \
 		ops/classTags.h \
-		MatrixUtil.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
+		ops/MatrixUtil.h \
 		ops/Matrix.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MatrixUtil.o ops/MatrixUtil.cpp
 
@@ -2177,6 +2154,8 @@ Vector.o: ops/Vector.cpp ops/Vector.h \
 		ops/OPS_Stream.h \
 		ops/MovableObject.h \
 		ops/classTags.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Matrix.h \
 		ops/ID.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Vector.o ops/Vector.cpp
@@ -2196,7 +2175,9 @@ Graph.o: ops/Graph.cpp ops/Graph.h \
 		ops/TaggedObjectIter.h \
 		ops/Channel.h \
 		ops/FEM_ObjectBroker.h \
-		ops/Vector.h
+		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Graph.o ops/Graph.cpp
 
 Vertex.o: ops/Vertex.cpp ops/Vertex.h \
@@ -2208,7 +2189,9 @@ Vertex.o: ops/Vertex.cpp ops/Vertex.h \
 		ops/OPS_Globals.h \
 		ops/Channel.h \
 		ops/FEM_ObjectBroker.h \
-		ops/Vector.h
+		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Vertex.o ops/Vertex.cpp
 
 VertexIter.o: ops/VertexIter.cpp ops/VertexIter.h \
@@ -2255,6 +2238,8 @@ LoadControl.o: ops/LoadControl.cpp ops/LoadControl.h \
 		ops/AnalysisModel.h \
 		ops/LinearSOE.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Channel.h \
 		ops/FE_Element.h \
 		ops/ID.h \
@@ -2285,6 +2270,8 @@ PenaltyConstraintHandler.o: ops/PenaltyConstraintHandler.cpp ops/PenaltyConstrai
 		ops/OPS_Stream.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/FE_Element.h \
 		ops/ID.h \
 		ops/Matrix.h \
@@ -2318,6 +2305,8 @@ TransformationConstraintHandler.o: ops/TransformationConstraintHandler.cpp ops/T
 		ops/OPS_Stream.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/FE_Element.h \
 		ops/ID.h \
 		ops/Matrix.h \
@@ -2353,6 +2342,8 @@ TransformationDOF_Group.o: ops/TransformationDOF_Group.cpp ops/TransformationDOF
 		ops/TaggedObject.h \
 		ops/Domain.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Node.h \
 		ops/DomainComponent.h \
 		ops/Matrix.h \
@@ -2375,6 +2366,8 @@ TransformationFE.o: ops/TransformationFE.cpp ops/TransformationFE.h \
 		ops/classTags.h \
 		ops/Matrix.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObject.h \
 		ops/Element.h \
 		ops/DomainComponent.h \
@@ -2399,6 +2392,8 @@ PenaltySP_FE.o: ops/PenaltySP_FE.cpp ops/PenaltySP_FE.h \
 		ops/classTags.h \
 		ops/Matrix.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObject.h \
 		ops/Element.h \
 		ops/DomainComponent.h \
@@ -2422,6 +2417,8 @@ PenaltyMP_FE.o: ops/PenaltyMP_FE.cpp ops/PenaltyMP_FE.h \
 		ops/classTags.h \
 		ops/Matrix.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObject.h \
 		ops/Element.h \
 		ops/DomainComponent.h \
@@ -2443,6 +2440,8 @@ ConstraintHandler.o: ops/ConstraintHandler.cpp ops/ConstraintHandler.h \
 		ops/OPS_Stream.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/AnalysisModel.h \
 		ops/Integrator.h \
 		ops/FE_EleIter.h \
@@ -2462,6 +2461,8 @@ IncrementalIntegrator.o: ops/IncrementalIntegrator.cpp ops/IncrementalIntegrator
 		ops/ID.h \
 		ops/Matrix.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObject.h \
 		ops/LinearSOE.h \
 		ops/AnalysisModel.h \
@@ -2482,6 +2483,8 @@ StaticIntegrator.o: ops/StaticIntegrator.cpp ops/StaticIntegrator.h \
 		ops/ID.h \
 		ops/Matrix.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObject.h \
 		ops/LinearSOE.h \
 		ops/AnalysisModel.h \
@@ -2502,7 +2505,9 @@ Integrator.o: ops/Integrator.cpp ops/Integrator.h \
 		ops/classTags.h \
 		ops/OPS_Globals.h \
 		ops/OPS_Stream.h \
-		ops/Vector.h
+		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Integrator.o ops/Integrator.cpp
 
 PlainNumberer.o: ops/PlainNumberer.cpp ops/PlainNumberer.h \
@@ -2519,6 +2524,8 @@ PlainNumberer.o: ops/PlainNumberer.cpp ops/PlainNumberer.h \
 		ops/FE_Element.h \
 		ops/Matrix.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/FE_EleIter.h \
 		ops/Channel.h \
 		ops/FEM_ObjectBroker.h \
@@ -2542,6 +2549,8 @@ DOF_Numberer.o: ops/DOF_Numberer.cpp ops/DOF_Numberer.h \
 		ops/FE_Element.h \
 		ops/Matrix.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/FE_EleIter.h \
 		ops/Channel.h \
 		ops/FEM_ObjectBroker.h \
@@ -2571,6 +2580,8 @@ StaticAnalysis.o: ops/StaticAnalysis.cpp ops/StaticAnalysis.h \
 		ops/ConstraintHandler.h \
 		ops/ConvergenceTest.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/StaticIntegrator.h \
 		ops/Domain.h \
 		ops/FE_Element.h \
@@ -2589,7 +2600,9 @@ Analysis.o: ops/Analysis.cpp ops/Analysis.h \
 		ops/MovableObject.h \
 		ops/classTags.h \
 		ops/Vector.h \
-		ops/OPS_Globals.h
+		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Analysis.o ops/Analysis.cpp
 
 NewtonRaphson.o: ops/NewtonRaphson.cpp ops/NewtonRaphson.h \
@@ -2602,6 +2615,8 @@ NewtonRaphson.o: ops/NewtonRaphson.cpp ops/NewtonRaphson.h \
 		ops/OPS_Globals.h \
 		ops/OPS_Stream.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/AnalysisModel.h \
 		ops/StaticAnalysis.h \
 		ops/Analysis.h \
@@ -2624,7 +2639,9 @@ EquiSolnAlgo.o: ops/EquiSolnAlgo.cpp ops/EquiSolnAlgo.h \
 		ops/AnalysisModel.h \
 		ops/LinearSOE.h \
 		ops/ConvergenceTest.h \
-		ops/Vector.h
+		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EquiSolnAlgo.o ops/EquiSolnAlgo.cpp
 
 SolutionAlgorithm.o: ops/SolutionAlgorithm.cpp ops/SolutionAlgorithm.h \
@@ -2647,6 +2664,8 @@ AnalysisModel.o: ops/AnalysisModel.cpp ops/ArrayOfTaggedObjects.h \
 		ops/AnalysisModel.h \
 		ops/Domain.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/FE_Element.h \
 		ops/ID.h \
 		ops/Matrix.h \
@@ -2671,6 +2690,8 @@ CTestNormDispIncr.o: ops/CTestNormDispIncr.cpp ops/CTestNormDispIncr.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
 		ops/OPS_Stream.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Channel.h \
 		ops/EquiSolnAlgo.h \
 		ops/SolutionAlgorithm.h \
@@ -2685,7 +2706,9 @@ ConvergenceTest.o: ops/ConvergenceTest.cpp ops/ConvergenceTest.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
-		ops/OPS_Stream.h
+		ops/OPS_Stream.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ConvergenceTest.o ops/ConvergenceTest.cpp
 
 LinearSOE.o: ops/LinearSOE.cpp ops/LinearSOE.h \
@@ -2706,6 +2729,8 @@ BandGenLinSOE.o: ops/BandGenLinSOE.cpp ops/BandGenLinSOE.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
 		ops/OPS_Stream.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/BandGenLinSolver.h \
 		ops/LinearSOESolver.h \
 		ops/Matrix.h \
@@ -2726,7 +2751,9 @@ BandGenLinSolver.o: ops/BandGenLinSolver.cpp ops/BandGenLinSolver.h \
 		ops/LinearSOE.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
-		ops/OPS_Stream.h
+		ops/OPS_Stream.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o BandGenLinSolver.o ops/BandGenLinSolver.cpp
 
 BandGenLinLapackSolver.o: ops/BandGenLinLapackSolver.cpp ops/BandGenLinLapackSolver.h \
@@ -2738,7 +2765,9 @@ BandGenLinLapackSolver.o: ops/BandGenLinLapackSolver.cpp ops/BandGenLinLapackSol
 		ops/LinearSOE.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
-		ops/OPS_Stream.h
+		ops/OPS_Stream.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o BandGenLinLapackSolver.o ops/BandGenLinLapackSolver.cpp
 
 FE_Element.o: ops/FE_Element.cpp ops/FE_Element.h \
@@ -2749,6 +2778,8 @@ FE_Element.o: ops/FE_Element.cpp ops/FE_Element.h \
 		ops/classTags.h \
 		ops/Matrix.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/TaggedObject.h \
 		ops/Element.h \
 		ops/DomainComponent.h \
@@ -2772,6 +2803,8 @@ DOF_Group.o: ops/DOF_Group.cpp ops/DOF_Group.h \
 		ops/Node.h \
 		ops/DomainComponent.h \
 		ops/Vector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Matrix.h \
 		ops/TransientIntegrator.h \
 		ops/IncrementalIntegrator.h \
@@ -2788,6 +2821,8 @@ PySimple1.o: ops/PySimple1.cpp ops/PySimple1.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Channel.h \
 		ops/elementAPI.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdebug.h
@@ -2803,6 +2838,8 @@ TzSimple1.o: ops/TzSimple1.cpp ops/TzSimple1.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Channel.h \
 		ops/elementAPI.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o TzSimple1.o ops/TzSimple1.cpp
@@ -2817,6 +2854,8 @@ QzSimple1.o: ops/QzSimple1.cpp ops/QzSimple1.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Channel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o QzSimple1.o ops/QzSimple1.cpp
 
@@ -2829,6 +2868,8 @@ UniaxialMaterial.o: ops/UniaxialMaterial.cpp ops/UniaxialMaterial.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Information.h \
 		ops/MaterialResponse.h \
 		ops/Response.h \
@@ -2845,7 +2886,9 @@ Material.o: ops/Material.cpp ops/Material.h \
 		ops/MovableObject.h \
 		ops/classTags.h \
 		ops/Vector.h \
-		ops/OPS_Globals.h
+		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Material.o ops/Material.cpp
 
 StandardStream.o: ops/StandardStream.cpp ops/StandardStream.h \
@@ -2853,7 +2896,9 @@ StandardStream.o: ops/StandardStream.cpp ops/StandardStream.h \
 		ops/MovableObject.h \
 		ops/classTags.h \
 		ops/Vector.h \
-		ops/OPS_Globals.h
+		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o StandardStream.o ops/StandardStream.cpp
 
 DummyStream.o: ops/DummyStream.cpp ops/DummyStream.h \
@@ -2861,7 +2906,9 @@ DummyStream.o: ops/DummyStream.cpp ops/DummyStream.h \
 		ops/MovableObject.h \
 		ops/classTags.h \
 		ops/Vector.h \
-		ops/OPS_Globals.h
+		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DummyStream.o ops/DummyStream.cpp
 
 DummyElementAPI.o: ops/DummyElementAPI.cpp ops/elementAPI.h \
@@ -2871,6 +2918,8 @@ DummyElementAPI.o: ops/DummyElementAPI.cpp ops/elementAPI.h \
 		ops/classTags.h \
 		ops/Vector.h \
 		ops/OPS_Globals.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		ops/Node.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h \
@@ -2885,10 +2934,10 @@ OPS_Stream.o: ops/OPS_Stream.cpp ops/OPS_Stream.h \
 		ops/classTags.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o OPS_Stream.o ops/OPS_Stream.cpp
 
-main.o: main.cpp mainwindow.h \
+main.o: main.cpp mainWindow/mainwindow.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
-		pilegrouptool_parameters.h \
+		includes/pilegrouptool_parameters.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
 		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
@@ -2897,26 +2946,20 @@ main.o: main.cpp mainwindow.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qapplication.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QFile \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qfile.h \
-		surveysplashscreen.h \
+		dialogs/surveysplashscreen.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QDialog \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qdialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
-mainwindow.o: mainwindow.cpp mainwindow.h \
+mainwindow.o: mainWindow/mainwindow.cpp mainWindow/mainwindow.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
-		pilegrouptool_parameters.h \
+		includes/pilegrouptool_parameters.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
 		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
 		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
 		ui_mainwindow.h \
-		../widgets/Common/FooterWidget.h \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QGroupBox \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qgroupbox.h \
-		../widgets/Common/HeaderWidget.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QString \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qstring.h \
 		utilWindows/copyrightdialog.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QDialog \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qdialog.h \
@@ -2927,22 +2970,26 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qsettings.h \
 		utilWindows/dialogabout.h \
 		utilWindows/dialogfuturefeature.h \
-		pilefeamodeler.h \
+		FEA/pilefeamodeler.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QMap \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmap.h \
-		soilmat.h \
-		systemplotsuper.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QFile \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qfile.h \
+		FEA/soilmat.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QString \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qstring.h \
+		plots/systemplotsuper.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		qcustomplot.h \
+		qcp/qcustomplot.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric \
-		systemplotqcp.h \
-		systemplotqwt.h \
-		resultplotsuper.h \
-		resultplotqcp.h \
-		resultplotqwt.h \
+		plots/systemplotqcp.h \
+		plots/systemplotqwt.h \
+		plots/resultplotsuper.h \
+		plots/resultplotqcp.h \
+		plots/resultplotqwt.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QApplication \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qapplication.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QDateTime \
@@ -2959,6 +3006,57 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qjsonobject.h \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QJsonValue \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qjsonvalue.h \
+		ops/StandardStream.h \
+		ops/OPS_Stream.h \
+		ops/MovableObject.h \
+		ops/classTags.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainWindow/mainwindow.cpp
+
+getPyParam.o: FEA/getPyParam.cpp ../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QDebug \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdebug.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o getPyParam.o FEA/getPyParam.cpp
+
+getQzParam.o: FEA/getQzParam.cpp ../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QDebug \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdebug.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o getQzParam.o FEA/getQzParam.cpp
+
+getTZParam.o: FEA/getTZParam.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o getTZParam.o FEA/getTZParam.cpp
+
+soilmat.o: FEA/soilmat.cpp FEA/soilmat.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QString \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qstring.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
+		mainWindow/mainwindow.h \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
+		includes/pilegrouptool_parameters.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o soilmat.o FEA/soilmat.cpp
+
+pilefeamodeler.o: FEA/pilefeamodeler.cpp FEA/pilefeamodeler.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QMap \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmap.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QFile \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qfile.h \
+		includes/pilegrouptool_parameters.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
+		FEA/soilmat.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QString \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qstring.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QList \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qevent.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QListIterator \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qlist.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QDateTime \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdatetime.h \
 		ops/Node.h \
 		ops/DomainComponent.h \
 		ops/TaggedObject.h \
@@ -2996,6 +3094,11 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		ops/SimulationInformation.h \
 		ops/StringContainer.h \
 		ops/File.h \
+		ops/NodeIter.h \
+		ops/ElementIter.h \
+		ops/SP_ConstraintIter.h \
+		ops/MP_ConstraintIter.h \
+		ops/LoadPatternIter.h \
 		ops/LoadControl.h \
 		ops/StaticIntegrator.h \
 		ops/IncrementalIntegrator.h \
@@ -3019,50 +3122,22 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		ops/LinearSOESolver.h \
 		ops/StaticAnalysis.h \
 		ops/Analysis.h \
-		ops/AnalysisModel.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp
-
-getPyParam.o: getPyParam.cpp ../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QDebug \
+		ops/AnalysisModel.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QDebug \
 		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdebug.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o getPyParam.o getPyParam.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o pilefeamodeler.o FEA/pilefeamodeler.cpp
 
-getQzParam.o: getQzParam.cpp ../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QDebug \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdebug.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o getQzParam.o getQzParam.cpp
-
-getTZParam.o: getTZParam.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o getTZParam.o getTZParam.cpp
-
-qcustomplot.o: qcustomplot.cpp qcustomplot.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qcustomplot.o qcustomplot.cpp
-
-materialdbinterface.o: materialdbinterface.cpp materialdbinterface.h \
+materialdbinterface.o: dialogs/materialdbinterface.cpp dialogs/materialdbinterface.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
 		ui_materialdbinterface.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o materialdbinterface.o materialdbinterface.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o materialdbinterface.o dialogs/materialdbinterface.cpp
 
-surveysplashscreen.o: surveysplashscreen.cpp surveysplashscreen.h \
+surveysplashscreen.o: dialogs/surveysplashscreen.cpp dialogs/surveysplashscreen.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QDialog \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qdialog.h \
 		ui_surveysplashscreen.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o surveysplashscreen.o surveysplashscreen.cpp
-
-soilmat.o: soilmat.cpp soilmat.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QString \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qstring.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
-		mainwindow.h \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
-		pilegrouptool_parameters.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o soilmat.o soilmat.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o surveysplashscreen.o dialogs/surveysplashscreen.cpp
 
 copyrightdialog.o: utilWindows/copyrightdialog.cpp utilWindows/copyrightdialog.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QDialog \
@@ -3095,6 +3170,159 @@ dialogfuturefeature.o: utilWindows/dialogfuturefeature.cpp utilWindows/dialogfut
 		ui_dialogfuturefeature.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dialogfuturefeature.o utilWindows/dialogfuturefeature.cpp
 
+systemplotsuper.o: plots/systemplotsuper.cpp plots/systemplotsuper.h \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
+		includes/pilegrouptool_parameters.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
+		qcp/qcustomplot.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o systemplotsuper.o plots/systemplotsuper.cpp
+
+systemplotqwt.o: plots/systemplotqwt.cpp plots/systemplotqwt.h \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
+		includes/pilegrouptool_parameters.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
+		plots/systemplotsuper.h \
+		qcp/qcustomplot.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric \
+		qwt-6.2/src/qwt_plot.h \
+		qwt-6.2/src/qwt_global.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qglobal.h \
+		qwt-6.2/src/qwt_text.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qstring.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qsize.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qfont.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmetatype.h \
+		qwt-6.2/src/qwt_plot_dict.h \
+		qwt-6.2/src/qwt_plot_item.h \
+		qwt-6.2/src/qwt_legend_data.h \
+		qwt-6.2/src/qwt_graphic.h \
+		qwt-6.2/src/qwt_null_paintdevice.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpaintdevice.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpaintengine.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qimage.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpixmap.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvariant.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmap.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qrect.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qlist.h \
+		qwt-6.2/src/qwt_scale_map.h \
+		qwt-6.2/src/qwt_transform.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdebug.h \
+		qwt-6.2/src/qwt_interval.h \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qframe.h \
+		qwt-6.2/src/qwt_legend.h \
+		qwt-6.2/src/qwt_abstract_legend.h \
+		qwt-6.2/src/qwt_plot_curve.h \
+		qwt-6.2/src/qwt_plot_seriesitem.h \
+		qwt-6.2/src/qwt_scale_div.h \
+		qwt-6.2/src/qwt_series_data.h \
+		qwt-6.2/src/qwt_samples.h \
+		qwt-6.2/src/qwt_point_3d.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qpoint.h \
+		qwt-6.2/src/qwt_point_polar.h \
+		qwt-6.2/src/qwt_math.h \
+		qwt-6.2/src/qwt_series_store.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpen.h \
+		qwt-6.2/src/qwt_plot_grid.h \
+		qwt-6.2/src/qwt_symbol.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpolygon.h \
+		qwt-6.2/src/qwt_plot_shapeitem.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpainterpath.h \
+		qwt-6.2/src/qwt_plot_textlabel.h \
+		qwt-6.2/src/qwt_picker.h \
+		qwt-6.2/src/qwt_event_pattern.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnamespace.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qobject.h \
+		qwt-6.2/src/qwt_plot_picker.h \
+		qwt-6.2/src/qwt_picker_machine.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QDebug \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTime \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdatetime.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QFont
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o systemplotqwt.o plots/systemplotqwt.cpp
+
+resultplotsuper.o: plots/resultplotsuper.cpp plots/resultplotsuper.h \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
+		includes/pilegrouptool_parameters.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o resultplotsuper.o plots/resultplotsuper.cpp
+
+resultplotqwt.o: plots/resultplotqwt.cpp plots/resultplotqwt.h \
+		plots/resultplotsuper.h \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
+		includes/pilegrouptool_parameters.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
+		qwt-6.2/src/qwt_plot.h \
+		qwt-6.2/src/qwt_global.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qglobal.h \
+		qwt-6.2/src/qwt_text.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qstring.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qsize.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qfont.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmetatype.h \
+		qwt-6.2/src/qwt_plot_dict.h \
+		qwt-6.2/src/qwt_plot_item.h \
+		qwt-6.2/src/qwt_legend_data.h \
+		qwt-6.2/src/qwt_graphic.h \
+		qwt-6.2/src/qwt_null_paintdevice.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpaintdevice.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpaintengine.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qimage.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpixmap.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvariant.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmap.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qrect.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qlist.h \
+		qwt-6.2/src/qwt_scale_map.h \
+		qwt-6.2/src/qwt_transform.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdebug.h \
+		qwt-6.2/src/qwt_interval.h \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qframe.h \
+		qwt-6.2/src/qwt_plot_curve.h \
+		qwt-6.2/src/qwt_plot_seriesitem.h \
+		qwt-6.2/src/qwt_scale_div.h \
+		qwt-6.2/src/qwt_series_data.h \
+		qwt-6.2/src/qwt_samples.h \
+		qwt-6.2/src/qwt_point_3d.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qpoint.h \
+		qwt-6.2/src/qwt_point_polar.h \
+		qwt-6.2/src/qwt_math.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
+		qwt-6.2/src/qwt_series_store.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpen.h \
+		qwt-6.2/src/qwt_legend.h \
+		qwt-6.2/src/qwt_abstract_legend.h \
+		qwt-6.2/src/qwt_plot_shapeitem.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpainterpath.h \
+		qwt-6.2/src/qwt_plot_grid.h \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QPolygonF \
+		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qpolygon.h \
+		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QPointF \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QGridLayout \
+		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qgridlayout.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o resultplotqwt.o plots/resultplotqwt.cpp
+
 FooterWidget.o: ../widgets/Common/FooterWidget.cpp ../widgets/Common/FooterWidget.h \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QGroupBox \
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qgroupbox.h \
@@ -3125,180 +3353,11 @@ HeaderWidget.o: ../widgets/Common/HeaderWidget.cpp ../widgets/Common/HeaderWidge
 		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qlineedit.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o HeaderWidget.o ../widgets/Common/HeaderWidget.cpp
 
-pilefeamodeler.o: pilefeamodeler.cpp pilefeamodeler.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QMap \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmap.h \
-		pilegrouptool_parameters.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
-		soilmat.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QString \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qstring.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QList \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qevent.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QListIterator \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qlist.h \
-		ops/Node.h \
-		ops/DomainComponent.h \
-		ops/TaggedObject.h \
-		ops/OPS_Stream.h \
-		ops/MovableObject.h \
-		ops/classTags.h \
-		ops/Vector.h \
-		ops/OPS_Globals.h \
-		ops/ID.h \
-		ops/SP_Constraint.h \
-		ops/MP_Constraint.h \
-		ops/Domain.h \
-		ops/StandardStream.h \
-		ops/LinearCrdTransf3d.h \
-		ops/CrdTransf.h \
-		ops/Matrix.h \
-		ops/DispBeamColumn3d.h \
-		ops/Element.h \
-		ops/PySimple1.h \
-		ops/UniaxialMaterial.h \
-		ops/Material.h \
-		ops/TzSimple1.h \
-		ops/QzSimple1.h \
-		ops/ZeroLength.h \
-		ops/LegendreBeamIntegration.h \
-		ops/BeamIntegration.h \
-		ops/ElasticSection3d.h \
-		ops/SectionForceDeformation.h \
-		ops/LinearSeries.h \
-		ops/TimeSeries.h \
-		ops/Information.h \
-		ops/NodalLoad.h \
-		ops/Load.h \
-		ops/LoadPattern.h \
-		ops/SimulationInformation.h \
-		ops/StringContainer.h \
-		ops/File.h \
-		ops/LoadControl.h \
-		ops/StaticIntegrator.h \
-		ops/IncrementalIntegrator.h \
-		ops/Integrator.h \
-		ops/RCM.h \
-		ops/GraphNumberer.h \
-		ops/PlainNumberer.h \
-		ops/DOF_Numberer.h \
-		ops/NewtonRaphson.h \
-		ops/EquiSolnAlgo.h \
-		ops/SolutionAlgorithm.h \
-		ops/CTestNormDispIncr.h \
-		ops/ConvergenceTest.h \
-		ops/TransformationConstraintHandler.h \
-		ops/ConstraintHandler.h \
-		ops/PenaltyConstraintHandler.h \
-		ops/BandGenLinSOE.h \
-		ops/LinearSOE.h \
-		ops/BandGenLinLapackSolver.h \
-		ops/BandGenLinSolver.h \
-		ops/LinearSOESolver.h \
-		ops/StaticAnalysis.h \
-		ops/Analysis.h \
-		ops/AnalysisModel.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QDebug \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdebug.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o pilefeamodeler.o pilefeamodeler.cpp
-
-systemplotqwt.o: systemplotqwt.cpp systemplotqwt.h \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		pilegrouptool_parameters.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
-		systemplotsuper.h \
-		qcustomplot.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QDebug \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdebug.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QTime \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qdatetime.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o systemplotqwt.o systemplotqwt.cpp
-
-systemplotsuper.o: systemplotsuper.cpp systemplotsuper.h \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		pilegrouptool_parameters.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
-		qcustomplot.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o systemplotsuper.o systemplotsuper.cpp
-
-systemplotqcp.o: systemplotqcp.cpp systemplotqcp.h \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		pilegrouptool_parameters.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
-		systemplotsuper.h \
-		qcustomplot.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o systemplotqcp.o systemplotqcp.cpp
-
-resultplotsuper.o: resultplotsuper.cpp resultplotsuper.h \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		pilegrouptool_parameters.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o resultplotsuper.o resultplotsuper.cpp
-
-resultplotqcp.o: resultplotqcp.cpp resultplotqcp.h \
-		resultplotsuper.h \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		pilegrouptool_parameters.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
-		qcustomplot.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qmath.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qnumeric.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QtNumeric
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o resultplotqcp.o resultplotqcp.cpp
-
-resultplotqwt.o: resultplotqwt.cpp resultplotqwt.h \
-		resultplotsuper.h \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		pilegrouptool_parameters.h \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/QVector \
-		../../../Qt/5.10.0/clang_64/lib/QtCore.framework/Headers/qvector.h \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/QColor \
-		../../../Qt/5.10.0/clang_64/lib/QtGui.framework/Headers/qcolor.h \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/QGridLayout \
-		../../../Qt/5.10.0/clang_64/lib/QtWidgets.framework/Headers/qgridlayout.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o resultplotqwt.o resultplotqwt.cpp
-
 qrc_qtpileresources.o: qrc_qtpileresources.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_qtpileresources.o qrc_qtpileresources.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
-
-moc_qcustomplot.o: moc_qcustomplot.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_qcustomplot.o moc_qcustomplot.cpp
 
 moc_materialdbinterface.o: moc_materialdbinterface.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_materialdbinterface.o moc_materialdbinterface.cpp
@@ -3318,20 +3377,17 @@ moc_dialogpreferences.o: moc_dialogpreferences.cpp
 moc_dialogfuturefeature.o: moc_dialogfuturefeature.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dialogfuturefeature.o moc_dialogfuturefeature.cpp
 
+moc_systemplotqwt.o: moc_systemplotqwt.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_systemplotqwt.o moc_systemplotqwt.cpp
+
+moc_resultplotsuper.o: moc_resultplotsuper.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_resultplotsuper.o moc_resultplotsuper.cpp
+
 moc_FooterWidget.o: moc_FooterWidget.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_FooterWidget.o moc_FooterWidget.cpp
 
 moc_HeaderWidget.o: moc_HeaderWidget.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_HeaderWidget.o moc_HeaderWidget.cpp
-
-moc_systemplotqwt.o: moc_systemplotqwt.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_systemplotqwt.o moc_systemplotqwt.cpp
-
-moc_systemplotqcp.o: moc_systemplotqcp.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_systemplotqcp.o moc_systemplotqcp.cpp
-
-moc_resultplotsuper.o: moc_resultplotsuper.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_resultplotsuper.o moc_resultplotsuper.cpp
 
 ####### Install
 

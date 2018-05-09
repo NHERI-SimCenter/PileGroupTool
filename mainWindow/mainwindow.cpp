@@ -47,6 +47,7 @@ MainWindow::MainWindow(bool graphicsModeQCP, QWidget *parent) :
 
     this->fetchSettings();
 
+#ifdef USEQCP
     if (graphicsModeQCP || useGraphicsLib == "QCP")
     {
         systemPlot  = new SystemPlotQCP(ui->systemTab);
@@ -62,6 +63,7 @@ MainWindow::MainWindow(bool graphicsModeQCP, QWidget *parent) :
         z50Plot     = new ResultPlotQCP(ui->z50Tab);
     }
     else
+#endif
     {
         systemPlot  = new SystemPlotQwt(ui->systemTab);
         displPlot   = new ResultPlotQwt(ui->dispTab);
