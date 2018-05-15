@@ -713,6 +713,15 @@ void MainWindow::on_actionFEA_parameters_triggered()
 void MainWindow::on_action_About_triggered()
 {
     DialogAbout *dlg = new DialogAbout();
+
+    //
+    // adjust size of application window to the available display
+    //
+    QRect rec = QApplication::desktop()->screenGeometry();
+    int height = 0.50*rec.height();
+    int width  = 0.50*rec.width();
+    dlg->resize(width, height);
+
     dlg->exec();
     delete dlg;
 }
