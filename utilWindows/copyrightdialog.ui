@@ -66,6 +66,12 @@
        <string>qrc:/resources/PileGroupToolLICENSE.txt</string>
       </url>
      </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+     <property name="openLinks">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
    <item>

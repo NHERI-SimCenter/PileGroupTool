@@ -54,7 +54,7 @@ The SimCenter Pile Group Tool makes use of the Qwt library, which is distributed
 </p>
 
 <p>
-                             Qwt License
+                             Qwt License<br>
                            Version 1.0, January 1, 2003
 </p>
 
@@ -94,7 +94,7 @@ exceptions:
        documentation to satisfy this requirement:<br>
 
            [program/widget] is based in part on the work of
-           the Qwt project (http://qwt.sf.net).
+           the Qwt project (<a href="http://qwt.sf.net">http://qwt.sf.net</a>).
 </li>
 </ol>
 
