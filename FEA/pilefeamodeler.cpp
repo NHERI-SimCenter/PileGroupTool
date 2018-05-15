@@ -372,6 +372,7 @@ void PileFEAmodeler::buildMesh()
     QTextStream out(FEMfile);
     int materialIndex = 0;
     int nDOFs = 0;
+    excentricity = 0.0;
 
     // clear the list of soil nodes == those nodes where p-y springs are attaching to the soil
     soilNodes.clear();
@@ -1022,6 +1023,8 @@ void PileFEAmodeler::buildMesh()
             }
         }
 
+        excentricity = 0.50*(headNodeList[numPiles-1].x - headNodeList[0].x);
+
         // set up transformation and orientation for the pile cap elements
 
         static Vector crdV(3); crdV(0)=0.; crdV(1)=-1; crdV(2) = 0.;
@@ -1236,7 +1239,7 @@ void PileFEAmodeler::buildLoad()
         load.Zero();
         load(0) = P;
         load(2) = PV;
-        load(4) = PMom;
+        load(4) = PMom - PV*excentricity;
 
         if (numLoadedNode >= 0)
         {
