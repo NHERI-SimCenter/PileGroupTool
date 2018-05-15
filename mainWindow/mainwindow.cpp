@@ -1196,13 +1196,21 @@ void MainWindow::onSystemPlot_groundWaterSelected()
 void MainWindow::on_actionLicense_Information_triggered()
 {
     CopyrightDialog *dlg = new CopyrightDialog(this);
+
+    //
+    // adjust size of application window to the available display
+    //
+    QRect rec = QApplication::desktop()->screenGeometry();
+    int height = 0.50*rec.height();
+    int width  = 0.50*rec.width();
+    dlg->resize(width, height);
+
     dlg->exec();
 }
 
 void MainWindow::on_actionLicense_triggered()
 {
-    CopyrightDialog *dlg = new CopyrightDialog(this);
-    dlg->exec();
+    this->on_actionLicense_Information_triggered();
 }
 
 void MainWindow::on_actionVersion_triggered()
