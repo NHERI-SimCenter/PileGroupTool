@@ -9,5 +9,6 @@
         <file>imagesCommon/sim_logo_footer.png</file>
         <file>style.qss</file>
         <file>resources/NHERI-PGT-Icon.icns</file>
+        <file>resources/PileGroupToolLICENSE.txt</file>
     </qresource>
 </RCC>

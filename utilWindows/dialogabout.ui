@@ -41,6 +41,12 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="undoRedoEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
      <property name="plainText">
       <string>This text will be set in the constructor!</string>
      </property>

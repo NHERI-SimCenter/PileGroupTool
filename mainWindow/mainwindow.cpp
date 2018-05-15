@@ -1208,7 +1208,7 @@ void MainWindow::on_actionLicense_triggered()
 void MainWindow::on_actionVersion_triggered()
 {
     QMessageBox::about(this, tr("Version"),
-                       tr("Version 1.0 "));
+                       tr("Version 2.0.0 "));
 }
 
 void MainWindow::on_actionProvide_Feedback_triggered()
