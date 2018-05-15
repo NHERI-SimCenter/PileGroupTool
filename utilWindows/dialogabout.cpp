@@ -1,13 +1,15 @@
 #include "dialogabout.h"
 #include "ui_dialogabout.h"
+#include <QApplication>
 
 DialogAbout::DialogAbout(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DialogAbout)
 {
     ui->setupUi(this);
+
     QString msg =
-    "This is the SimCenter Educational Pile Group Tool Version 1.0.\n"
+    "This is the SimCenter Educational Pile Group Tool Version 2.0.0\n"
     "\n"
     "Please be aware that this software is not intended to be used in any commercial analysis and/or design. "
     "All contributors of NHERI SimCenter are free of responsibility and liability resulting from the use of "
@@ -28,14 +30,16 @@ DialogAbout::DialogAbout(QWidget *parent) :
     " * position of the ground water table,\n"
     " * pile stiffness, embedment length, connection type to the pile cap,\n"
     " * number of piles in the group (one to three piles), and\n"
-    " * the applied horizontal force at the pile cap (push-over analysis).\n"
+    " * the applied horizontal force, vertical force, and moment at the pile cap (building loads).\n"
+    " * the applied horizontal and vertical displacement at the pile cap (push-over analysis).\n"
+    " * an applied soil motion profile to quasi-statically emulate liquefaction (soil motion effects).\n"
     "\n"
     "Presented results include\n"
     "\n"
-    " * lateral displacement of all piles,\n"
-    " * moment and shear diagrams for each pile,\n"
+    " * lateral and axial displacements of all piles,\n"
+    " * moment, shear, and axial force diagrams for each pile,\n"
     " * vertical soil stresses\n"
-    " * ultimate strength and stiffness parameters for the employed p-y springs.\n"
+    " * ultimate strength and stiffness parameters for the employed p-y and t-z springs.\n"
     "\n"
     "Technical background:\n"
     "\n"
@@ -68,6 +72,7 @@ DialogAbout::DialogAbout(QWidget *parent) :
     " [3] American Petroleum Institute (API) (1987). Recommended Practice for Planning, Designing and Constructing Fixed Offshore Platforms. API Recommended Practice 2A(RP-2A), Washington D.C, 17th edition.\n"
     ;
     ui->plainTextEdit->setPlainText(msg);
+
 }
 
 DialogAbout::~DialogAbout()

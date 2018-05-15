@@ -48,9 +48,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport network
 
 TARGET   = PileGroupTool
 TEMPLATE = app
-VERSION  = 1.99.2
+VERSION  = 2.0.0
 
-#VERSION = pre2.0.2
 #M_REV     = $Rev: $
 
 PRODUCT_NAME = 'PileGroupTool'
