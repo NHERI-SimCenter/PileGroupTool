@@ -77,7 +77,6 @@ INCLUDEPATH += dialogs
 INCLUDEPATH += plots
 INCLUDEPATH += FEA
 
-
 unix: {
     INCLUDEPATH += ./qwt-6.2/src
 
