@@ -1,11 +1,52 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QResource>
 #include <QFile>
-#include "surveysplashscreen.h"
+//#include <QDir>
+
+
+QString openStyleFiles()
+{
+    QString ret;
+    QFile mainStyleFile(":/resources/styleSheets/pgtStyle.qss");
+
+#ifdef Q_OS_WIN
+    QFile appendedStyle("qrc:/resources/styleSheets/pgtWin.qss");
+#endif
+
+#ifdef Q_OS_MACOS
+    //QFile appendedStyle(":/resources/styleSheets/pgtMac.qss");
+    QFile appendedStyle("qrc:/pgtMac.qss");
+#endif
+
+#ifdef Q_OS_LINUX
+    QFile appendedStyle("qrc:/resources/styleSheets/pgtLinux.qss");
+#endif
+
+    if (!mainStyleFile.open(QFile::ReadOnly))
+    {
+        return ret;
+    }
+
+    if (!appendedStyle.open(QFile::ReadOnly))
+    {
+        return ret;
+    }
+
+    ret = ret.append(mainStyleFile.readAll());
+    ret = ret.append(appendedStyle.readAll());
+
+    mainStyleFile.close();
+    appendedStyle.close();
+
+    return ret;
+}
+
+
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QApplication app(argc, argv);
 
     bool graphicModeQCP = false;
 #ifdef USEQCP
@@ -27,11 +68,9 @@ int main(int argc, char *argv[])
     QApplication::setWindowIcon(QIcon(":/resources/NHERI-PGT-Icon.icns"));
     w.show();
 
-    QFile file(":/style.qss");
-    if(file.open(QFile::ReadOnly)) {
-       QString styleSheet = QLatin1String(file.readAll());
-       a.setStyleSheet(styleSheet);
-    }
+    QString stylesheet = openStyleFiles();
+    qDebug() << stylesheet;
+    app.setStyleSheet(stylesheet);
 
-    return a.exec();
+    return app.exec();
 }
