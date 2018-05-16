@@ -119,6 +119,7 @@ void ResultPlotQwt::refresh(void)
     //
 
     double range = (xr - xl) ;
+    if (range < 1e-5) range = 1e-5;
     xl -= 0.1*range;
     xr += 0.1*range;
 

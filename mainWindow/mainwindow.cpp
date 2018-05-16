@@ -110,11 +110,6 @@ MainWindow::MainWindow(bool graphicsModeQCP, QWidget *parent) :
     ui->appliedMoment->setMinimum(-MAX_MOMENT);
 
     ui->textBrowser->clear();
-#ifdef Q_OS_WIN
-    QFont font = ui->textBrowser->font();
-    font.setPointSize(8);
-    ui->textBrowser->setFont(font);
-#endif
 
     ui->textBrowser->setHtml("<b>Hints</b><p><ul><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
 
@@ -713,6 +708,15 @@ void MainWindow::on_actionFEA_parameters_triggered()
 void MainWindow::on_action_About_triggered()
 {
     DialogAbout *dlg = new DialogAbout();
+
+    //
+    // adjust size of application window to the available display
+    //
+    QRect rec = QApplication::desktop()->screenGeometry();
+    int height = 0.50*rec.height();
+    int width  = 0.50*rec.width();
+    dlg->resize(width, height);
+
     dlg->exec();
     delete dlg;
 }
@@ -1187,19 +1191,27 @@ void MainWindow::onSystemPlot_groundWaterSelected()
 void MainWindow::on_actionLicense_Information_triggered()
 {
     CopyrightDialog *dlg = new CopyrightDialog(this);
+
+    //
+    // adjust size of application window to the available display
+    //
+    QRect rec = QApplication::desktop()->screenGeometry();
+    int height = 0.50*rec.height();
+    int width  = 0.50*rec.width();
+    dlg->resize(width, height);
+
     dlg->exec();
 }
 
 void MainWindow::on_actionLicense_triggered()
 {
-    CopyrightDialog *dlg = new CopyrightDialog(this);
-    dlg->exec();
+    this->on_actionLicense_Information_triggered();
 }
 
 void MainWindow::on_actionVersion_triggered()
 {
     QMessageBox::about(this, tr("Version"),
-                       tr("Version 1.0 "));
+                       tr("Version 2.0.0 "));
 }
 
 void MainWindow::on_actionProvide_Feedback_triggered()

@@ -48,9 +48,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport network
 
 TARGET   = PileGroupTool
 TEMPLATE = app
-VERSION  = 1.99.2
+VERSION  = 2.0.0
 
-#VERSION = pre2.0.2
 #M_REV     = $Rev: $
 
 PRODUCT_NAME = 'PileGroupTool'
@@ -69,7 +68,6 @@ include(OPS_includes.pro)
 INCLUDEPATH += ./qwt-6.2/src
 LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
 LIBS += -L"$(HOME)/Documents/GitHub/PileGroupTool/qwt-6.2/lib"
-LIBS += -lqwt
 
 INCLUDEPATH += includes
 INCLUDEPATH += mainWindow
@@ -77,15 +75,18 @@ INCLUDEPATH += dialogs
 INCLUDEPATH += plots
 INCLUDEPATH += FEA
 
-
 unix: {
     INCLUDEPATH += ./qwt-6.2/src
 
-    LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
-    LIBS += -lqwt
+    #LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
+    #LIBS += -lqwt
+    LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwt.a
+    LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwtmathml.a
+
+    QT += svg
 }
 
-SOURCES += main.cpp\
+SOURCES += main.cpp \
         mainWindow/mainwindow.cpp \
         FEA/getPyParam.cpp \
         FEA/getQzParam.cpp \

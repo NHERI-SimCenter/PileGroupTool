@@ -500,6 +500,7 @@ void SystemPlotQwt::refresh()
     pointsOnMomentCurve << (forceOrigin + QPointF(Rx*cos(theta), Ry*sin(theta)));
 
     moment->setSamples(pointsOnMomentCurve);
+    moment->setItemAttribute(QwtPlotItem::Legend, false);
     moment->setPen(QPen(Qt::red, 3));
 
     if (PMom != 0){

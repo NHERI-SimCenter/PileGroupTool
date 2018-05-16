@@ -113,6 +113,8 @@ protected:
     double PV;    // vertical force on pile cap
     double PMom;  // applied moment on pile cap
 
+    double excentricity;  // horizontal offset of the first pile from the center of the pile cap
+
     double HDisp; // prescribed horizontal displacement
     double VDisp; // prescriber vertical displacement
 
