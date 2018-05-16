@@ -52,17 +52,17 @@ private:
 protected:
     LoadControlType loadControlType;
 
-    double P;     // lateral force on pile cap
-    double PV;    // vertical force on pile cap
-    double PMom;  // applied moment on pile cap
+    double P    = 0.0;  // lateral force on pile cap
+    double PV   = 0.0;  // vertical force on pile cap
+    double PMom = 0.0;  // applied moment on pile cap
 
-    double HDisp; // prescribed horizontal displacement
-    double VDisp; // prescriber vertical displacement
+    double HDisp = 0.0; // prescribed horizontal displacement
+    double VDisp = 0.0; // prescriber vertical displacement
 
-    double surfaceDisp;    // prescribed soil surface displacement
-    double percentage12;   // percentage of surface displacement at 1st layer interface
-    double percentage23;   // percentage of surface displacement at 2nd layer interface
-    double percentageBase; // percentage of surface displacement at base of soil column
+    double surfaceDisp    = 0.0; // prescribed soil surface displacement
+    double percentage12   = 1.0; // percentage of surface displacement at 1st layer interface
+    double percentage23   = 0.0; // percentage of surface displacement at 2nd layer interface
+    double percentageBase = 0.0; // percentage of surface displacement at base of soil column
 
     QVector<double> soilMotion = QVector<double>(MAXLAYERS+1, 0.0);
     QVector<SOIL_MOTION_DATA> motionData = QVector<SOIL_MOTION_DATA>(MAXLAYERS);

@@ -78,6 +78,11 @@ QDoubleSpinBox {
 /*
 * ======= <HEADER AND FOOTER> =======
 */
+QGroupBox {
+    background-color: #ffffff;
+    border-radius: 5px;
+}
+
 
 QGroupBox#headerWidget {
     background-color: #B0BEC5;
@@ -92,11 +97,6 @@ QGroupBox#footerWidget {
     border-radius: 5px;
 }
 
-
-QGroupBox {
-    background-color: #ffffff;
-    border-radius: 5px;
-}
 
 
 QLabel#titleText {
@@ -257,7 +257,7 @@ QFrame#soilMotionFrame {
 }
 
 QFrame#loadSelectionFrame {
-    background-color: #FFFFFF;
+    background-color: #FFFFF;
     border:none;
 }
 

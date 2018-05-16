@@ -86,6 +86,12 @@ PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
     coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft ).invTransform( pos.y() );
     coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight ).invTransform( pos.y() );
 
+    //qDebug() << "Pos: " << pos
+    //         << " coord: " << coords[ QwtPlot::xBottom ]
+    //         << "/" << coords[ QwtPlot::xTop ]
+    //         << "/" << coords[ QwtPlot::yLeft ]
+    //         << "/" << coords[ QwtPlot::yRight ];
+
     for ( int i = plotItemList.size() - 1; i >= 0; i-- )
     {
         PLOTOBJECT obj = plotItemList[i];
@@ -97,7 +103,7 @@ PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
             QwtPlotCurve *curveItem = static_cast<QwtPlotCurve *>( item );
             const QPointF p( coords[ item->xAxis() ], coords[ item->yAxis() ] );
 
-            if ( curveItem->boundingRect().contains( p ) || true )
+            if ( curveItem->boundingRect().contains( p ) )
             {
                 // trace curves ...
                 dist = 1000.;
@@ -163,32 +169,13 @@ PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
 
 void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 {
-    qWarning() << "picker appended " << pos;
-
-    SystemPlotQwt::refresh();
-
-    double coords[ QwtPlot::axisCnt ];
-    coords[ QwtPlot::xBottom ] = plot->canvasMap( QwtPlot::xBottom ).invTransform( pos.x() );
-    coords[ QwtPlot::xTop ]    = plot->canvasMap( QwtPlot::xTop ).invTransform( pos.x() );
-    coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft ).invTransform( pos.y() );
-    coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight ).invTransform( pos.y() );
+    //SystemPlotQwt::refresh();
 
     PLOTOBJECT    obj = itemAt(pos);
     QwtPlotItem *item = obj.itemPtr;
 
     if ( item )
     {
-        /*if ( item->rtti() == QwtPlotItem::Rtti_PlotShape )
-        {
-            QwtPlotShapeItem *theShape = static_cast<QwtPlotShapeItem *>(item);
-            theShape->setPen(Qt::red, 3);
-            QBrush brush = theShape->brush();
-            QColor color = brush.color();
-            color.setAlpha(64);
-            brush.setColor(color);
-            theShape->setBrush(brush);
-        }*/
-
         plot->replot();
 
         switch (obj.type) {
@@ -212,7 +199,6 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 
 void SystemPlotQwt::refresh()
 {  
-    //qDebug() << "entering SystemPlotQwt::refresh()" << QTime::currentTime();
     foreach (PLOTOBJECT item, plotItemList) {
         item.itemPtr->detach();
         delete item.itemPtr;
@@ -270,54 +256,26 @@ void SystemPlotQwt::refresh()
     double xl = xbar - W/2;
     double xr = xbar + W/2;
 
-
-    //
-    // HERE IS WHERE TO START ...
-    //
-
-    //
     // Plot Legend
-    //
     plot->insertLegend( new QwtLegend(), QwtPlot::BottomLegend );
 
-    // Adjust x-axis to match Ground Layer Width
-    plot->setAxisScale( QwtPlot::xBottom, xbar - W/2, xbar + W/2 );
-    // Adjust y-axis to match Ground Layer Depth and slightly above pilecap
-    double heightAbovePileCap = 1;
-    plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + maxH + heightAbovePileCap );
-    //qWarning() << QString::number(maxD);
+    // Set x-axis and y-axis
+    if (loadControlType == LoadControlType::SoilMotion)
+    {
+        plot->setAxisScale( QwtPlot::xBottom, xl-1.0, xr+1.0 );
+        plot->setAxisScale( QwtPlot::xTop, xl-1.0, xr+1.0 );
+    }
+    else
+    {
+        plot->setAxisScale( QwtPlot::xBottom, xl, xr );
+        plot->setAxisScale( QwtPlot::xTop, xl, xr );
+    }
+    plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + 1.75);
+    plot->setAxisScale( QwtPlot::yRight, -depthOfLayer[3], L1 + 1.75);
 
     //
     // Plot Ground Water Table
     //
-
-    //plot->setCurrentLayer("groundwater");
-    /*
-    if (gwtDepth < (H-L1)) {
-        QPolygonF(groundwaterCorners);
-        groundwaterCorners << QPointF(xl, -gwtDepth)
-                           << QPointF(xl, -(H - L1))
-                           << QPointF(xr, -(H - L1))
-                           << QPointF(xr, -gwtDepth)
-                           << QPointF(xl, -gwtDepth);
-
-        QwtPlotShapeItem *water = new QwtPlotShapeItem();
-        water->setPolygon(groundwaterCorners);
-
-        water->setPen(QPen(Qt::blue, 2));
-        water->setBrush(QBrush(GROUND_WATER_BLUE));
-
-        water->setTitle(QString("Groundwater"));
-        water->attach( plot );
-        water->setItemAttribute(QwtPlotItem::Legend, true);
-
-        PLOTOBJECT var;
-        var.itemPtr = water;
-        var.type    = PLType::WATER;
-        var.index   = -1;
-        plotItemList.append(var);
-    }
-    */
 
     if (gwtDepth < (H-L1)) {
         QPolygonF(groundwaterCorners);
@@ -405,42 +363,8 @@ void SystemPlotQwt::refresh()
         plotItemList.append(var);
     }
 
-    /*
-    // Testing percentage12 for deformation
-    double percentage12temp(P/MAX_H_FORCE);
-    QPolygonF testCorners;
-    testCorners   << QPointF(-2, -5)
-                  << QPointF(-2+ 0.75*percentage12temp,-4)
-                  << QPointF( 2+ 0.75*percentage12temp,-4)
-                  << QPointF( 2,-5)
-                  << QPointF(-2,-5);
-    QwtPlotShapeItem *testObject = new QwtPlotShapeItem();
-    testObject->setPolygon(testCorners);
-    testObject->setPen(QPen(Qt::black, 1));
-    testObject->setBrush(QBrush(Qt::blue));
-    testObject->setZ(10);
-    testObject->attach( plot );
-
-    PLOTOBJECT testsq;
-    testsq.itemPtr = testObject;
-    testsq.type    = PLType::OTHER;
-    testsq.index   = -1;
-    plotItemList.append(testsq);
-
-
-    qWarning() << "surfaceDisp = "    + QString::number(surfaceDisp);
-    qWarning() << "percentageBase = " + QString::number(percentageBase);
-    qWarning() << "percentage12 = "   + QString::number(percentage12);
-    qWarning() << "percentage23 = "   + QString::number(percentage23);
-    qWarning() << "percentage12temp = "   + QString::number(percentage12temp);
-    qWarning() << "P = "              + QString::number(P);
-    qWarning() << "PV = "             + QString::number(PV);
-
-    // Test end
-    */
-
     //
-    // Plot PileCaps
+    // Plot the Pile Cap
     //
     QRectF capCorners(QPointF(minX0 - maxD/2, L1 + maxH), QSizeF(maxX0 + maxD - minX0, -maxH));
 
@@ -458,10 +382,10 @@ void SystemPlotQwt::refresh()
 
     pileCap->setItemAttribute(QwtPlotItem::Legend, false);
 
-
     //
     // Plot Piles
     //
+
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++) {
 
         double D = pileDiameter[pileIdx];
@@ -486,7 +410,6 @@ void SystemPlotQwt::refresh()
         else
         {
             // undeformed pile
-
             pileCorners << QPointF(xOffset[pileIdx] - D/2, L1)
                         << QPointF(xOffset[pileIdx] - D/2, -L2[pileIdx])
                         << QPointF(xOffset[pileIdx] + D/2, -L2[pileIdx])
@@ -515,6 +438,82 @@ void SystemPlotQwt::refresh()
         plotItemList.append(var);
     }
 
+    double pileCapCenter = 0.5 * (minX0 + maxX0);
+    QPointF forceOrigin  = QPointF(pileCapCenter, L1 + maxH);
+
+    //
+    // Plot Scaling Parameters
+    //
+
+    QPointF plotZero     = QPointF(0.0, 0.0);
+    QPointF deltaPoint   = QPointF(5.0, 5.0);
+
+    double deltaPointx   = plot->canvasMap( QwtPlot::xBottom).transform(deltaPoint.x());
+    double zeroPointx    = plot->canvasMap( QwtPlot::xBottom).transform(plotZero.x());
+    double deltaPointy   = plot->canvasMap( QwtPlot::yLeft).transform(deltaPoint.y());
+    double zeroPointy    = plot->canvasMap( QwtPlot::yLeft).transform(plotZero.y());
+
+    double xScalar = 5.0/(deltaPointx-zeroPointx);
+    double yScalar = 5.0/(deltaPointy-zeroPointy);
+
+    //qDebug()   << "zeroPoint  (x,y) = (" << zeroPointx << "," << zeroPointy << ")\n"
+    //           << "deltaPoint (x,y) = (" << deltaPointx << "," << deltaPointy << ")\n"
+    //           << "Scalar     (x,y) = (" << xScalar << "," << yScalar << ")\n";
+
+    //
+    // Plotting the Applied Moment Symbol
+    //
+    double alpha;
+    double dTheta;
+    double theta;
+
+    double mR = 25.0; // Moment Radius in screen coordinates
+    double nChords = 20;
+
+    double Rx = mR*xScalar;
+    double Ry = mR*yScalar;
+
+    QwtPlotCurve *moment = new QwtPlotCurve();
+    QPolygonF pointsOnMomentCurve;
+
+    if (PMom < 0)
+    {
+        alpha = (1.0 + 0.75*(PMom)/MAX_MOMENT) * (2*3.1415927);
+        dTheta = (alpha - 2*3.1415927) / (nChords-1);
+        theta = 0.5*(3.1415927 - alpha);
+    }
+    else
+    {
+        alpha = (1.0 - 0.75*(PMom)/MAX_MOMENT) * (2*3.1415927);
+        dTheta = (2*3.1415927 - alpha) / (nChords-1);
+        theta = 0.5*(alpha + 3.1415927);
+    }
+
+    for (int n=0; n<=nChords; n++)
+    {
+        pointsOnMomentCurve << (forceOrigin + QPointF(Rx*cos(theta), Ry*sin(theta)));
+        theta += dTheta;
+    }
+    theta -= dTheta;
+    pointsOnMomentCurve << (forceOrigin + QPointF(0.8*Rx*cos(theta-3*dTheta), 0.8*Ry*sin(theta-3*dTheta)));
+    pointsOnMomentCurve << (forceOrigin + QPointF(1.2*Rx*cos(theta-3*dTheta), 1.2*Ry*sin(theta-3*dTheta)));
+    pointsOnMomentCurve << (forceOrigin + QPointF(Rx*cos(theta), Ry*sin(theta)));
+
+    moment->setSamples(pointsOnMomentCurve);
+    moment->setItemAttribute(QwtPlotItem::Legend, false);
+    moment->setPen(QPen(Qt::red, 3));
+
+    if (PMom != 0){
+        moment->attach( plot );
+
+        PLOTOBJECT var;
+        var.itemPtr = moment;
+        var.type    = PLType::LOAD;
+        var.index   = 2;
+        plotItemList.append(var);
+    }
+
+    //
     // Drawing Horizontal Force Arrow using QwtPlotShapeItem
     //
     QwtPlotShapeItem *arrow = new QwtPlotShapeItem();
@@ -534,95 +533,97 @@ void SystemPlotQwt::refresh()
     arrow->setPen( pen );
     arrow->setBrush( Qt::red );
 
-    double pileCapCenter  = 0.5 * (minX0 + maxX0),
-           arrowThickness = 0.07,
-           arrowHead = 0.3,
-           arrowHeadLength = 0.8;
+    // Horizontal Force Arrow dimensions
+    double arrowThickness  =  3 * yScalar,
+           arrowHead       = 10 * yScalar,
+           arrowHeadLength = 15 * xScalar;
 
     if (forceArrowRatio < 0) {arrowHeadLength = -arrowHeadLength;}
 
     QPainterPath path;
-    path.moveTo( pileCapCenter                                            , L1 + maxH                  );
-    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH + arrowHead      );
-    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH + arrowThickness );
-    path.lineTo( pileCapCenter + arrowHeadLength + forceArrowRatio*( W/2 ), L1 + maxH + arrowThickness );
-    path.lineTo( pileCapCenter + arrowHeadLength + forceArrowRatio*( W/2 ), L1 + maxH - arrowThickness );
-    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH - arrowThickness );
-    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH - arrowHead      );
-    path.lineTo( pileCapCenter                                            , L1 + maxH                  );
+    path.moveTo( pileCapCenter                                            , L1 + maxH                    );
+    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH + arrowHead/2      );
+    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH + arrowThickness/2 );
+    path.lineTo( pileCapCenter + arrowHeadLength + forceArrowRatio*( W/2 ), L1 + maxH + arrowThickness/2 );
+    path.lineTo( pileCapCenter + arrowHeadLength + forceArrowRatio*( W/2 ), L1 + maxH - arrowThickness/2 );
+    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH - arrowThickness/2 );
+    path.lineTo( pileCapCenter + arrowHeadLength                          , L1 + maxH - arrowHead/2      );
+    path.lineTo( pileCapCenter                                            , L1 + maxH                    );
     arrow->setShape( path );
 
     if (forceArrowRatio != 0){
         arrow->attach( plot );
 
-    PLOTOBJECT var;
-    var.itemPtr = arrow;
-    var.type    = PLType::LOAD;
-    var.index   = 0;
-    plotItemList.append(var);
+        PLOTOBJECT var;
+        var.itemPtr = arrow;
+        var.type    = PLType::LOAD;
+        var.index   = 0;
+        plotItemList.append(var);
     }
-
 
     // Drawing Vertical Force Arrow using QwtPlotShapeItem
-
     QwtPlotShapeItem *arrowV = new QwtPlotShapeItem();
 
-    double forceArrowRatioV = PV/MAX_V_FORCE,
-           arrowHeadLengthV = 0.3,
-           arrowHeadV       = 1.5,
-           arrowThicknessV  = 0.3;
-
-    if (( forceArrowRatioV < 0.3 ) && (forceArrowRatioV > 0)) {
-        forceArrowRatio = 0.3;
-    }
-    else if (( forceArrowRatioV > -0.3 ) && (forceArrowRatioV < 0)) {
-        forceArrowRatioV = -0.3;
-    }
+    double forceArrowRatioV =  PV/MAX_V_FORCE;
+    double yLength          =  -depthOfLayer[3]/2;
+    double arrowHeadLengthV =  15 * yScalar;
+    double arrowHeadV       =  10 * xScalar;
+    double arrowWidthV      =   3 * xScalar;
 
 
-    //QPen pen( Qt::black, 2 );
-    //pen.setJoinStyle( Qt::MiterJoin );
+    if ( PV > 0.0 && forceArrowRatioV <  0.3 ) forceArrowRatio =  0.3;
+    if ( PV < 0.0 && forceArrowRatioV > -0.3 ) forceArrowRatio = -0.3;
+
     arrowV->setPen( pen );
     arrowV->setBrush( Qt::red );
 
-    if (forceArrowRatioV < 0) {arrowHeadLengthV = -arrowHeadLengthV;}
-
     QPainterPath pathV;
-    pathV.moveTo( pileCapCenter                  , L1 + maxH                       );
-    pathV.lineTo( pileCapCenter - arrowHeadV     , L1 + maxH + arrowHeadLengthV    );
-    pathV.lineTo( pileCapCenter - arrowThicknessV, L1 + maxH + arrowHeadLengthV    );
-    pathV.lineTo( pileCapCenter - arrowThicknessV, L1 + maxH + arrowHeadLengthV + forceArrowRatioV    );
-    pathV.lineTo( pileCapCenter + arrowThicknessV, L1 + maxH + arrowHeadLengthV + forceArrowRatioV    );
-    pathV.lineTo( pileCapCenter + arrowThicknessV, L1 + maxH + arrowHeadLengthV    );
-    pathV.lineTo( pileCapCenter + arrowHeadV     , L1 + maxH + arrowHeadLengthV    );
-    pathV.lineTo( pileCapCenter                  , L1 + maxH                       );
+    if (forceArrowRatioV < 0) {
+        pathV.moveTo( pileCapCenter + arrowWidthV/2, L1 + maxH);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter + arrowHeadV/2 , L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter                , L1 + maxH - yLength*forceArrowRatioV);
+        pathV.lineTo( pileCapCenter - arrowHeadV/2 , L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV );
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH - yLength*forceArrowRatioV - arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH);
+    }
+    if (forceArrowRatioV > 0) {
+        pathV.moveTo( pileCapCenter , L1 + maxH);
+        pathV.lineTo( pileCapCenter + arrowHeadV/2 , L1 + maxH + arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH + arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter + arrowWidthV/2, L1 + maxH + arrowHeadLengthV + yLength*forceArrowRatioV);
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH + arrowHeadLengthV + yLength*forceArrowRatioV);
+        pathV.lineTo( pileCapCenter - arrowWidthV/2, L1 + maxH + arrowHeadLengthV);
+        pathV.lineTo( pileCapCenter - arrowHeadV/2 , L1 + maxH + arrowHeadLengthV);
+        pathV.moveTo( pileCapCenter , L1 + maxH);
+    }
+
     arrowV->setShape( pathV );
     //arrowV->setZ	( 3 );
 
-    if (forceArrowRatioV != 0){
-    arrowV->attach( plot );
+    if (PV != 0){
+        arrowV->attach( plot );
 
-    PLOTOBJECT var2;
-    var2.itemPtr = arrowV;
-    var2.type    = PLType::LOAD;
-    var2.index   = 1;
-    plotItemList.append(var2);
+        PLOTOBJECT var2;
+        var2.itemPtr = arrowV;
+        var2.type    = PLType::LOAD;
+        var2.index   = 1;
+        plotItemList.append(var2);
     }
-
 
     // status info
     if (!mIsStable)
     {
         //
-        // TODO: write "unstable system" at center of the system plot
+        // write "unstable system" at center of the system plot
         //
-
-        // this is the code from QCP
 
         QwtPlotTextLabel *warning = new QwtPlotTextLabel();
 
-        QwtText title("unstable\nsystem");
+        QwtText title("unstable\nsystem\n\nanalysis\ndid not\nconverge");
         title.setFont(QFont(font().family(), 36));
+        title.setColor(Qt::magenta);
         warning->setText(title);
         warning->setMargin(8);
         warning->attach(plot);

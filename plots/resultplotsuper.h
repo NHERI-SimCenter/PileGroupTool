@@ -20,8 +20,8 @@ public slots:
 
 protected:
     QVector<double> depthOfLayer = QVector<double>(4, 0.0);
-    QVector<QVector<double> *> m_x;
-    QVector<QVector<double> *> m_y;
+    QVector<QVector<double> > m_pos;   // lists of depth of points
+    QVector<QVector<double> > m_data;  // lists of associated results at points
 };
 
 #endif // RESULTPLOTSUPER_H

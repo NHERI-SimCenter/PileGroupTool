@@ -61,8 +61,8 @@ extern int getPyParam(double pyDepth,
 #include <QDebug>
 
 
-#define SET_3_NDOF if (nDOFs != 3) { nDOFs = 3; out << "model BasicBuilder -ndm 3 - ndf " << nDOFs << " ;" << endl; }
-#define SET_6_NDOF if (nDOFs != 6) { nDOFs = 6; out << "model BasicBuilder -ndm 3 - ndf " << nDOFs << " ;" << endl; }
+#define SET_3_NDOF if (nDOFs != 3) { nDOFs = 3; out << "model BasicBuilder -ndm 3 -ndf " << nDOFs << " ;" << endl; }
+#define SET_6_NDOF if (nDOFs != 6) { nDOFs = 6; out << "model BasicBuilder -ndm 3 -ndf " << nDOFs << " ;" << endl; }
 
 PileFEAmodeler::PileFEAmodeler()
 {
@@ -372,6 +372,7 @@ void PileFEAmodeler::buildMesh()
     QTextStream out(FEMfile);
     int materialIndex = 0;
     int nDOFs = 0;
+    excentricity = 0.0;
 
     // clear the list of soil nodes == those nodes where p-y springs are attaching to the soil
     soilNodes.clear();
@@ -397,6 +398,8 @@ void PileFEAmodeler::buildMesh()
     OPS_clearAllUniaxialMaterial();
     ops_Dt = 0.0;
 
+    capNodeList.clear();
+
     //
     // find meshing parameters
     //
@@ -411,6 +414,10 @@ void PileFEAmodeler::buildMesh()
         pileInfo[k].maxLayers    = MAXLAYERS;
         pileInfo[k].nodeIDoffset = 0;
         pileInfo[k].elemIDoffset = 0;
+        pileInfo[k].firstNodeTag = -1;    // for error detection
+        pileInfo[k].lastNodeTag  = -1;    // for error detection
+        pileInfo[k].firstElementTag = -1; // for error detection
+        pileInfo[k].lastElementTag  = -1; // for error detection
     }
 
     /* ******** sizing and adjustments ******** */
@@ -504,6 +511,7 @@ void PileFEAmodeler::buildMesh()
         out << "#----------------------------------------------------------" << endl;
         out << "#   creating the FE model                                  " << endl;
         out << "#----------------------------------------------------------" << endl;
+        SET_3_NDOF
     }
 
     //
@@ -592,6 +600,8 @@ void PileFEAmodeler::buildMesh()
         nodeTag = numNode+ioffset2;
 
         theNode = new Node(nodeTag, 6, pileInfo[pileIdx].xOffset, 0., zCoord);  theDomain->addNode(theNode);
+        pileInfo[pileIdx].firstNodeTag = nodeTag;
+
         if (dumpFEMinput)
         {
             SET_6_NDOF
@@ -665,13 +675,13 @@ void PileFEAmodeler::buildMesh()
             if (dumpFEMinput)
             {
                 out << "uniaxialMaterial QzSimple1 " << numNode << " "
-                    << 2 << " " << qult << " " << z50q << " 0.0, 0.0 ;" << endl;
+                    << 2 << " " << qult << " " << z50q << " 0.0 0.0 ;" << endl;
 
                 out << "element zeroLength "
                     << 1+pileIdx+ioffset4 << " " << numNode << " " << numNode+ioffset
                     << " -mat " << numNode
                     << " -dir ";
-                for (int k=0; k<Onedirection.Size(); k++) { out << Onedirection(k) << " "; }
+                for (int k=0; k<Onedirection.Size(); k++) { out << Onedirection(k)+1 << " "; }
                 out << " -orient ";
                 for (int k=0; k<x.Size(); k++) { out << x(k) << " "; }
                 for (int k=0; k<y.Size(); k++) { out << y(k) << " "; }
@@ -826,14 +836,6 @@ void PileFEAmodeler::buildMesh()
                     out << "uniaxialMaterial PySimple1 " << numNode << " 2 " << pult << " " << y50 << " 0.0" << " ;" << endl;
                 }
 
-                (*locList[pileIdx])[numNode+ioffset2- pileInfo[pileIdx].nodeIDoffset-1]  = zCoord;
-                // pult is a nodal value for the p-y spring.
-                // It needs to be scaled by element length ito represent a line load
-                (*pultList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1] = pult/eleSize;
-                (*y50List[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = y50;
-                (*tultList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1] = tult/eleSize;
-                (*z50List[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = z50;
-
                 // t-z spring material
                 getTzParam(phi, pileInfo[pileIdx].pileDiameter,  sigV,  eleSize, &tult, &z50);
 
@@ -854,6 +856,18 @@ void PileFEAmodeler::buildMesh()
                 }
 
                 //
+                // collect plot data
+                //
+
+                (*locList[pileIdx])[numNode+ioffset2- pileInfo[pileIdx].nodeIDoffset-1]  = zCoord;
+                // pult is a nodal value for the p-y spring.
+                // It needs to be scaled by element length ito represent a line load
+                (*pultList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1] = pult/eleSize;
+                (*y50List[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = y50;
+                (*tultList[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1] = tult/eleSize;
+                (*z50List[pileIdx])[numNode+ioffset2-pileInfo[pileIdx].nodeIDoffset-1]  = z50;
+
+                //
                 // create soil spring elements
                 //
 
@@ -869,7 +883,7 @@ void PileFEAmodeler::buildMesh()
                         << numNode+ioffset3 << " " << numNode << " " << numNode+ioffset
                         << " -mat " << numNode << " " << numNode+ioffset
                         << " -dir ";
-                    for (int k=0; k<direction.Size(); k++) { out << direction(k) << " "; }
+                    for (int k=0; k<direction.Size(); k++) { out << direction(k)+1 << " "; }
                     out << " -orient ";
                     for (int k=0; k<x.Size(); k++) { out << x(k) << " "; }
                     for (int k=0; k<y.Size(); k++) { out << y(k) << " "; }
@@ -939,6 +953,7 @@ void PileFEAmodeler::buildMesh()
 
 
         headNodeList[pileIdx] = {pileIdx, nodeTag, pileInfo[pileIdx].xOffset};
+        pileInfo[pileIdx].lastNodeTag = nodeTag;
 
         //
         // create pile elements
@@ -958,6 +973,8 @@ void PileFEAmodeler::buildMesh()
             for (int k=0; k<crdV.Size(); k++) { out << " " << crdV(k); }
             out << " ;" << endl;
         }
+
+        pileInfo[pileIdx].firstElementTag = numElem+1;
 
         for (int i=0; i<pileInfo[pileIdx].numNodePile-1; i++) {
             numElem++;
@@ -989,10 +1006,12 @@ void PileFEAmodeler::buildMesh()
                         << " ;" << endl;
             }
         }
+
+        pileInfo[pileIdx].lastElementTag = numElem;
     }
 
     //
-    // *** construct the pile head ***
+    // *** construct the pile cap ***
     //
     if (numPiles > 0) {
 
@@ -1003,6 +1022,8 @@ void PileFEAmodeler::buildMesh()
                 if (headNodeList[i].x < headNodeList[j].x) SWAP(headNodeList[i],headNodeList[j]);
             }
         }
+
+        excentricity = 0.50*(headNodeList[numPiles-1].x - headNodeList[0].x);
 
         // set up transformation and orientation for the pile cap elements
 
@@ -1052,6 +1073,7 @@ void PileFEAmodeler::buildMesh()
             int nodeTag = numNode + ioffset5;
 
             Node *theNode = new Node(nodeTag, 6, headNodeList[pileIdx].x, 0., pileInfo[pileIdx].L1);  theDomain->addNode(theNode);
+            capNodeList.append({pileIdx, nodeTag, headNodeList[pileIdx].x, pileInfo[pileIdx].L1});
 
             if (dumpFEMinput)
             {
@@ -1142,12 +1164,33 @@ void PileFEAmodeler::buildMesh()
         }
     }
 
-    numLoadedNode = headNodeList[0].nodeIdx;
+    //numLoadedNode = headNodeList[0].nodeIdx;
+    numLoadedNode = capNodeList.first().nodeIdx;
 
     /* *** done with the pile head *** */
 
     if (numNode != numNodePiles) {
         qDebug() << "ERROR: " << numNode << " nodes generated but " << numNodePiles << "expected" << endln;
+    }
+
+    if (dumpFEMinput)
+    {
+        out << endl;
+        out << "#----------------------------------------------------------" << endl;
+        out << "#   create recorders                                       " << endl;
+        out << "#----------------------------------------------------------" << endl;
+        out << endl;
+        out << "# node recorder for pile cap" << endl;
+        out << "recorder Node -file PileCap.txt -time -node " << numLoadedNode << " -dof 1 3 5 disp" << endl;
+        out << "recorder Node -file Pile1_Disp.txt -time "
+            << " -nodeRange " << pileInfo[0].firstNodeTag << " " << pileInfo[0].lastNodeTag
+            << " -dof 1 3 5 disp" << endl;
+        out << endl;
+        out << "# element recorder" << endl;
+        out << "recorder Element -file Pile1_Forces.txt -time "
+            << " -eleRange " << pileInfo[0].firstElementTag << " " << pileInfo[0].lastElementTag
+            << " -dT 9.95 forces" << endl;
+        out << endl;
     }
 
     ENABLE_STATE(AnalysisState::meshValid);
@@ -1196,7 +1239,7 @@ void PileFEAmodeler::buildLoad()
         load.Zero();
         load(0) = P;
         load(2) = PV;
-        load(4) = PMom;
+        load(4) = PMom - PV*excentricity;
 
         if (numLoadedNode >= 0)
         {
@@ -1326,7 +1369,7 @@ void PileFEAmodeler::buildAnalysis()
         out << "# analysis commands"                                         << endl;
         out << "    integrator LoadControl  0.05 ;"                          << endl;
         out << "    numberer RCM ;"                                          << endl;
-        out << "	system BandGeneral ;"                                    << endl;
+        out << "    system BandGeneral ;"                                    << endl;
         out << "    constraints Penalty   1.0e14  1.0e14 ;"                  << endl;
         out << "    test NormDispIncr 1e-5      20      1 ;"                 << endl;
         out << "    algorithm Newton ;"                                      << endl;
@@ -1366,24 +1409,11 @@ void PileFEAmodeler::clearPlotBuffers()
 
     foreach (QVector<double> *ptr, StressList) { if (ptr != NULL) delete ptr; }
     StressList.clear();
-
-    //foreach (QVector<double> *ptr, pultList) { if (ptr != NULL) delete ptr; }
-    //pultList.clear();
-
-    //foreach (QVector<double> *ptr, y50List) { if (ptr != NULL) delete ptr; }
-    //y50List.clear();
-
-    //foreach (QVector<double> *ptr, tultList) { if (ptr != NULL) delete ptr; }
-    //tultList.clear();
-
-    //foreach (QVector<double> *ptr, z50List) { if (ptr != NULL) delete ptr; }
-    //z50List.clear();
 }
 
 int PileFEAmodeler::extractPlotData()
 {
     if ( CHECK_STATE(AnalysisState::solutionAvailable) && CHECK_STATE(AnalysisState::dataExtracted)) return 0;
-
     if (!CHECK_STATE(AnalysisState::solutionAvailable)) this->doAnalysis();
 
     this->clearPlotBuffers();
@@ -1393,24 +1423,16 @@ int PileFEAmodeler::extractPlotData()
         //
         // allocate storage for results from pile with pileIdx
         //
-        locList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-
+        locList.append        (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
         lateralDispList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        axialDispList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-
-        MomentList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        ShearList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        AxialList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-
-        StressList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-
-        //pultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        //y50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
-        //tultList.append(new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
-        //z50List.append(new QVector<double>(pileInfo[pileIdx].numNodePile,  0.0));
+        axialDispList.append  (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        MomentList.append     (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        ShearList.append      (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        AxialList.append      (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
+        StressList.append     (new QVector<double>(pileInfo[pileIdx].numNodePile, 0.0));
     }
 
-    if (!CHECK_STATE(AnalysisState::solutionValid)) return -1;
+    if (!CHECK_STATE(AnalysisState::solutionValid)) { return -1; }
 
     for (int pileIdx=0; pileIdx<numPiles; pileIdx++)
     {
@@ -1421,6 +1443,7 @@ int PileFEAmodeler::extractPlotData()
             Node *theNode = theDomain->getNode(i+pileInfo[pileIdx].nodeIDoffset+1);
             const Vector &nodeCoord = theNode->getCrds();
             (*locList[pileIdx])[i] = nodeCoord(2);
+
             int iLayer;
             for (iLayer=0; iLayer<pileInfo[pileIdx].maxLayers; iLayer++) { if (-nodeCoord(2) <= depthOfLayer[iLayer+1]) break;}
             (*StressList[pileIdx])[i] = mSoilLayers[iLayer].getEffectiveStress(-nodeCoord(2)-depthOfLayer[iLayer]);
@@ -1428,8 +1451,7 @@ int PileFEAmodeler::extractPlotData()
             const Vector &nodeDisp = theNode->getDisp();
 
             (*lateralDispList[pileIdx])[i] = nodeDisp(0);
-
-            (*axialDispList[pileIdx])[i] = nodeDisp(2);
+            (*axialDispList[pileIdx])[i]   = nodeDisp(2);
         }
 
         /* during initialization, the list can contain zero elements and the next 2 lines will crash */

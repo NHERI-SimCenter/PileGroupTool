@@ -7,6 +7,11 @@
         <file>images/PileSchematic@1x.png</file>
         <file>imagesCommon/nsf.gif</file>
         <file>imagesCommon/sim_logo_footer.png</file>
-        <file>style.qss</file>
+        <file>resources/NHERI-PGT-Icon.icns</file>
+        <file>resources/styleSheets/pgtLinux.qss</file>
+        <file>resources/styleSheets/pgtMac.qss</file>
+        <file>resources/styleSheets/pgtStyles.qss</file>
+        <file>resources/styleSheets/pgtWin.qss</file>
+        <file>resources/PileGroupToolLICENSE.txt</file>
     </qresource>
 </RCC>
