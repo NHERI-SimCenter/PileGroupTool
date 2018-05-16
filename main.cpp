@@ -8,15 +8,14 @@
 QString openStyleFiles()
 {
     QString ret;
-    QFile mainStyleFile(":/resources/styleSheets/pgtStyle.qss");
+    QFile mainStyleFile(":/resources/styleSheets/pgtStyles.qss");
 
 #ifdef Q_OS_WIN
     QFile appendedStyle("qrc:/resources/styleSheets/pgtWin.qss");
 #endif
 
 #ifdef Q_OS_MACOS
-    //QFile appendedStyle(":/resources/styleSheets/pgtMac.qss");
-    QFile appendedStyle("qrc:/pgtMac.qss");
+    QFile appendedStyle(":/resources/styleSheets/pgtMac.qss");
 #endif
 
 #ifdef Q_OS_LINUX
@@ -68,9 +67,7 @@ int main(int argc, char *argv[])
     QApplication::setWindowIcon(QIcon(":/resources/NHERI-PGT-Icon.icns"));
     w.show();
 
-    QString stylesheet = openStyleFiles();
-    qDebug() << stylesheet;
-    app.setStyleSheet(stylesheet);
+    app.setStyleSheet(openStyleFiles());
 
     return app.exec();
 }
