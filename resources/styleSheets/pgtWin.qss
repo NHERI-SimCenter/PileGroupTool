@@ -287,8 +287,22 @@ QFrame#soilMotionFrame {
 }
 
 QFrame#loadSelectionFrame {
-    background-color: #FFFFF;
+    background-color: #FFFFFF;
     border:none;
 }
 
+QLabel#pilePropertyLabel {
+    font-weight: bold;
+}
 
+QLabel#label_GWT {
+    font-weight: bold;
+}
+
+QLabel#label_Layers {
+    font-weight: bold;
+}
+
+QLabel#label_LoadControl {
+    font-weight: bold;
+}

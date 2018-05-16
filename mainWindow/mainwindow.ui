@@ -305,10 +305,16 @@
              </item>
              <item row="0" column="0">
               <widget class="QLabel" name="pilePropertyLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
-                 <height>25</height>
+                 <height>100</height>
                 </size>
                </property>
                <property name="font">
@@ -398,7 +404,7 @@
                <property name="sizeHint" stdset="0">
                 <size>
                  <width>20</width>
-                 <height>40</height>
+                 <height>1</height>
                 </size>
                </property>
               </spacer>
@@ -451,7 +457,7 @@
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
-                 <height>30</height>
+                 <height>100</height>
                 </size>
                </property>
                <property name="font">
@@ -500,7 +506,7 @@
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
-                 <height>30</height>
+                 <height>100</height>
                 </size>
                </property>
                <property name="font">
@@ -707,7 +713,7 @@
                <property name="sizeHint" stdset="0">
                 <size>
                  <width>20</width>
-                 <height>40</height>
+                 <height>1</height>
                 </size>
                </property>
               </spacer>
@@ -759,7 +765,7 @@
               <number>6</number>
              </property>
              <item>
-              <widget class="QLabel" name="label_20">
+              <widget class="QLabel" name="label_LoadControl">
                <property name="font">
                 <font>
                  <weight>75</weight>
