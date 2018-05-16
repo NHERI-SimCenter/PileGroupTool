@@ -11,7 +11,7 @@ QString openStyleFiles()
     QFile mainStyleFile(":/resources/styleSheets/pgtStyles.qss");
 
 #ifdef Q_OS_WIN
-    QFile appendedStyle("qrc:/resources/styleSheets/pgtWin.qss");
+    QFile appendedStyle(":/resources/styleSheets/pgtWin.qss");
 #endif
 
 #ifdef Q_OS_MACOS
@@ -19,7 +19,7 @@ QString openStyleFiles()
 #endif
 
 #ifdef Q_OS_LINUX
-    QFile appendedStyle("qrc:/resources/styleSheets/pgtLinux.qss");
+    QFile appendedStyle(":/resources/styleSheets/pgtLinux.qss");
 #endif
 
     if (!mainStyleFile.open(QFile::ReadOnly))

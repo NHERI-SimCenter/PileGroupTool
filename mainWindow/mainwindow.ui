@@ -161,18 +161,24 @@
             <property name="frameShadow">
              <enum>QFrame::Raised</enum>
             </property>
-            <layout class="QGridLayout" name="gridLayout_12">
+            <layout class="QGridLayout" name="gridLayout_12" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetDefaultConstraint</enum>
+             </property>
              <property name="leftMargin">
               <number>12</number>
              </property>
              <property name="topMargin">
-              <number>12</number>
+              <number>8</number>
              </property>
              <property name="rightMargin">
               <number>12</number>
              </property>
              <property name="bottomMargin">
               <number>12</number>
+             </property>
+             <property name="spacing">
+              <number>6</number>
              </property>
              <item row="1" column="1">
               <widget class="QSpinBox" name="pileIndex">
