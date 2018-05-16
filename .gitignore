@@ -65,3 +65,8 @@ build-qwt-Desktop_Qt_5_10_0_clang_64bit-Debug/lib/qwtmathml.pc
 *.pc
 *.pc
 *.pc
+qwt-6.2/lib/qwtmathml.pc
+qwt-6.2/lib/pkgconfig/Qt5Qwt6.pc
+qwt-6.2/lib/qwtmathml.pc
+qwt-6.2/lib/pkgconfig/Qt5Qwt6.pc
+qwt-6.2/lib/qwtmathml.pc

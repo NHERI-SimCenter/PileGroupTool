@@ -86,6 +86,12 @@ PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
     coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft ).invTransform( pos.y() );
     coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight ).invTransform( pos.y() );
 
+    //qDebug() << "Pos: " << pos
+    //         << " coord: " << coords[ QwtPlot::xBottom ]
+    //         << "/" << coords[ QwtPlot::xTop ]
+    //         << "/" << coords[ QwtPlot::yLeft ]
+    //         << "/" << coords[ QwtPlot::yRight ];
+
     for ( int i = plotItemList.size() - 1; i >= 0; i-- )
     {
         PLOTOBJECT obj = plotItemList[i];
@@ -97,7 +103,7 @@ PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
             QwtPlotCurve *curveItem = static_cast<QwtPlotCurve *>( item );
             const QPointF p( coords[ item->xAxis() ], coords[ item->yAxis() ] );
 
-            if ( curveItem->boundingRect().contains( p ) || true )
+            if ( curveItem->boundingRect().contains( p ) )
             {
                 // trace curves ...
                 dist = 1000.;
@@ -163,32 +169,13 @@ PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
 
 void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 {
-    qWarning() << "picker appended " << pos;
-
-    SystemPlotQwt::refresh();
-
-    double coords[ QwtPlot::axisCnt ];
-    coords[ QwtPlot::xBottom ] = plot->canvasMap( QwtPlot::xBottom ).invTransform( pos.x() );
-    coords[ QwtPlot::xTop ]    = plot->canvasMap( QwtPlot::xTop    ).invTransform( pos.x() );
-    coords[ QwtPlot::yLeft ]   = plot->canvasMap( QwtPlot::yLeft   ).invTransform( pos.y() );
-    coords[ QwtPlot::yRight ]  = plot->canvasMap( QwtPlot::yRight  ).invTransform( pos.y() );
+    //SystemPlotQwt::refresh();
 
     PLOTOBJECT    obj = itemAt(pos);
     QwtPlotItem *item = obj.itemPtr;
 
     if ( item )
     {
-        /*if ( item->rtti() == QwtPlotItem::Rtti_PlotShape )
-        {
-            QwtPlotShapeItem *theShape = static_cast<QwtPlotShapeItem *>(item);
-            theShape->setPen(Qt::red, 3);
-            QBrush brush = theShape->brush();
-            QColor color = brush.color();
-            color.setAlpha(64);
-            brush.setColor(color);
-            theShape->setBrush(brush);
-        }*/
-
         plot->replot();
 
         switch (obj.type) {
@@ -212,7 +199,6 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
 
 void SystemPlotQwt::refresh()
 {  
-    //qDebug() << "entering SystemPlotQwt::refresh()" << QTime::currentTime();
     foreach (PLOTOBJECT item, plotItemList) {
         item.itemPtr->detach();
         delete item.itemPtr;
@@ -277,12 +263,15 @@ void SystemPlotQwt::refresh()
     if (loadControlType == LoadControlType::SoilMotion)
     {
         plot->setAxisScale( QwtPlot::xBottom, xl-1.0, xr+1.0 );
+        plot->setAxisScale( QwtPlot::xTop, xl-1.0, xr+1.0 );
     }
     else
     {
         plot->setAxisScale( QwtPlot::xBottom, xl, xr );
+        plot->setAxisScale( QwtPlot::xTop, xl, xr );
     }
     plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + 1.75);
+    plot->setAxisScale( QwtPlot::yRight, -depthOfLayer[3], L1 + 1.75);
 
     //
     // Plot Ground Water Table
@@ -511,6 +500,7 @@ void SystemPlotQwt::refresh()
     pointsOnMomentCurve << (forceOrigin + QPointF(Rx*cos(theta), Ry*sin(theta)));
 
     moment->setSamples(pointsOnMomentCurve);
+    moment->setItemAttribute(QwtPlotItem::Legend, false);
     moment->setPen(QPen(Qt::red, 3));
 
     if (PMom != 0){
@@ -626,10 +616,8 @@ void SystemPlotQwt::refresh()
     if (!mIsStable)
     {
         //
-        // TODO: write "unstable system" at center of the system plot
+        // write "unstable system" at center of the system plot
         //
-
-        // this is the code from QCP
 
         QwtPlotTextLabel *warning = new QwtPlotTextLabel();
 

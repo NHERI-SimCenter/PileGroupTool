@@ -1,0 +1,108 @@
+The SimCenter Pile Group Tool, in source and binary forms, is copyright "The Regents of the University of California" and is licensed under the following copyright and license:
+
+<p>
+BSD 3-Clause License<br>
+Copyright (c) 2017, The Regents of the University of California
+</p>
+
+<p>
+All rights reserved.
+</p>
+
+<p>
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+</p>
+
+<ul>
+<li>
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+</li>
+<li>
+Redistributions in binary form must reproduce the above copyright notice,  this list of conditions and the following disclaimer in the documentation  and/or other materials provided with the distribution.
+</li>
+<li>
+Neither the name of the copyright holder nor the names of its  contributors may be used to endorse or promote products derived from  this software without specific prior written permission.
+</li>
+</ul>
+
+<p>
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</p>
+
+<p>
+------------------------------------------------------------------------------------
+</p>
+
+<p>
+The SimCenter Pile Group Tool makes use of the QT packages (unmodified): core, gui, widgets and network
+</p>
+
+<p>
+QT is copyright "The Qt Company Ltd" and licensed under the GNU Lesser General Public License (version 3) which references the GNU General Public License (version 3)
+</p>
+
+<p>
+These Licenses can be found at: <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>   
+</p>
+
+<p>
+------------------------------------------------------------------------------------
+</p>
+
+<p>
+The SimCenter Pile Group Tool makes use of the Qwt library, which is distributed under the following license:
+</p>
+
+<p>
+                             Qwt License<br>
+                           Version 1.0, January 1, 2003
+</p>
+
+<p>
+The Qwt library and included programs are provided under the terms
+of the GNU LESSER GENERAL PUBLIC LICENSE (LGPL) with the following
+exceptions:
+</p>
+
+<ol>
+<li>
+    Widgets that are subclassed from Qwt widgets do not
+       constitute a derivative work.
+</li>
+<li>
+    Static linking of applications and widgets to the
+       Qwt library does not constitute a derivative work
+       and does not require the author to provide source
+       code for the application or widget, use the shared
+       Qwt libraries, or link their applications or
+       widgets against a user-supplied version of Qwt.<br>
+
+       If you link the application or widget to a modified
+       version of Qwt, then the changes to Qwt must be 
+       provided under the terms of the LGPL in sections
+       1, 2, and 4.
+</li>
+<li>   
+    You do not have to provide a copy of the Qwt license
+       with programs that are linked to the Qwt library, nor
+       do you have to identify the Qwt license in your
+       program or documentation as required by section 6
+       of the LGPL.<br>
+
+       However, programs must still identify their use of Qwt.
+       The following example statement can be included in user
+       documentation to satisfy this requirement:<br>
+
+           [program/widget] is based in part on the work of
+           the Qwt project (<a href="http://qwt.sf.net">http://qwt.sf.net</a>).
+</li>
+</ol>
+
+<p>
+----------------------------------------------------------------------
+</p>
+
+<p>
+These Licenses can be found at: <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>  
+</p>
+
