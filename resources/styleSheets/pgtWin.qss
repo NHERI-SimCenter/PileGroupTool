@@ -1,30 +1,30 @@
 QFrame {
-    font: 12pt;
+    font: 11pt;
     padding: 5px;
 }
 
 QSpinBox {
-    font: 12pt;
+    font: 11pt;
     padding: 5px;
 }
 
 QDoubleSpinBox {
-    font: 12pt;
+    font: 11pt;
     padding: 5px;
 }
 
 QComboBox {
-    font: 12pt;
+    font: 11pt;
     padding: 5px;
 }
 
 QLabel {
-    font: 12pt;
+    font: 11pt;
     padding: 5px;
 }
 
 QCheckBox {
-    font: 12pt;
+    font: 11pt;
     padding: 5px;
 }
 
@@ -305,4 +305,20 @@ QLabel#label_Layers {
 
 QLabel#label_LoadControl {
     font-weight: bold;
+}
+
+QLabel#label_DisplayGraphics {
+    font-weight: bold;
+}
+
+QLabel#label_FEAparameters {
+    font-weight: bold;
+}
+
+QTextBrowser#licenseBrowser {
+    font: 9pt;
+}
+
+QPlainTextEdit#licenseBrowser {
+    font: 9pt;
 }
