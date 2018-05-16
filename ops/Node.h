@@ -127,7 +127,7 @@ class Node : public DomainComponent
     virtual int recvSelf(int commitTag, Channel &theChannel, 
 			 FEM_ObjectBroker &theBroker);
     virtual void Print(OPS_Stream &s, int flag = 0);
-    virtual int displaySelf(Renderer &theRenderer, int displayMode, float fact);
+    virtual int displaySelf(Renderer &theRenderer, int displayMode, float fact, const char **displayModes=0, int numModes=0);
 
     // AddingSensitivity:BEGIN /////////////////////////////////////////
     int addInertiaLoadSensitivityToUnbalance(const Vector &accel, 
@@ -142,7 +142,7 @@ class Node : public DomainComponent
     double getDispSensitivity(int dof, int gradNum);
     double getVelSensitivity(int dof, int gradNum);
     double getAccSensitivity(int dof, int gradNum);
-    int setParameter(const char **argv, int argc, Parameter &param);
+    int    setParameter(const char **argv, int argc, Parameter &param);
     int    updateParameter(int parameterID, Information &info);
     int    activateParameter(int parameterID);
 

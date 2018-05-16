@@ -4,15 +4,52 @@
 #
 #-------------------------------------------------
 
+## common compile issues
+#
+# -- Windows 10
+#
+#   * missing lapack.lib and/or blas.lib:
+#
+#     download and install Intel MKL (math kernel library).
+#     it is free from intel's web site, easy to install, and efficient.
+#
+#   * LNK1104: cannot open file 'qwt.lib'
+#
+#     - in Qt Creator, open existing project PileGroupTool\qwt-6.2\qwt.pro
+#     - configure the kit to compile in "[your_path]\build-qwt-[....]" (the full path is important)
+#     - adjust the path in the LIBS line below to reflect your build directory
+win32: {
+    INCLUDEPATH += ./qwt-6.2/src
+    #LIBS += -L"C:\Users\Peter Mackenzie\Documents\GitHub\build-qwt-Desktop_Qt_5_7_1_MSVC2015_64bit-Debug\lib"
+    LIBS += -L"C:\Users\Peter Mackenzie\Documents\GitHub\build-qwt-Desktop_Qt_5_10_1_MSVC2015_64bit-Debug\lib"
+    LIBS += qwt.lib
+}
+#     - in Qt Creator, PileGroupTool, rerun QMake and Build
+#
+# -- MacOS
+#
+#   * cannot open file 'qwt.lib'
+#
+#     first time compile only:
+#     - open Terminal, navigate to your source folder
+#     - cd qwt-6.2
+#     - ~/Qt/5.10.0/clang_64/bin/qmake qwt.pro
+#     - make
+#
+#     now, and with future updates, work as usual:
+#     - return to Qt Creator and Build the PileGroupTool.
+#
+# -- Linux
+#
+
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport network
 
-TARGET = PileGroupTool
+TARGET   = PileGroupTool
 TEMPLATE = app
-VERSION=1.0
+VERSION  = 2.0.0
 
-#M_VERSION = 1.0.
 #M_REV     = $Rev: $
 
 PRODUCT_NAME = 'PileGroupTool'
@@ -21,52 +58,81 @@ PRODUCT_NAME = 'PileGroupTool'
 #DEFINES += APPLICATION_VERSION=\"\\\"$$M_VERSION$$member(M_REV, 1)\\\"\"
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
-#win32: INCLUDES += "./ops"
-#win32: LIBS += -llapack -lblas
 unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable -std=c++11
 win32: QMAKE_CXXFLAGS += /Y-
 
 include(OPS_includes.pro)
 
-#INCLUDEPATH += "$(HOME)/OpenSees/DEVELOPER/core"
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-        getPyParam.cpp \
-        getQzParam.cpp \
-        getTZParam.cpp \
-        qcustomplot.cpp \
-        materialdbinterface.cpp \
-        surveysplashscreen.cpp \
-        soilmat.cpp \
+#INCLUDEPATH += "$(HOME)/OpenSees/DEVELOPER/core"
+INCLUDEPATH += ./qwt-6.2/src
+LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
+LIBS += -L"$(HOME)/Documents/GitHub/PileGroupTool/qwt-6.2/lib"
+
+INCLUDEPATH += includes
+INCLUDEPATH += mainWindow
+INCLUDEPATH += dialogs
+INCLUDEPATH += plots
+INCLUDEPATH += FEA
+
+unix: {
+    INCLUDEPATH += ./qwt-6.2/src
+
+    #LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
+    #LIBS += -lqwt
+    LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwt.a
+    LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwtmathml.a
+
+    QT += svg
+}
+
+SOURCES += main.cpp \
+        mainWindow/mainwindow.cpp \
+        FEA/getPyParam.cpp \
+        FEA/getQzParam.cpp \
+        FEA/getTZParam.cpp \
+        FEA/soilmat.cpp \
+        FEA/pilefeamodeler.cpp \
+        dialogs/materialdbinterface.cpp \
+        dialogs/surveysplashscreen.cpp \
         utilWindows/copyrightdialog.cpp \
         utilWindows/dialogabout.cpp \
         utilWindows/dialogpreferences.cpp \
         utilWindows/dialogfuturefeature.cpp \
-    ../widgets/Common/FooterWidget.cpp \
-    ../widgets/Common/HeaderWidget.cpp
+        plots/systemplotsuper.cpp \
+        plots/systemplotqwt.cpp \
+        plots/resultplotsuper.cpp \
+        plots/resultplotqwt.cpp \
+        ../widgets/Common/FooterWidget.cpp \
+        ../widgets/Common/HeaderWidget.cpp
         
-HEADERS  += mainwindow.h \
-        qcustomplot.h \
-        materialdbinterface.h \
-        surveysplashscreen.h \
-        soilmat.h \
+HEADERS  += \
+        mainWindow/mainwindow.h \
+        includes/pilegrouptool_parameters.h \
+        FEA/soilmat.h \
+        FEA/pilefeamodeler.h \
+        dialogs/materialdbinterface.h \
+        dialogs/surveysplashscreen.h \
         utilWindows/copyrightdialog.h \
         utilWindows/dialogabout.h \
         utilWindows/dialogpreferences.h \
         utilWindows/dialogfuturefeature.h \
-    ../widgets/Common/FooterWidget.h \
-    ../widgets/Common/HeaderWidget.h
+        plots/systemplotsuper.h \
+        plots/systemplotqwt.h \
+        plots/resultplotsuper.h \
+        plots/resultplotqwt.h \
+        ../widgets/Common/FooterWidget.h \
+        ../widgets/Common/HeaderWidget.h
 
-FORMS    += mainwindow.ui \
-        materialdbinterface.ui \
-        surveysplashscreen.ui \
+FORMS    += mainWindow/mainwindow.ui \
+        dialogs/materialdbinterface.ui \
+        dialogs/surveysplashscreen.ui \
         utilWindows/copyrightdialog.ui \
         utilWindows/dialogabout.ui \
         utilWindows/dialogpreferences.ui \
         utilWindows/dialogfuturefeature.ui
 
 RESOURCES += \
-    qtpileresources.qrc
+	qtpileresources.qrc
 
 DISTFILES +=

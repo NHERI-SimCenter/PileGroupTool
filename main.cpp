@@ -1,22 +1,73 @@
 #include "mainwindow.h"
 #include <QApplication>
-#include "surveysplashscreen.h"
+#include <QResource>
+#include <QFile>
+//#include <QDir>
+
+
+QString openStyleFiles()
+{
+    QString ret;
+    QFile mainStyleFile(":/resources/styleSheets/pgtStyles.qss");
+
+#ifdef Q_OS_WIN
+    QFile appendedStyle(":/resources/styleSheets/pgtWin.qss");
+#endif
+
+#ifdef Q_OS_MACOS
+    QFile appendedStyle(":/resources/styleSheets/pgtMac.qss");
+#endif
+
+#ifdef Q_OS_LINUX
+    QFile appendedStyle(":/resources/styleSheets/pgtLinux.qss");
+#endif
+
+    if (!mainStyleFile.open(QFile::ReadOnly))
+    {
+        return ret;
+    }
+
+    if (!appendedStyle.open(QFile::ReadOnly))
+    {
+        return ret;
+    }
+
+    ret = ret.append(mainStyleFile.readAll());
+    ret = ret.append(appendedStyle.readAll());
+
+    mainStyleFile.close();
+    appendedStyle.close();
+
+    return ret;
+}
+
+
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QApplication app(argc, argv);
 
-    //surveySplashScreen splash;
-   // splash.exec();
+    bool graphicModeQCP = false;
+#ifdef USEQCP
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i],"-useQCP") == 0
+                || strcmp(argv[i],"-QCP") == 0
+                || strcmp(argv[i],"-useqcp") == 0
+                || strcmp(argv[i],"-qcp") == 0)
+        {
+            graphicModeQCP = true;
+        }
+    }
+#else
+    graphicModeQCP = false;
+#endif
 
-    MainWindow w;
+    MainWindow w(graphicModeQCP);
+    QApplication::setWindowIcon(QIcon(":/resources/NHERI-PGT-Icon.icns"));
     w.show();
 
-    QFile file(":/style.qss");
-    if(file.open(QFile::ReadOnly)) {
-       QString styleSheet = QLatin1String(file.readAll());
-       a.setStyleSheet(styleSheet);
-    }
+    app.setStyleSheet(openStyleFiles());
 
-    return a.exec();
+    return app.exec();
 }

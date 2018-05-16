@@ -6,6 +6,7 @@
 
 # Qt created files
 moc*
+ui_*.h
 
 # Compiled Object files
 *.slo
@@ -41,3 +42,31 @@ moc*
 *.autosave
 
 mainwindow - Copy.ui
+*.stash
+*.pc
+qrc_qtpileresources.cpp
+Makefile
+ui_mainwindow.h
+ui_mainwindow.h
+qwt-6.2/lib/qwt.framework/*
+qwt-6.2/lib/qwtmathml.framework/*
+build-qwt-Desktop_Qt_5_10_0_clang_64bit-Debug/lib/libqwt.prl
+build-qwt-Desktop_Qt_5_10_0_clang_64bit-Debug/lib/libqwtmathml.prl
+qwt-6.2/textengines/mathml/qwt-6.2.0/features/qwtmathml.prf
+qwt-6.2/textengines/mathml/qwt-6.2.0/include/qwt_mathml_text_engine.h
+build-qwt-Desktop_Qt_5_10_0_clang_64bit-Debug/lib/pkgconfig/Qt5Qwt6.pc
+build-qwt-Desktop_Qt_5_10_0_clang_64bit-Debug/lib/qwtmathml.pc
+*.pc
+*.pc
+*.pc
+*.prl
+*.pc
+*.pc
+*.pc
+*.pc
+*.pc
+qwt-6.2/lib/qwtmathml.pc
+qwt-6.2/lib/pkgconfig/Qt5Qwt6.pc
+qwt-6.2/lib/qwtmathml.pc
+qwt-6.2/lib/pkgconfig/Qt5Qwt6.pc
+qwt-6.2/lib/qwtmathml.pc

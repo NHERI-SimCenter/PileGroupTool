@@ -870,23 +870,23 @@ DispBeamColumn3d::getResistingForce()
     
     double si;
     for (int j = 0; j < order; j++) {
-      si = s(j)*wt[i];
-      switch(code(j)) {
-      case SECTION_RESPONSE_P:
-	q(0) += si;
-	break;
-      case SECTION_RESPONSE_MZ:
-	q(1) += (xi6-4.0)*si; q(2) += (xi6-2.0)*si;
-	break;
-      case SECTION_RESPONSE_MY:
-	q(3) += (xi6-4.0)*si; q(4) += (xi6-2.0)*si;
-	break;
-      case SECTION_RESPONSE_T:
-	q(5) += si;
-	break;
-      default:
-	break;
-      }
+        si = s(j)*wt[i];
+        switch(code(j)) {
+        case SECTION_RESPONSE_P:
+            q(0) += si;
+            break;
+        case SECTION_RESPONSE_MZ:
+            q(1) += (xi6-4.0)*si; q(2) += (xi6-2.0)*si;
+            break;
+        case SECTION_RESPONSE_MY:
+            q(3) += (xi6-4.0)*si; q(4) += (xi6-2.0)*si;
+            break;
+        case SECTION_RESPONSE_T:
+            q(5) += si;
+            break;
+        default:
+            break;
+        }
     }
     
   }
