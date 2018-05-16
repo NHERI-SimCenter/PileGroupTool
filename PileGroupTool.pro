@@ -68,7 +68,6 @@ include(OPS_includes.pro)
 INCLUDEPATH += ./qwt-6.2/src
 LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
 LIBS += -L"$(HOME)/Documents/GitHub/PileGroupTool/qwt-6.2/lib"
-LIBS += -lqwt
 
 INCLUDEPATH += includes
 INCLUDEPATH += mainWindow
@@ -79,11 +78,15 @@ INCLUDEPATH += FEA
 unix: {
     INCLUDEPATH += ./qwt-6.2/src
 
-    LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
-    LIBS += -lqwt
+    #LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
+    #LIBS += -lqwt
+    LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwt.a
+    LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwtmathml.a
+
+    QT += svg
 }
 
-SOURCES += main.cpp\
+SOURCES += main.cpp \
         mainWindow/mainwindow.cpp \
         FEA/getPyParam.cpp \
         FEA/getQzParam.cpp \
