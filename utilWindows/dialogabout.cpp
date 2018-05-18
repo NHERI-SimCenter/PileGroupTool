@@ -9,7 +9,7 @@ DialogAbout::DialogAbout(QWidget *parent) :
     ui->setupUi(this);
 
     QString msg =
-    "This is the SimCenter Educational Pile Group Tool Version 2.0.0\n"
+    "This is the SimCenter Educational Pile Group Tool Version 2.0.1\n"
     "\n"
     "Please be aware that this software is not intended to be used in any commercial analysis and/or design. "
     "All contributors of NHERI SimCenter are free of responsibility and liability resulting from the use of "
