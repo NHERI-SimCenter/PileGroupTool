@@ -162,6 +162,11 @@ QLabel#labelLayerProperties {
     font-weight: bold;
 }
 
+QLabel#label_about {
+    font-size: 24pt;
+    font-weight: bold;
+}
+
 /*
 * ======= <SECTION LABEL STYLES> =======
 */
