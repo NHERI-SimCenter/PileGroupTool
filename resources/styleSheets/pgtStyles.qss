@@ -257,7 +257,7 @@ QFrame#soilMotionFrame {
 }
 
 QFrame#loadSelectionFrame {
-    background-color: #FFFFF;
+    background-color: #FFFFFF;
     border:none;
 }
 
