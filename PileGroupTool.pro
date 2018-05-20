@@ -48,7 +48,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport network
 
 TARGET   = PileGroupTool
 TEMPLATE = app
-VERSION  = 2.0.1
+VERSION  = 2.0.2
 
 #M_REV     = $Rev: $
 
@@ -94,7 +94,6 @@ SOURCES += main.cpp \
         FEA/soilmat.cpp \
         FEA/pilefeamodeler.cpp \
         dialogs/materialdbinterface.cpp \
-        dialogs/surveysplashscreen.cpp \
         utilWindows/copyrightdialog.cpp \
         utilWindows/dialogabout.cpp \
         utilWindows/dialogpreferences.cpp \
@@ -112,7 +111,6 @@ HEADERS  += \
         FEA/soilmat.h \
         FEA/pilefeamodeler.h \
         dialogs/materialdbinterface.h \
-        dialogs/surveysplashscreen.h \
         utilWindows/copyrightdialog.h \
         utilWindows/dialogabout.h \
         utilWindows/dialogpreferences.h \
@@ -126,7 +124,6 @@ HEADERS  += \
 
 FORMS    += mainWindow/mainwindow.ui \
         dialogs/materialdbinterface.ui \
-        dialogs/surveysplashscreen.ui \
         utilWindows/copyrightdialog.ui \
         utilWindows/dialogabout.ui \
         utilWindows/dialogpreferences.ui \
