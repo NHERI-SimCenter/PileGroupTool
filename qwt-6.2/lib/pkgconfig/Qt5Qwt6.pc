@@ -1,4 +1,4 @@
-prefix=/Users/tatsuhikosweet/Qt/5.9.2/clang_64
+prefix=/Users/pmackenz/Qt/5.10.0/clang_64
 exec_prefix=${prefix}
 libdir=./qwt-6.2.0/lib
 includedir=./qwt-6.2.0/include
@@ -8,6 +8,7 @@ Name: Qwt6
 Description: Qt Widgets for Technical Applications
 Version: 6.2.0
 Libs: -L${libdir} -lqwt 
+Libs.private: -F/Users/pmackenz/Qt/5.10.0/clang_64/lib -framework QtPrintSupport -framework QtWidgets -framework QtGui -framework QtCore -framework DiskArbitration -framework IOKit -framework QtSvg -framework QtOpenGL -framework QtConcurrent -framework OpenGL -framework AGL  
 Cflags: -I${includedir}
 Requires: Qt5Widgets Qt5Concurrent Qt5PrintSupport Qt5Svg Qt5OpenGL
 
