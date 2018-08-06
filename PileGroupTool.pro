@@ -102,8 +102,8 @@ SOURCES += main.cpp \
         plots/systemplotqwt.cpp \
         plots/resultplotsuper.cpp \
         plots/resultplotqwt.cpp \
-        ../widgets/Common/FooterWidget.cpp \
-        ../widgets/Common/HeaderWidget.cpp
+        ../SimCenterCommon/Common/FooterWidget.cpp \
+        ../SimCenterCommon/Common/HeaderWidget.cpp
         
 HEADERS  += \
         mainWindow/mainwindow.h \
@@ -119,8 +119,8 @@ HEADERS  += \
         plots/systemplotqwt.h \
         plots/resultplotsuper.h \
         plots/resultplotqwt.h \
-        ../widgets/Common/FooterWidget.h \
-        ../widgets/Common/HeaderWidget.h
+        ../SimCenterCommon/Common/FooterWidget.h \
+        ../SimCenterCommon/Common/HeaderWidget.h
 
 FORMS    += mainWindow/mainwindow.ui \
         dialogs/materialdbinterface.ui \
