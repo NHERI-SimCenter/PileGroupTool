@@ -779,7 +779,7 @@ void MainWindow::on_btn_newPile_clicked()
     ui->pileIndex->setMaximum(numPiles);
     ui->pileIndex->setValue(numPiles);
 
-    //this->updateSystemPlot();
+    this->updateSystemPlot();
     this->doAnalysis();
 }
 

@@ -638,4 +638,6 @@ void SystemPlotQwt::refresh()
 
     plot->replot();
 
+    // we should not need this but since Qt5.11.0 we do need it or newly added piles wont refresh
+    this->repaint();
 }
