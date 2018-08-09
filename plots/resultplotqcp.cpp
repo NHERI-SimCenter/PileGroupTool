@@ -1,3 +1,15 @@
+/*!
+ * \class ResultPlotQCP
+ * \brief The ResultPlotQwt class implements the QCP library interface for ResultPlotSuper.
+ * \since 2.0
+ * \ingroup Plotting
+ *
+ * This class provides library-dependent plotting for QCustomPlot (QCP).
+ *
+ *  \sa ResultPlotQwt
+ */
+
+
 #include "resultplotqcp.h"
 #include "qcp/qcustomplot.h"
 

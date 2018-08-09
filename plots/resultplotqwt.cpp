@@ -1,3 +1,15 @@
+/*!
+ * \class ResultPlotQwt
+ * \brief The ResultPlotQwt class implements the Qwt library interface for ResultPlotSuper.
+ * \since 2.0
+ * \ingroup Plotting
+ *
+ * This class provides library-dependent plotting for Qwt.
+ *
+ *  \sa ResultPlotQCP
+ */
+
+
 #include "resultplotqwt.h"
 #include "qwt_plot.h"
 #include "qwt_plot_curve.h"
