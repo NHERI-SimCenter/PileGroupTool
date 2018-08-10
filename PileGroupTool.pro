@@ -64,9 +64,10 @@ include(OPS_includes.pro)
 
 
 #INCLUDEPATH += "$(HOME)/OpenSees/DEVELOPER/core"
-INCLUDEPATH += ./qwt-6.2/src
-LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
-LIBS += -L"$(HOME)/Documents/GitHub/PileGroupTool/qwt-6.2/lib"
+#INCLUDEPATH += ./qwt-6.2/src
+
+#LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
+#LIBS += -L"$(HOME)/Documents/GitHub/PileGroupTool/qwt-6.2/lib"
 
 INCLUDEPATH += includes
 INCLUDEPATH += mainWindow
@@ -75,12 +76,12 @@ INCLUDEPATH += plots
 INCLUDEPATH += FEA
 
 unix: {
-    INCLUDEPATH += ./qwt-6.2/src
+    #INCLUDEPATH += ./qwt-6.2/src
 
     #LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
     #LIBS += -lqwt
-    LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwt.a
-    LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwtmathml.a
+    #LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwt.a
+    #LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwtmathml.a
 
     QT += svg
 }
@@ -132,3 +133,18 @@ RESOURCES += \
 	qtpileresources.qrc
 
 DISTFILES +=
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../usr/local/qwt-6.2.0-svn/lib/release/ -lqwt
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../usr/local/qwt-6.2.0-svn/lib/debug/ -lqwt
+else:mac: LIBS += -F/usr/local/qwt-6.2.0-svn/lib/ -framework qwt
+else:unix: LIBS += -L$$PWD/../../../../../usr/local/qwt-6.2.0-svn/lib/ -lqwt
+
+unix: {
+    INCLUDEPATH += /usr/local/qwt-6.2.0-svn
+    DEPENDPATH += /usr/local/qwt-6.2.0-svn
+}
+else:win32:
+{
+    INCLUDEPATH += /usr/local/qwt-6.2.0-svn
+    DEPENDPATH += /usr/local/qwt-6.2.0-svn
+}
