@@ -1723,13 +1723,13 @@ Layers 1 &amp; 2:</string>
   <customwidget>
    <class>HeaderWidget</class>
    <extends>QFrame</extends>
-   <header>../widgets/Common/HeaderWidget.h</header>
+   <header>../SimCenterCommon/Common/HeaderWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>FooterWidget</class>
    <extends>QFrame</extends>
-   <header>../widgets/Common/FooterWidget.h</header>
+   <header>../SimCenterCommon/Common/FooterWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

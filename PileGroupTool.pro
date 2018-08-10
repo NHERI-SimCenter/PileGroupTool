@@ -20,8 +20,7 @@
 #     - adjust the path in the LIBS line below to reflect your build directory
 win32: {
     INCLUDEPATH += ./qwt-6.2/src
-    #LIBS += -L"C:\Users\Peter Mackenzie\Documents\GitHub\build-qwt-Desktop_Qt_5_7_1_MSVC2015_64bit-Debug\lib"
-    LIBS += -L"C:\Users\Peter Mackenzie\Documents\GitHub\build-qwt-Desktop_Qt_5_10_1_MSVC2015_64bit-Debug\lib"
+    LIBS += -L"C:\Users\Peter Mackenzie\Documents\GitHub\PileGroupTool\build-qwt-Desktop_Qt_5_11_1_MSVC2017_64bit-Debug\lib"
     LIBS += qwt.lib
 }
 #     - in Qt Creator, PileGroupTool, rerun QMake and Build
@@ -59,7 +58,7 @@ PRODUCT_NAME = 'PileGroupTool'
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable -std=c++11
-win32: QMAKE_CXXFLAGS += /Y-
+win32: QMAKE_CXXFLAGS += /Y- /W4
 
 include(OPS_includes.pro)
 
