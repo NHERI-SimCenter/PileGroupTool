@@ -15,6 +15,7 @@
 #include "qwt_plot_item.h"
 #include "qwt_plot_shapeitem.h"
 #include "qwt_picker_machine.h"
+#include "qwt_scale_map.h"
 
 #include <QDebug>
 #include <QTime>

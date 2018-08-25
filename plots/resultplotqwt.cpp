@@ -20,6 +20,7 @@
 #include <QPolygonF>
 #include <QPointF>
 #include <QGridLayout>
+#include <QPen>
 
 
 
