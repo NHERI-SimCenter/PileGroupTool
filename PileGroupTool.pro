@@ -60,14 +60,14 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable -std=c++11
 win32: QMAKE_CXXFLAGS += /Y- /W4
 
-include(OPS_includes.pro)
+win32: include(C:\qwt-6.2\features\qwt.prf)
+unix: include(/usr/local/qwt-6.2.0-svn/features/qwt.prf)
 
+include(OPS_includes.pro)
 
 #INCLUDEPATH += "$(HOME)/OpenSees/DEVELOPER/core"
 #INCLUDEPATH += ./qwt-6.2/src
 
-#LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
-#LIBS += -L"$(HOME)/Documents/GitHub/PileGroupTool/qwt-6.2/lib"
 
 INCLUDEPATH += includes
 INCLUDEPATH += mainWindow
@@ -134,17 +134,17 @@ RESOURCES += \
 
 DISTFILES +=
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../usr/local/qwt-6.2.0-svn/lib/release/ -lqwt
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../usr/local/qwt-6.2.0-svn/lib/debug/ -lqwt
-else:mac: LIBS += -F/usr/local/qwt-6.2.0-svn/lib/ -framework qwt
-else:unix: LIBS += -L$$PWD/../../../../../usr/local/qwt-6.2.0-svn/lib/ -lqwt
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../usr/local/qwt-6.2.0-svn/lib/release/ -lqwt
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../usr/local/qwt-6.2.0-svn/lib/debug/ -lqwt
+#else:mac: LIBS += -F/usr/local/qwt-6.2.0-svn/lib/ -framework qwt
+#else:unix: LIBS += -L$$PWD/../../../../../usr/local/qwt-6.2.0-svn/lib/ -lqwt
 
 unix: {
-    INCLUDEPATH += /usr/local/qwt-6.2.0-svn
-    DEPENDPATH += /usr/local/qwt-6.2.0-svn
+    #INCLUDEPATH += /usr/local/qwt-6.2.0-svn
+    #DEPENDPATH += /usr/local/qwt-6.2.0-svn
 }
 else:win32:
 {
-    INCLUDEPATH += /usr/local/qwt-6.2.0-svn
-    DEPENDPATH += /usr/local/qwt-6.2.0-svn
+    #INCLUDEPATH += /usr/local/qwt-6.2.0-svn
+    #DEPENDPATH += /usr/local/qwt-6.2.0-svn
 }
