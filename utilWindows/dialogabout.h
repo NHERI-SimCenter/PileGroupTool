@@ -15,6 +15,9 @@ public:
     explicit DialogAbout(QWidget *parent = 0);
     ~DialogAbout();
 
+private slots:
+    void on_btn_backToTop_clicked();
+
 private:
     Ui::DialogAbout *ui;
 };

@@ -18,12 +18,6 @@
 #     - in Qt Creator, open existing project PileGroupTool\qwt-6.2\qwt.pro
 #     - configure the kit to compile in "[your_path]\build-qwt-[....]" (the full path is important)
 #     - adjust the path in the LIBS line below to reflect your build directory
-win32: {
-    INCLUDEPATH += ./qwt-6.2/src
-    #LIBS += -L"C:\Users\Peter Mackenzie\Documents\GitHub\build-qwt-Desktop_Qt_5_7_1_MSVC2015_64bit-Debug\lib"
-    LIBS += -L"C:\Users\Peter Mackenzie\Documents\GitHub\build-qwt-Desktop_Qt_5_10_1_MSVC2015_64bit-Debug\lib"
-    LIBS += qwt.lib
-}
 #     - in Qt Creator, PileGroupTool, rerun QMake and Build
 #
 # -- MacOS
@@ -48,7 +42,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport network
 
 TARGET   = PileGroupTool
 TEMPLATE = app
-VERSION  = 2.0.1
+VERSION  = 2.0.3
 
 #M_REV     = $Rev: $
 
@@ -59,15 +53,15 @@ PRODUCT_NAME = 'PileGroupTool'
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable -std=c++11
-win32: QMAKE_CXXFLAGS += /Y-
+win32: QMAKE_CXXFLAGS += /Y- -wd"4100"
+
+unix: DEPENDPATH += /usr/local/qwt-6.2.0-svn
+win32: DEPENDPATH += C:\Qwt-6.1.3
+
+win32: include(C:\qwt-6.1.3\features\qwt.prf)
+unix: include(/usr/local/qwt-6.2.0-svn/features/qwt.prf)
 
 include(OPS_includes.pro)
-
-
-#INCLUDEPATH += "$(HOME)/OpenSees/DEVELOPER/core"
-INCLUDEPATH += ./qwt-6.2/src
-LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
-LIBS += -L"$(HOME)/Documents/GitHub/PileGroupTool/qwt-6.2/lib"
 
 INCLUDEPATH += includes
 INCLUDEPATH += mainWindow
@@ -75,16 +69,7 @@ INCLUDEPATH += dialogs
 INCLUDEPATH += plots
 INCLUDEPATH += FEA
 
-unix: {
-    INCLUDEPATH += ./qwt-6.2/src
-
-    #LIBS += -L"$(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib"
-    #LIBS += -lqwt
-    LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwt.a
-    LIBS += $(HOME)/Development/SimCenter/PileGroupTool/qwt-6.2/lib/libqwtmathml.a
-
-    QT += svg
-}
+unix: QT += sv
 
 SOURCES += main.cpp \
         mainWindow/mainwindow.cpp \
@@ -94,7 +79,6 @@ SOURCES += main.cpp \
         FEA/soilmat.cpp \
         FEA/pilefeamodeler.cpp \
         dialogs/materialdbinterface.cpp \
-        dialogs/surveysplashscreen.cpp \
         utilWindows/copyrightdialog.cpp \
         utilWindows/dialogabout.cpp \
         utilWindows/dialogpreferences.cpp \
@@ -103,8 +87,8 @@ SOURCES += main.cpp \
         plots/systemplotqwt.cpp \
         plots/resultplotsuper.cpp \
         plots/resultplotqwt.cpp \
-        ../widgets/Common/FooterWidget.cpp \
-        ../widgets/Common/HeaderWidget.cpp
+        ../SimCenterCommon/Common/FooterWidget.cpp \
+        ../SimCenterCommon/Common/HeaderWidget.cpp
         
 HEADERS  += \
         mainWindow/mainwindow.h \
@@ -112,7 +96,6 @@ HEADERS  += \
         FEA/soilmat.h \
         FEA/pilefeamodeler.h \
         dialogs/materialdbinterface.h \
-        dialogs/surveysplashscreen.h \
         utilWindows/copyrightdialog.h \
         utilWindows/dialogabout.h \
         utilWindows/dialogpreferences.h \
@@ -121,12 +104,11 @@ HEADERS  += \
         plots/systemplotqwt.h \
         plots/resultplotsuper.h \
         plots/resultplotqwt.h \
-        ../widgets/Common/FooterWidget.h \
-        ../widgets/Common/HeaderWidget.h
+        ../SimCenterCommon/Common/FooterWidget.h \
+        ../SimCenterCommon/Common/HeaderWidget.h
 
 FORMS    += mainWindow/mainwindow.ui \
         dialogs/materialdbinterface.ui \
-        dialogs/surveysplashscreen.ui \
         utilWindows/copyrightdialog.ui \
         utilWindows/dialogabout.ui \
         utilWindows/dialogpreferences.ui \

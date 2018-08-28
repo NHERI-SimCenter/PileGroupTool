@@ -56,7 +56,6 @@ private slots:
 
     void on_actionLicense_Information_triggered();
     void on_actionLicense_triggered();
-    void on_actionVersion_triggered();
     void on_actionProvide_Feedback_triggered();
 
     void on_action_About_triggered();

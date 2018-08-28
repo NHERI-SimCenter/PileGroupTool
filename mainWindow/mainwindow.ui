@@ -1598,7 +1598,7 @@ Layers 1 &amp; 2:</string>
      <x>0</x>
      <y>0</y>
      <width>994</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOpenSeesPile">
@@ -1625,7 +1625,6 @@ Layers 1 &amp; 2:</string>
     <addaction name="action_About"/>
     <addaction name="actionPreferences"/>
     <addaction name="actionProvide_Feedback"/>
-    <addaction name="actionVersion"/>
     <addaction name="actionLicense"/>
    </widget>
    <addaction name="menuOpenSeesPile"/>
@@ -1724,13 +1723,13 @@ Layers 1 &amp; 2:</string>
   <customwidget>
    <class>HeaderWidget</class>
    <extends>QFrame</extends>
-   <header>../widgets/Common/HeaderWidget.h</header>
+   <header>../SimCenterCommon/Common/HeaderWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>FooterWidget</class>
    <extends>QFrame</extends>
-   <header>../widgets/Common/FooterWidget.h</header>
+   <header>../SimCenterCommon/Common/FooterWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

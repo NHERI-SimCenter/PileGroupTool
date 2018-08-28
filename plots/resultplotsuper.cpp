@@ -9,6 +9,24 @@
  *
  * ********************************************************************** */
 
+/*!
+ * \class ResultPlotSuper
+ * \brief The ResultPlotSuper class is an abstract class implementing simple line plots.
+ * \since 2.0
+ * \ingroup Plotting
+ *
+ * This class provides library-independent data exchange and data management for result
+ * plots.
+ *
+ * Any library-dependent functionality needs to be implemented by a derived class.
+ * The derived class must implement the \method refresh method.
+ *
+ *  \note Implementations exist for both the Qwt and the QCustomPlot libraries.
+ *
+ *  \sa ResultPlotQwt, ResultPlotQCP
+ */
+
+
 #include "resultplotsuper.h"
 
 ResultPlotSuper::ResultPlotSuper(QWidget *parent) : QWidget(parent)

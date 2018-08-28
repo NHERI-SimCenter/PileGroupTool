@@ -1,5 +1,6 @@
 # Prerequisites
 *.d
+.DS_Store
 
 # old text editor files
 *~
@@ -44,6 +45,7 @@ ui_*.h
 mainwindow - Copy.ui
 *.stash
 *.pc
+*.prl
 qrc_qtpileresources.cpp
 Makefile
 ui_mainwindow.h
@@ -56,15 +58,8 @@ qwt-6.2/textengines/mathml/qwt-6.2.0/features/qwtmathml.prf
 qwt-6.2/textengines/mathml/qwt-6.2.0/include/qwt_mathml_text_engine.h
 build-qwt-Desktop_Qt_5_10_0_clang_64bit-Debug/lib/pkgconfig/Qt5Qwt6.pc
 build-qwt-Desktop_Qt_5_10_0_clang_64bit-Debug/lib/qwtmathml.pc
-*.pc
-*.pc
-*.pc
-*.prl
-*.pc
-*.pc
-*.pc
-*.pc
-*.pc
+qwt-6.2/lib/qwtmathml.pc
+qwt-6.2/lib/pkgconfig/Qt5Qwt6.pc
 qwt-6.2/lib/qwtmathml.pc
 qwt-6.2/lib/pkgconfig/Qt5Qwt6.pc
 qwt-6.2/lib/qwtmathml.pc

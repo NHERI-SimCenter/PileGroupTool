@@ -3,6 +3,7 @@
 
 #include <QSettings>
 #include <QApplication>
+#include <QTabBar>
 
 #include <qdebug.h>
 
