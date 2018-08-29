@@ -1210,7 +1210,6 @@ void MainWindow::on_actionLicense_triggered()
 
 void MainWindow::on_actionProvide_Feedback_triggered()
 {
-    // QDesktopServices::openUrl(QUrl("https://github.com/NHERI-SimCenter/QtPile/issues", QUrl::TolerantMode));
   QDesktopServices::openUrl(QUrl("https://www.designsafe-ci.org/help/new-ticket/", QUrl::TolerantMode));
 
 }
