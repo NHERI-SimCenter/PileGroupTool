@@ -1,0 +1,9 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node2" href="$class_material_d_b_interface.html" title="MaterialDBInterface" alt="" coords="127,5,266,31"/>
+<area shape="rect" id="node3" href="$class_result_plot_super.html" title="The ResultPlotSuper class is an abstract class implementing simple line plots. " alt="" coords="137,55,255,80"/>
+<area shape="rect" id="node6" href="$class_system_plot_super.html" title="SystemPlotSuper" alt="" coords="134,104,258,129"/>
+<area shape="rect" id="node4" href="$class_result_plot_q_c_p.html" title="The ResultPlotQwt class implements the QCP library interface for ResultPlotSuper. ..." alt="" coords="317,5,428,31"/>
+<area shape="rect" id="node5" href="$class_result_plot_qwt.html" title="The ResultPlotQwt class implements the Qwt library interface for ResultPlotSuper. ..." alt="" coords="320,55,425,80"/>
+<area shape="rect" id="node7" href="$class_system_plot_q_c_p.html" title="SystemPlotQCP" alt="" coords="314,104,431,129"/>
+<area shape="rect" id="node8" href="$class_system_plot_qwt.html" title="SystemPlotQwt" alt="" coords="316,153,429,179"/>
+</map>

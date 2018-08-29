@@ -1,4 +1,4 @@
-The SimCenter QtPile Tool, in source and binary forms, are copyright "The Regents of the University of California".
+The SimCenter Pile Group Tool, in source and binary forms, are copyright "The Regents of the University of California".
 
 The SimCenter PileGroupTool Program makes use of the Qt packages (unmodified): core, gui, widgets, printsupport and network
 and the QCustomPlot library (unmodified) for graphics.

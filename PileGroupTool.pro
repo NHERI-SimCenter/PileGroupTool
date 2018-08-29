@@ -69,7 +69,7 @@ INCLUDEPATH += dialogs
 INCLUDEPATH += plots
 INCLUDEPATH += FEA
 
-unix: QT += sv
+unix: QT += svg
 
 SOURCES += main.cpp \
         mainWindow/mainwindow.cpp \
