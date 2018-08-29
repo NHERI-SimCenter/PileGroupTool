@@ -1,3 +1,7 @@
+![missing PGT logo][logo]
+
+[logo]: https://nheri-simcenter.github.io/PileGroupTool/docs/NHERI-PGT-Icon.png "Pile Group Tool Logo"
+
 # Pile Group Tool
 
 The SimCenter Pile-Group Tool provides a dynamic interface to study the behavior of a pile or pile-group in layered soil. It allows the user to interactively (and nearly instantly) observe the system's response to changes of the following parameters:
@@ -6,18 +10,28 @@ The SimCenter Pile-Group Tool provides a dynamic interface to study the behavior
 * position of the ground water table
 * pile stiffness, embedment length, connection type to the pile cap
 * number of piles in the group (one to three piles)
-* the applied horizontal force at the pile cap (push-over analysis)
+* the applied horizontal and vertical forces and moment at the pile cap (push-over analysis)
 
 ## Presented results include:
 
-* lateral displacement of all piles
-* moment and shear diagrams for each
+* axial and lateral displacement of all piles
+* moment, shear and force diagrams for each pile
 * vertical soil stresses
 * ultimate strength and stiffness parameters for the employed p-y springs
 
 ## Technical background:
 
 The soil-structure system is modeled using a finite-element platform. Piles are represented by displacement based beam-column elements. Soil-structure interaction is represented laterally by p-y springs and tangentially by t-z springs. Spring properties are computed using Hansen's method [1] and recommendations by the American Petroleum Institute (API) [2]. The Pile-Group Tool constructs a structurally and numerically appropriate finite-element mesh, computes spring properties from soil properties, and places spring elements accordingly. The actual simulation employs a Newton-Raphson iterative procedure to solve the governing nonlinear system of equations.
+
+## Downloads
+
+* __download a binary version__ of the latest release on https://simcenter.designsafe-ci.org/learning-tools/pile-group-application/
+* __download the source__ of latest release at https://github.com/NHERI-SimCenter/PileGroupTool/releases
+
+## Software class documentation
+
+* An (as-yet-incomplete) documentation of the code can be found at: https://nheri-simcenter.github.io/PileGroupTool/docs/index.html
+* view the source on https://github.com/NHERI-SimCenter/PileGroupTool
 
 # References:
 
