@@ -1,9 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file>images/PileSchematic.png</file>
         <file>images/PileSchematic@0,5x.png</file>
-        <file>images/LayerSchematic@0,5x.png</file>
-        <file>images/LayerSchematic@1x.png</file>
         <file>images/PileSchematic@1x.png</file>
         <file>imagesCommon/nsf.gif</file>
         <file>imagesCommon/sim_logo_footer.png</file>
@@ -13,5 +10,11 @@
         <file>resources/styleSheets/pgtStyles.qss</file>
         <file>resources/styleSheets/pgtWin.qss</file>
         <file>resources/PileGroupToolLICENSE.txt</file>
+        <file>help/About/Arduino-Pedro.png</file>
+        <file>help/About/Ghofrani-Alborz.png</file>
+        <file>help/About/Mackenzie-Helnwein-Peter.png</file>
+        <file>help/About/McKenna-Frank.png</file>
+        <file>help/About/PGTabout.html</file>
+        <file>help/About/Tatsu.png</file>
     </qresource>
 </RCC>
