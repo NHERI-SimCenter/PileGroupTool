@@ -25,13 +25,13 @@ The soil-structure system is modeled using a finite-element platform. Piles are 
 
 ## Downloads
 
-* __download a binary version__ of the latest release on https://simcenter.designsafe-ci.org/learning-tools/pile-group-application/
-* __download the source__ of latest release at https://github.com/NHERI-SimCenter/PileGroupTool/releases
+* __download a binary version__ of the latest release on [simcenter.designsafe-ci.org/learning-tools/pile-group-application/](https://simcenter.designsafe-ci.org/learning-tools/pile-group-application/)
+* __download the source__ of latest release at [github.com/NHERI-SimCenter/PileGroupTool/releases](https://github.com/NHERI-SimCenter/PileGroupTool/releases)
 
 ## Software class documentation
 
-* An (as-yet-incomplete) documentation of the code can be found at: https://nheri-simcenter.github.io/PileGroupTool/docs/index.html
-* view the source on https://github.com/NHERI-SimCenter/PileGroupTool
+* An (as-yet-incomplete) documentation of the code can be found at: [nheri-simcenter.github.io/PileGroupTool/docs/index.html](https://nheri-simcenter.github.io/PileGroupTool/docs/index.html)
+* view the source on [github.com/NHERI-SimCenter/PileGroupTool](https://github.com/NHERI-SimCenter/PileGroupTool)
 
 # References:
 
