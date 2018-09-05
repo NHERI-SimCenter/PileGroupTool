@@ -37,6 +37,8 @@
 #
 
 QT       += core gui
+unix: QT += svg opengl concurrent
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport network
 
@@ -68,8 +70,6 @@ INCLUDEPATH += mainWindow
 INCLUDEPATH += dialogs
 INCLUDEPATH += plots
 INCLUDEPATH += FEA
-
-unix: QT += svg
 
 SOURCES += main.cpp \
         mainWindow/mainwindow.cpp \
