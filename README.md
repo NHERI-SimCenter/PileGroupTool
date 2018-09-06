@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1410646.svg)](https://doi.org/10.5281/zenodo.1410646)
+
 ![missing PGT logo][logo]
 
 [logo]: https://nheri-simcenter.github.io/PileGroupTool/docs/NHERI-PGT-Icon.png "Pile Group Tool Logo"
