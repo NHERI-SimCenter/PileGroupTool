@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1410646.svg)](https://doi.org/10.5281/zenodo.1410646)
+/badge/DOI/10.5281/zenodo.1410668.svg)](https://doi.org/10.5281/zenodo.1410668)
 
 ![missing PGT logo][logo]
 
