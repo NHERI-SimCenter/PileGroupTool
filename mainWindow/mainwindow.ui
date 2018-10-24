@@ -83,16 +83,9 @@
        <number>6</number>
       </property>
       <item>
-       <widget class="Line" name="line_3">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QTextBrowser" name="textBrowser">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>1</verstretch>
          </sizepolicy>
@@ -118,7 +111,7 @@
         <property name="minimumSize">
          <size>
           <width>300</width>
-          <height>300</height>
+          <height>200</height>
          </size>
         </property>
         <property name="tabPosition">
