@@ -88,6 +88,17 @@ void ResultPlotSuper::updateSoil(QVector<double> &layerDepth)
 void ResultPlotSuper::plotResults(QVector<QVector<double> *> &pos,
                                   QVector<QVector<double> *> &data)
 {
+    this->plotResults(pos, data, "", "");
+}
+
+void ResultPlotSuper::plotResults(QVector<QVector<double> *> &pos,
+                                  QVector<QVector<double> *> &data,
+                                  const QString &posLabel,
+                                  const QString &dataLabel)
+{
+    m_posLabel  = posLabel;
+    m_dataLabel = dataLabel;
+
     m_pos.clear();
     m_data.clear();
 
@@ -100,8 +111,6 @@ void ResultPlotSuper::plotResults(QVector<QVector<double> *> &pos,
     {
         m_data.append(*ptr);
     }
-    //m_pos  = pos;
-    //m_data = data;
 
     this->refresh();
 }

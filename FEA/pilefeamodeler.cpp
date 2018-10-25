@@ -90,7 +90,7 @@ PileFEAmodeler::PileFEAmodeler()
 PileFEAmodeler::~PileFEAmodeler()
 {
     delete theDomain;
-    theDomain = NULL;
+    theDomain = nullptr;
 }
 
 
@@ -1214,9 +1214,9 @@ void PileFEAmodeler::buildLoad()
         out << endl;
     }
 
-    LinearSeries *theTimeSeries  = NULL;
-    LoadPattern  *theLoadPattern = NULL;
-    NodalLoad    *theLoad        = NULL;
+    LinearSeries *theTimeSeries  = nullptr;
+    LoadPattern  *theLoadPattern = nullptr;
+    NodalLoad    *theLoad        = nullptr;
 
     theTimeSeries  = new LinearSeries(1, 1.0);
     theLoadPattern = new LoadPattern(1);
@@ -1346,7 +1346,7 @@ void PileFEAmodeler::buildAnalysis()
     BandGenLinSolver  *theSolver     = new BandGenLinLapackSolver();
     LinearSOE         *theSOE        = new BandGenLinSOE(*theSolver);
 
-    if (theAnalysis != NULL) delete theAnalysis;
+    if (theAnalysis != nullptr) delete theAnalysis;
 
     theAnalysis = new StaticAnalysis(*theDomain,
                                   *theHandler,
@@ -1389,25 +1389,25 @@ void PileFEAmodeler::buildAnalysis()
 
 void PileFEAmodeler::clearPlotBuffers()
 {
-    foreach (QVector<double> *ptr, locList) { if (ptr != NULL) delete ptr; }
+    foreach (QVector<double> *ptr, locList) { if (ptr != nullptr) delete ptr; }
     locList.clear();
 
-    foreach (QVector<double> *ptr, lateralDispList) { if (ptr != NULL) delete ptr; }
+    foreach (QVector<double> *ptr, lateralDispList) { if (ptr != nullptr) delete ptr; }
     lateralDispList.clear();
 
-    foreach (QVector<double> *ptr, axialDispList) { if (ptr != NULL) delete ptr; }
+    foreach (QVector<double> *ptr, axialDispList) { if (ptr != nullptr) delete ptr; }
     axialDispList.clear();
 
-    foreach (QVector<double> *ptr, MomentList) { if (ptr != NULL) delete ptr; }
+    foreach (QVector<double> *ptr, MomentList) { if (ptr != nullptr) delete ptr; }
     MomentList.clear();
 
-    foreach (QVector<double> *ptr, ShearList) { if (ptr != NULL) delete ptr; }
+    foreach (QVector<double> *ptr, ShearList) { if (ptr != nullptr) delete ptr; }
     ShearList.clear();
 
-    foreach (QVector<double> *ptr, AxialList) { if (ptr != NULL) delete ptr; }
+    foreach (QVector<double> *ptr, AxialList) { if (ptr != nullptr) delete ptr; }
     AxialList.clear();
 
-    foreach (QVector<double> *ptr, StressList) { if (ptr != NULL) delete ptr; }
+    foreach (QVector<double> *ptr, StressList) { if (ptr != nullptr) delete ptr; }
     StressList.clear();
 }
 
@@ -1780,5 +1780,5 @@ void PileFEAmodeler::writeFEMinput(QString filename)
     FEMfile->flush();
     FEMfile->close();
     delete FEMfile;
-    FEMfile = NULL;
+    FEMfile = nullptr;
 }

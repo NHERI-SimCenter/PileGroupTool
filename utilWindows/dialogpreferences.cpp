@@ -18,7 +18,7 @@ DialogPreferences::DialogPreferences(QWidget *parent, QSettings *settings) :
     // initialize the setup file
     //
 
-    if (settings != NULL) {
+    if (settings != nullptr) {
         DLGsettings = settings;
     }
     else {

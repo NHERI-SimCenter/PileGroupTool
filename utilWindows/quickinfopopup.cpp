@@ -44,7 +44,7 @@ QuickInfoPopup::QuickInfoPopup(QString message, QWidget *parent) :
 
     QLabel * textLabel = this->findChild<QLabel *>("shownText");
 
-    if (message != NULL)
+    if (message != nullptr)
     {
         textLabel->setText(message);
     }

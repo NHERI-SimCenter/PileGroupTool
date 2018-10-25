@@ -26,7 +26,7 @@
 #
 #     first time compile only:
 #     - open Terminal, navigate to your source folder
-#     - cd qwt-6.2
+#     - cd qwt-6.1
 #     - ~/Qt/5.10.0/clang_64/bin/qmake qwt.pro
 #     - make
 #
@@ -44,7 +44,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport network
 
 TARGET   = PileGroupTool
 TEMPLATE = app
-VERSION  = 2.0.3
+VERSION  = 2.0.4
 
 #M_REV     = $Rev: $
 
@@ -57,11 +57,11 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable -std=c++11
 win32: QMAKE_CXXFLAGS += /Y- -wd"4100"
 
-unix: DEPENDPATH += /usr/local/qwt-6.2.0-svn
+unix: DEPENDPATH += /usr/local/qwt-6.1.4-svn
 win32: DEPENDPATH += C:\Qwt-6.1.3
 
 win32: include(C:\qwt-6.1.3\features\qwt.prf)
-unix: include(/usr/local/qwt-6.2.0-svn/features/qwt.prf)
+unix: include(/usr/local/qwt-6.1.4-svn/features/qwt.prf)
 
 include(OPS_includes.pro)
 
