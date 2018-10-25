@@ -29,7 +29,7 @@ ResultPlotQwt::ResultPlotQwt(QWidget *parent) :
 {
     plot = new QwtPlot(this);
     plot->setCanvasBackground(QBrush(Qt::white));
-    grid = NULL;
+    grid = nullptr;
 
     QGridLayout *lyt = new QGridLayout(this);
     lyt->addWidget(plot,0,0);
@@ -52,7 +52,7 @@ void ResultPlotQwt::refresh(void)
     if (grid)
     {
         delete grid;
-        grid = NULL;
+        grid = nullptr;
     }
 
     //QVector<double> *xOffset;
@@ -163,6 +163,14 @@ void ResultPlotQwt::refresh(void)
 
     plot->setAxisScale( QwtPlot::xBottom, xl, xr);
     plot->setAxisScale( QwtPlot::yLeft, -depthOfLayer[3], L1 + 1.75);
+
+    // axes
+    if (!m_posLabel.isEmpty()) {
+        plot->setAxisTitle( QwtPlot::yLeft, m_posLabel );
+    }
+    if (!m_dataLabel.isEmpty()) {
+        plot->setAxisTitle( QwtPlot::xBottom, m_dataLabel );
+    }
 
     // Create Background Grid for Plot
     grid = new QwtPlotGrid();

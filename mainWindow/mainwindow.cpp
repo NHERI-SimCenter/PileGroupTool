@@ -206,7 +206,7 @@ MainWindow::~MainWindow()
 {
     delete ui;
 
-    if (pileFEAmodel != NULL) delete pileFEAmodel;
+    if (pileFEAmodel != nullptr) delete pileFEAmodel;
 }
 
 void MainWindow::refreshUI() {
@@ -356,76 +356,76 @@ void MainWindow::updateResultPlots()
     if (showDisplacements) {
         QList<QVector<QVector<double> *> *> list = pileFEAmodel->getLateralDisplacements();
         if (list.size() >= 2)
-            displPlot->plotResults(*list[0], *list[1]);
+            displPlot->plotResults(*list[0], *list[1], "Depth [m]", "Lateral Displacement [m]");
     }
 
     // axial displacements
     if (showPullOut) {
         QList<QVector<QVector<double> *> *> list = pileFEAmodel->getAxialDisplacements();
         if (list.size() >= 2)
-            pullOutPlot->plotResults(*list[0], *list[1]);
+            pullOutPlot->plotResults(*list[0], *list[1], "Depth [m]", "Axial Displacement [m]");
     }
 
     // axial
     if (showAxial) {
         QList<QVector<QVector<double> *> *> list = pileFEAmodel->getForce();
         if (list.size() >= 2)
-            axialPlot->plotResults(*list[0], *list[1]);
+            axialPlot->plotResults(*list[0], *list[1], "Depth [m]", "Axial Force [kN]");
     }
 
     // shear
     if (showShear) {
         QList<QVector<QVector<double> *> *> list = pileFEAmodel->getShear();
         if (list.size() >= 2)
-            shearPlot->plotResults(*list[0], *list[1]);
+            shearPlot->plotResults(*list[0], *list[1], "Depth [m]", "Shear Force [kN]");
     }
 
     // moments
     if (showMoments) {
         QList<QVector<QVector<double> *> *> list = pileFEAmodel->getMoment();
         if (list.size() >= 2)
-            momentPlot->plotResults(*list[0], *list[1]);
+            momentPlot->plotResults(*list[0], *list[1], "Depth [m]", "Pile Moment [kN.m]");
     }
 
     // vertical stress
     if (showStress) {
         QList<QVector<QVector<double> *> *> list = pileFEAmodel->getStress();
         if (list.size() >= 2)
-            stressPlot->plotResults(*list[0], *list[1]);
+            stressPlot->plotResults(*list[0], *list[1], "Depth [m]", "Effective Stress [kPa]");
     }
 
     // p_ultimate
     if (showPultimate) {
         QList<QVector<QVector<double> *> *> list = pileFEAmodel->getPult();
         if (list.size() >= 2)
-            pultPlot->plotResults(*list[0], *list[1]);
+            pultPlot->plotResults(*list[0], *list[1], "Depth [m]", "p_ult [kPa]");
     }
 
     // y_50
     if (showY50) {
         QList<QVector<QVector<double> *> *> list = pileFEAmodel->getY50();
         if (list.size() >= 2)
-            y50Plot->plotResults(*list[0], *list[1]);
+            y50Plot->plotResults(*list[0], *list[1], "Depth [m]", "y_50 [m]");
     }
 
     // t_ultimate
     if (showTultimate) {
         QList<QVector<QVector<double> *> *> list = pileFEAmodel->getTult();
         if (list.size() >= 2)
-            tultPlot->plotResults(*list[0], *list[1]);
+            tultPlot->plotResults(*list[0], *list[1], "Depth [m]", "t_ult [kPa]");
     }
 
     // z_50
     if (showZ50) {
         QList<QVector<QVector<double> *> *> list = pileFEAmodel->getZ50();
         if (list.size() >= 2)
-            z50Plot->plotResults(*list[0], *list[1]);
+            z50Plot->plotResults(*list[0], *list[1], "Depth [m]", "z_50 [m]");
     }
 }
 
 void MainWindow::fetchSettings()
 {
-    if (settings != NULL) { delete settings; }
+    if (settings != nullptr) { delete settings; }
     settings = new QSettings("NHERI SimCenter","Pile Group Tool");
 
     // general settings
