@@ -127,8 +127,8 @@ private:
     Q_OBJECT
     Ui::MainWindow *ui;
 
-    SystemPlotSuper *systemPlot = NULL;
-    PileFEAmodeler *pileFEAmodel = NULL;
+    SystemPlotSuper *systemPlot = nullptr;
+    PileFEAmodeler *pileFEAmodel = nullptr;
 
     void updateSystemPlot();
     void refreshUI();
@@ -186,7 +186,7 @@ private:
     bool inSetupState = true;
 
     // system conforming settings and parameters
-    QSettings *settings = NULL;
+    QSettings *settings = nullptr;
 
     // general settings
     QString useGraphicsLib;  // "QCP" or "QwtAll" or "QwtSystem" or "QwtResults"

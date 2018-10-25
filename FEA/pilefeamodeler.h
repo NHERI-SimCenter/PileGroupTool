@@ -172,7 +172,7 @@ protected:
     QList<CAP_NODE_TYPE>    capNodeList;
 
     Domain *theDomain;
-    StaticAnalysis *theAnalysis = NULL;
+    StaticAnalysis *theAnalysis = nullptr;
 
     int numLoadedNode;
     QVector<double> depthOfLayer = QVector<double>(4, 0.0);
@@ -196,7 +196,7 @@ protected:
     //
     // state switches
     bool    dumpFEMinput;
-    QFile  *FEMfile = NULL;
+    QFile  *FEMfile = nullptr;
 };
 
 #endif // PILEFEAMODELER_H

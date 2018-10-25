@@ -73,11 +73,11 @@ SystemPlotQwt::~SystemPlotQwt()
 PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
 {
     PLOTOBJECT emptyObj;
-    emptyObj.itemPtr = NULL;
+    emptyObj.itemPtr = nullptr;
     emptyObj.type    = PLType::NONE;
     emptyObj.index   = -1;
 
-    if ( plot == NULL )
+    if ( plot == nullptr )
         return emptyObj;
 
     // translate pos into the plot coordinates
@@ -142,7 +142,7 @@ PLOTOBJECT SystemPlotQwt::itemAt( const QPoint& pos ) const
                     else
                     {
                         dist = sqrt(QPointF::dotProduct(r,r));
-                        QPointF r2 = pos - x1;
+                        //QPointF r2 = pos - x1;
                         double d2  = sqrt(QPointF::dotProduct(r,r));
                         if ( d2 < dist ) { dist = d2; }
                     }
@@ -193,6 +193,11 @@ void SystemPlotQwt::on_picker_appended (const QPoint &pos)
         case PLType::WATER:
             emit on_groundWaterSelected();
             break;
+        case PLType::CAP:
+        case PLType::LOAD:
+        case PLType::OTHER:
+        case PLType::NONE:
+            break;
         }
     }
 }
@@ -203,7 +208,7 @@ void SystemPlotQwt::refresh()
     foreach (PLOTOBJECT item, plotItemList) {
         item.itemPtr->detach();
         delete item.itemPtr;
-        //item.itemPtr = NULL;
+        //item.itemPtr = nullptr;
     }
     plotItemList.clear();
 
