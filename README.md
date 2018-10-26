@@ -32,6 +32,7 @@ The soil-structure system is modeled using a finite-element platform. Piles are 
 
 ## Software class documentation
 
+* Documentation main page: [https://nheri-simcenter.github.io/PileGroupTool/](https://nheri-simcenter.github.io/PileGroupTool/)
 * An (as-yet-incomplete) documentation of the code can be found at: [nheri-simcenter.github.io/PileGroupTool/docs/index.html](https://nheri-simcenter.github.io/PileGroupTool/docs/index.html)
 * view the source on [github.com/NHERI-SimCenter/PileGroupTool](https://github.com/NHERI-SimCenter/PileGroupTool)
 
