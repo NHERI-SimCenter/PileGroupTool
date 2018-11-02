@@ -104,9 +104,18 @@ MainWindow::MainWindow(bool graphicsModeQCP, QWidget *parent) :
     //
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
+
     ui->HForceCtrl->setRange(-MAX_H_FORCE, MAX_H_FORCE);
     ui->VForceCtrl->setRange(-MAX_V_FORCE, MAX_V_FORCE);
     ui->MomentCtrl->setRange(-MAX_MOMENT, MAX_MOMENT);
+
+    ui->PushOverCtrl->setRange(-MAX_DISP*1000,MAX_DISP*1000);  // display unit is mm
+    ui->PullOutCtrl->setRange(-MAX_DISP*1000,MAX_DISP*1000);   // display unit is mm
+
+    ui->SurfaceDisplacementCtrl->setRange(-MAX_DISP*1000,MAX_DISP*1000);  // display unit is mm
+    ui->Interface12Ctrl->setRange(-100,100);                              // display units is %
+    ui->Interface12Ctrl->setRange(-100,100);                              // display units is %
+    ui->BaseDisplacementCtrl->setRange(-100,100);                         // display units is %
 
     /* connect a FEA modeler */
     pileFEAmodel = new PileFEAmodeler();
