@@ -69,3 +69,5 @@ qwt-6.2/lib/qwtmathml.pc
 *.swp
 
 *.dmg
+
+PGTinstaller/packages/nheri\.simcenter\.pgt/data/PileGroupTool/
