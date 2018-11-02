@@ -6,9 +6,9 @@
 
 APP=PileGroupTool
 QWT_FRAMEWORK=qwt.framework
-QWT_FRAMEWORK_PATH=/usr/local/qwt-6.2.0-svn/lib/
+QWT_FRAMEWORK_PATH=/usr/local/qwt-6.1.4-svn/lib/
 
-QT_DEPLOY=/Users/pmackenz/Qt/5.11.1/clang_64/bin/macdeployqt
+QT_DEPLOY=/Users/pmackenz/Qt/5.11.2/clang_64/bin/macdeployqt
 #
 # ---- do not change anything below this line -----------------------------------
 #

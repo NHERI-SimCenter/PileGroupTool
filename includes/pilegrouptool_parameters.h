@@ -13,11 +13,16 @@
 #define MAX_ELEMENTS_PER_LAYER   40
 #define NUM_ELEMENTS_IN_AIR       4
 
-// #define MAX_FORCE 5000.0
-#define MAX_H_FORCE  1000.0
-#define MAX_V_FORCE 10000.0
-#define MAX_MOMENT 2500.0
-#define MAX_DISP   1.0
+/*
+ *  force limits are given as integers to work with the sliders.
+ *  They are converted to floats when generating the FEA model.
+ */
+
+// #define MAX_FORCE 5000
+#define MAX_H_FORCE  1000
+#define MAX_V_FORCE 10000
+#define MAX_MOMENT 2500
+#define MAX_DISP   1
 
 // global constants
 #define GAMMA_WATER 9.81
