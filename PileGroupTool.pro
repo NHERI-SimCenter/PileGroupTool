@@ -67,6 +67,7 @@ include(OPS_includes.pro)
 
 INCLUDEPATH += includes
 INCLUDEPATH += mainWindow
+INCLUDEPATH += widgets
 INCLUDEPATH += dialogs
 INCLUDEPATH += plots
 INCLUDEPATH += FEA
@@ -88,7 +89,9 @@ SOURCES += main.cpp \
         plots/resultplotsuper.cpp \
         plots/resultplotqwt.cpp \
         ../SimCenterCommon/Common/FooterWidget.cpp \
-        ../SimCenterCommon/Common/HeaderWidget.cpp
+        ../SimCenterCommon/Common/HeaderWidget.cpp \
+    widgets/sctrinputgroup.cpp \
+    utilWindows/dialogquicktips.cpp
         
 HEADERS  += \
         mainWindow/mainwindow.h \
@@ -105,14 +108,18 @@ HEADERS  += \
         plots/resultplotsuper.h \
         plots/resultplotqwt.h \
         ../SimCenterCommon/Common/FooterWidget.h \
-        ../SimCenterCommon/Common/HeaderWidget.h
+        ../SimCenterCommon/Common/HeaderWidget.h \
+    widgets/sctrinputgroup.h \
+    utilWindows/dialogquicktips.h
 
 FORMS    += mainWindow/mainwindow.ui \
         dialogs/materialdbinterface.ui \
         utilWindows/copyrightdialog.ui \
         utilWindows/dialogabout.ui \
         utilWindows/dialogpreferences.ui \
-        utilWindows/dialogfuturefeature.ui
+        utilWindows/dialogfuturefeature.ui \
+    widgets/sctrinputgroup.ui \
+    utilWindows/dialogquicktips.ui
 
 RESOURCES += \
 	qtpileresources.qrc

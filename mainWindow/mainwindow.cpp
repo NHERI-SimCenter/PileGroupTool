@@ -4,6 +4,7 @@
 #include "utilWindows/copyrightdialog.h"
 #include "utilWindows/dialogpreferences.h"
 #include "utilWindows/dialogabout.h"
+#include "utilWindows/dialogquicktips.h"
 #include "utilWindows/dialogfuturefeature.h"
 #include "pilefeamodeler.h"
 
@@ -102,16 +103,9 @@ MainWindow::MainWindow(bool graphicsModeQCP, QWidget *parent) :
     //
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
-    ui->appliedHorizontalForce->setMaximum(MAX_H_FORCE);
-    ui->appliedHorizontalForce->setMinimum(-MAX_H_FORCE);
-    ui->appliedVerticalForce->setMaximum(MAX_V_FORCE);
-    ui->appliedVerticalForce->setMinimum(-MAX_V_FORCE);
-    ui->appliedMoment->setMaximum(MAX_MOMENT);
-    ui->appliedMoment->setMinimum(-MAX_MOMENT);
-
-    ui->textBrowser->clear();
-
-    ui->textBrowser->setHtml("<b>Hints</b><p><ul><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
+    ui->HForceCtrl->setRange(-MAX_H_FORCE, MAX_H_FORCE);
+    ui->VForceCtrl->setRange(-MAX_V_FORCE, MAX_V_FORCE);
+    ui->MomentCtrl->setRange(-MAX_MOMENT, MAX_MOMENT);
 
     /* connect a FEA modeler */
     pileFEAmodel = new PileFEAmodeler();
@@ -226,7 +220,8 @@ void MainWindow::refreshUI() {
     ui->appliedVerticalForce->setValue(PV);
     ui->appliedMoment->setValue(PMom);
 
-    this->on_appliedHorizontalForce_editingFinished();
+    // TODO
+    //this->on_appliedHorizontalForce_editingFinished();
     this->on_appliedVerticalForce_editingFinished();
     this->on_appliedMoment_editingFinished();
 
@@ -1559,7 +1554,8 @@ void MainWindow::on_forceTypeSelector_activated(int index)
     {
         loadControlType = LoadControlType::ForceControl;
         ui->appliedHorizontalForce->setValue(P);
-        this->on_appliedHorizontalForce_editingFinished();
+        // TODO
+        //this->on_appliedHorizontalForce_editingFinished();
         ui->appliedVerticalForce->setValue(P);
         this->on_appliedVerticalForce_editingFinished();
         ui->appliedMoment->setValue(P);
@@ -1578,11 +1574,11 @@ void MainWindow::on_forceTypeSelector_activated(int index)
         loadControlType = LoadControlType::SoilMotion;
         ui->surfaceDisplacement->setValue(surfaceDisp);
         this->on_surfaceDisplacement_editingFinished();
-        ui->Interface12->setValue(100.0*percentage12);
+        ui->Interface12->setValue(std::nearbyint(100.0*percentage12));
         this->on_Interface12_editingFinished();
-        ui->Interface23->setValue(100.0*percentage23);
+        ui->Interface23->setValue(std::nearbyint(100.0*percentage23));
         this->on_Interface23_editingFinished();
-        ui->BaseDisplacement->setValue(100.0*percentageBase);
+        ui->BaseDisplacement->setValue(std::nearbyint(100.0*percentageBase));
         this->on_BaseDisplacement_editingFinished();
     }
 
@@ -1594,15 +1590,19 @@ void MainWindow::on_forceTypeSelector_activated(int index)
 
 /* ***** loading parameter changes ***** */
 
-void MainWindow::on_appliedHorizontalForce_editingFinished()
+void MainWindow::on_appliedHorizontalForce_valueChanged(double arg)
 {
-    P = ui->appliedHorizontalForce->value();
+    //P = ui->appliedHorizontalForce->value();
+    if (P != arg)
+    {
+        P = arg;
 
-    int sliderPosition = nearbyint(100.*P/MAX_H_FORCE);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
+        int sliderPosition = std::nearbyint(100.*P/MAX_H_FORCE);
+        if (sliderPosition >  100) sliderPosition= 100;
+        if (sliderPosition < -100) sliderPosition=-100;
 
-    ui->horizontalForceSlider->setSliderPosition(sliderPosition);
+        ui->horizontalForceSlider->setSliderPosition(sliderPosition);
+    }
 }
 
 void MainWindow::on_horizontalForceSlider_valueChanged(int value)
@@ -1624,7 +1624,7 @@ void MainWindow::on_appliedVerticalForce_editingFinished()
 {
     PV = ui->appliedHorizontalForce->value();
 
-    int sliderPosition = nearbyint(100.*PV/MAX_V_FORCE);
+    int sliderPosition = std::nearbyint(100.*PV/MAX_V_FORCE);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -1650,7 +1650,7 @@ void MainWindow::on_appliedMoment_editingFinished()
 {
     PMom = ui->appliedMoment->value();
 
-    int sliderPosition = nearbyint(100.*PMom/MAX_MOMENT);
+    int sliderPosition = std::nearbyint(100.*PMom/MAX_MOMENT);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -1680,7 +1680,7 @@ void MainWindow::on_pushoverDisplacement_editingFinished()
 {
     HDisp = ui->pushoverDisplacement->value();
 
-    int sliderPosition = nearbyint(100.*HDisp/MAX_DISP);
+    int sliderPosition = std::nearbyint(100.*HDisp/MAX_DISP);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -1708,7 +1708,7 @@ void MainWindow::on_pulloutDisplacement_editingFinished()
 {
     VDisp = ui->pulloutDisplacement->value();
 
-    int sliderPosition = nearbyint(100.*VDisp/MAX_DISP);
+    int sliderPosition = std::nearbyint(100.*VDisp/MAX_DISP);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -1736,7 +1736,7 @@ void MainWindow::on_surfaceDisplacement_editingFinished()
 {
     surfaceDisp = ui->surfaceDisplacement->value();
 
-    int sliderPosition = nearbyint(100.*surfaceDisp/MAX_DISP);
+    int sliderPosition = std::nearbyint(100.*surfaceDisp/MAX_DISP);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -1764,7 +1764,7 @@ void MainWindow::on_Interface12_editingFinished()
 {
     percentage12 = ui->Interface12->value()/100.00;
 
-    int sliderPosition = nearbyint(percentage12*100.0);
+    int sliderPosition = std::nearbyint(percentage12*100.0);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -1792,7 +1792,7 @@ void MainWindow::on_Interface23_editingFinished()
 {
     percentage23 = ui->Interface23->value()/100.0;
 
-    int sliderPosition = nearbyint(percentage23*100.0);
+    int sliderPosition = std::nearbyint(percentage23*100.0);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -1820,7 +1820,7 @@ void MainWindow::on_BaseDisplacement_editingFinished()
 {
     percentageBase = ui->BaseDisplacement->value()/100.0;
 
-    int sliderPosition = nearbyint(percentageBase*100.0);
+    int sliderPosition = std::nearbyint(percentageBase*100.0);
     if (sliderPosition >  100) sliderPosition= 100;
     if (sliderPosition < -100) sliderPosition=-100;
 
@@ -1842,4 +1842,21 @@ void MainWindow::on_BaseDisplacementSlider_valueChanged(int value)
 
     this->doAnalysis();
     this->updateSystemPlot();
+}
+
+
+void MainWindow::on_actionQuick_Tips_triggered()
+{
+    DialogQuickTips *dlg = new DialogQuickTips();
+
+    //
+    // adjust size of application window to the available display
+    //
+    QRect rec = QApplication::desktop()->screenGeometry();
+    int height = 0.50*rec.height();
+    int width  = 0.50*rec.width();
+    dlg->resize(width, height);
+
+    dlg->exec();
+    delete dlg;
 }
