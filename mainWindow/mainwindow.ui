@@ -966,7 +966,7 @@
                <item row="0" column="3">
                 <widget class="QLabel" name="label_30">
                  <property name="text">
-                  <string>m</string>
+                  <string>mm</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -1019,7 +1019,7 @@ displacement</string>
                <item row="1" column="3">
                 <widget class="QLabel" name="label_31">
                  <property name="text">
-                  <string>m</string>
+                  <string>mm</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -1122,7 +1122,7 @@ displacement:</string>
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="SCtrInputGroup" name="BaseDisplacementCtrl">
+                <widget class="SCtrInputGroup" name="SurfaceDisplacementCtrl">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>1</horstretch>
@@ -1170,7 +1170,7 @@ displacement:</string>
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="SCtrInputGroup" name="BaseDisplacementCtrl_2">
+                <widget class="SCtrInputGroup" name="BaseDisplacementCtrl">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>1</horstretch>
@@ -1199,7 +1199,7 @@ Layers 2 &amp; 3:</string>
                <item row="0" column="2">
                 <widget class="QLabel" name="label_unitSurfaceDisplacement">
                  <property name="text">
-                  <string>m</string>
+                  <string>mm</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
