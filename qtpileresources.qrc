@@ -14,5 +14,6 @@
         <file>help/About/McKenna-Frank.png</file>
         <file>help/About/PGTabout.html</file>
         <file>help/About/Tatsu.png</file>
+        <file>help/QuickTips/QuickTips.html</file>
     </qresource>
 </RCC>

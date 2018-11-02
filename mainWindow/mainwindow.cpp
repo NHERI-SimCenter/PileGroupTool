@@ -1,9 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "math.h"
+#include "stdlib.h"
 #include "utilWindows/copyrightdialog.h"
 #include "utilWindows/dialogpreferences.h"
 #include "utilWindows/dialogabout.h"
+#include "utilWindows/dialogquicktips.h"
 #include "utilWindows/dialogfuturefeature.h"
 #include "pilefeamodeler.h"
 
@@ -102,16 +104,18 @@ MainWindow::MainWindow(bool graphicsModeQCP, QWidget *parent) :
     //
     this->updateUI();
     ui->headerWidget->setHeadingText("SimCenter Pile Group Tool");
-    ui->appliedHorizontalForce->setMaximum(MAX_H_FORCE);
-    ui->appliedHorizontalForce->setMinimum(-MAX_H_FORCE);
-    ui->appliedVerticalForce->setMaximum(MAX_V_FORCE);
-    ui->appliedVerticalForce->setMinimum(-MAX_V_FORCE);
-    ui->appliedMoment->setMaximum(MAX_MOMENT);
-    ui->appliedMoment->setMinimum(-MAX_MOMENT);
 
-    ui->textBrowser->clear();
+    ui->HForceCtrl->setRange(-MAX_H_FORCE, MAX_H_FORCE);
+    ui->VForceCtrl->setRange(-MAX_V_FORCE, MAX_V_FORCE);
+    ui->MomentCtrl->setRange(-MAX_MOMENT, MAX_MOMENT);
 
-    ui->textBrowser->setHtml("<b>Hints</b><p><ul><li>The Pile Group Tool uses metric units: meters, kN, and kPa. </li><li>Select piles or soil layers to display and/or change by clicking on the pile inside the System Plot </li><li>go to Preferences to select which result plots are shown. </li></ul>");
+    ui->PushOverCtrl->setRange(-MAX_DISP*1000,MAX_DISP*1000);  // display unit is mm
+    ui->PullOutCtrl->setRange(-MAX_DISP*1000,MAX_DISP*1000);   // display unit is mm
+
+    ui->SurfaceDisplacementCtrl->setRange(-MAX_DISP*1000,MAX_DISP*1000);  // display unit is mm
+    ui->Interface12Ctrl->setRange(-100,100);                              // display units is %
+    ui->Interface12Ctrl->setRange(-100,100);                              // display units is %
+    ui->BaseDisplacementCtrl->setRange(-100,100);                         // display units is %
 
     /* connect a FEA modeler */
     pileFEAmodel = new PileFEAmodeler();
@@ -222,13 +226,14 @@ void MainWindow::refreshUI() {
     else if (loadControlType == LoadControlType::SoilMotion) { ui->forceTypeSelector->setCurrentIndex(2); }
     else { ui->forceTypeSelector->setCurrentIndex(0); }
 
-    ui->appliedHorizontalForce->setValue(P);
-    ui->appliedVerticalForce->setValue(PV);
-    ui->appliedMoment->setValue(PMom);
+    ui->HForceCtrl->setValue(std::nearbyint(P));
+    ui->VForceCtrl->setValue(std::nearbyint(PV));
+    ui->MomentCtrl->setValue(std::nearbyint(PMom));
 
-    this->on_appliedHorizontalForce_editingFinished();
-    this->on_appliedVerticalForce_editingFinished();
-    this->on_appliedMoment_editingFinished();
+    // TODO
+    //this->on_appliedHorizontalForce_editingFinished();
+    //this->on_appliedVerticalForce_editingFinished();
+    //this->on_appliedMoment_editingFinished();
 
     int pileIdx = ui->pileIndex->value() - 1;
 
@@ -677,7 +682,7 @@ void MainWindow::on_actionReset_triggered()
 
     int pileIdx = ui->pileIndex->value() - 1;
 
-    ui->appliedHorizontalForce->setValue(P);
+    ui->HForceCtrl->setValue(std::nearbyint(P));
     ui->xOffset->setValue(xOffset[pileIdx]);
     ui->pileDiameter->setValue(pileDiameter[pileIdx]);
     ui->freeLength->setValue(L1);
@@ -1256,6 +1261,7 @@ bool MainWindow::ReadFile(QString s)
     fileTypeError = true;
     if (version.startsWith("1.") ) fileTypeError = false;
     if (version.startsWith("2.0") ) fileTypeError = false;
+    if (version.startsWith("2.1") ) fileTypeError = false;
 
     if (fileTypeError) {
         QMessageBox msg(QMessageBox::Information, "Info", "Not a valid model file.");
@@ -1558,32 +1564,23 @@ void MainWindow::on_forceTypeSelector_activated(int index)
     if (index == 0)
     {
         loadControlType = LoadControlType::ForceControl;
-        ui->appliedHorizontalForce->setValue(P);
-        this->on_appliedHorizontalForce_editingFinished();
-        ui->appliedVerticalForce->setValue(P);
-        this->on_appliedVerticalForce_editingFinished();
-        ui->appliedMoment->setValue(P);
-        this->on_appliedMoment_editingFinished();
+        ui->HForceCtrl->setValue(std::nearbyint(P));
+        ui->VForceCtrl->setValue(std::nearbyint(PV));
+        ui->MomentCtrl->setValue(std::nearbyint(PMom));
     }
     if (index == 1)
     {
         loadControlType = LoadControlType::PushOver;
-        ui->pushoverDisplacement->setValue(HDisp);
-        this->on_pushoverDisplacement_editingFinished();
-        ui->pulloutDisplacement->setValue(VDisp);
-        this->on_pulloutDisplacement_editingFinished();
+        ui->PushOverCtrl->setValue(std::nearbyint(HDisp*1000));
+        ui->PullOutCtrl->setValue(std::nearbyint(VDisp*1000));
     }
     if (index == 2)
     {
         loadControlType = LoadControlType::SoilMotion;
-        ui->surfaceDisplacement->setValue(surfaceDisp);
-        this->on_surfaceDisplacement_editingFinished();
-        ui->Interface12->setValue(100.0*percentage12);
-        this->on_Interface12_editingFinished();
-        ui->Interface23->setValue(100.0*percentage23);
-        this->on_Interface23_editingFinished();
-        ui->BaseDisplacement->setValue(100.0*percentageBase);
-        this->on_BaseDisplacement_editingFinished();
+        ui->SurfaceDisplacementCtrl->setValue(std::nearbyint(surfaceDisp*1000));
+        ui->Interface12Ctrl->setValue(std::nearbyint(100.0*percentage12));
+        ui->Interface23Ctrl->setValue(std::nearbyint(100.0*percentage23));
+        ui->BaseDisplacementCtrl->setValue(std::nearbyint(100.0*percentageBase));
     }
 
     systemPlot->setLoadType(loadControlType);
@@ -1594,79 +1591,25 @@ void MainWindow::on_forceTypeSelector_activated(int index)
 
 /* ***** loading parameter changes ***** */
 
-void MainWindow::on_appliedHorizontalForce_editingFinished()
+void MainWindow::on_HForceCtrl_valueChanged(int value)
 {
-    P = ui->appliedHorizontalForce->value();
-
-    int sliderPosition = nearbyint(100.*P/MAX_H_FORCE);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-
-    ui->horizontalForceSlider->setSliderPosition(sliderPosition);
-}
-
-void MainWindow::on_horizontalForceSlider_valueChanged(int value)
-{
-    double sliderRatio;
-
-    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
-    sliderRatio = double(value)/100.0;
-
-    P = MAX_H_FORCE * sliderRatio;
-
-    ui->appliedHorizontalForce->setValue(P);
+    P = double(value);
 
     this->doAnalysis();
     this->updateSystemPlot();
 }
 
-void MainWindow::on_appliedVerticalForce_editingFinished()
+void MainWindow::on_VForceCtrl_valueChanged(int value)
 {
-    PV = ui->appliedHorizontalForce->value();
-
-    int sliderPosition = nearbyint(100.*PV/MAX_V_FORCE);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-
-    ui->verticalForceSlider->setSliderPosition(sliderPosition);
-}
-
-void MainWindow::on_verticalForceSlider_valueChanged(int value)
-{
-    double sliderRatio;
-
-    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
-    sliderRatio = double(value)/100.0;
-
-    PV = MAX_V_FORCE * sliderRatio;
-
-    ui->appliedVerticalForce->setValue(PV);
+    PV = double(value);
 
     this->doAnalysis();
     this->updateSystemPlot();
 }
 
-void MainWindow::on_appliedMoment_editingFinished()
+void MainWindow::on_MomentCtrl_valueChanged(int value)
 {
-    PMom = ui->appliedMoment->value();
-
-    int sliderPosition = nearbyint(100.*PMom/MAX_MOMENT);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-
-    ui->momentSlider->setSliderPosition(sliderPosition);
-}
-
-void MainWindow::on_momentSlider_valueChanged(int value)
-{
-    double sliderRatio;
-
-    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
-    sliderRatio = double(value)/100.0;
-
-    PMom = MAX_MOMENT * sliderRatio;
-
-    ui->appliedMoment->setValue(PMom);
+    PMom = double(value);
 
     this->doAnalysis();
     this->updateSystemPlot();
@@ -1675,171 +1618,74 @@ void MainWindow::on_momentSlider_valueChanged(int value)
 
 
 
-
-void MainWindow::on_pushoverDisplacement_editingFinished()
+void MainWindow::on_PushOverCtrl_valueChanged(int value)
 {
-    HDisp = ui->pushoverDisplacement->value();
-
-    int sliderPosition = nearbyint(100.*HDisp/MAX_DISP);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-
-    ui->pushoverDisplacementSlider->setSliderPosition(sliderPosition);
-}
-
-void MainWindow::on_pushoverDisplacementSlider_valueChanged(int value)
-{
-    double sliderRatio;
-
-    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
-    sliderRatio = double(value)/100.0;
-
-    HDisp = MAX_DISP * sliderRatio;
-
-    ui->pushoverDisplacement->setValue(HDisp);
-
-    systemPlot->updateDisplacement(HDisp, VDisp);
+    HDisp = double(value)/1000.;
 
     this->doAnalysis();
     this->updateSystemPlot();
 }
 
-void MainWindow::on_pulloutDisplacement_editingFinished()
+void MainWindow::on_PullOutCtrl_valueChanged(int value)
 {
-    VDisp = ui->pulloutDisplacement->value();
-
-    int sliderPosition = nearbyint(100.*VDisp/MAX_DISP);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-
-    ui->pulloutDisplacementSlider->setSliderPosition(sliderPosition);
-}
-
-void MainWindow::on_pulloutDisplacementSlider_valueChanged(int value)
-{
-    double sliderRatio;
-
-    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
-    sliderRatio = double(value)/100.0;
-
-    VDisp = MAX_DISP * sliderRatio;
-
-    ui->pulloutDisplacement->setValue(VDisp);
-
-    systemPlot->updateDisplacement(HDisp, VDisp);
+    VDisp = double(value)/1000.;
 
     this->doAnalysis();
     this->updateSystemPlot();
 }
 
-void MainWindow::on_surfaceDisplacement_editingFinished()
+
+
+void MainWindow::on_SurfaceDisplacementCtrl_valueChanged(int value)
 {
-    surfaceDisp = ui->surfaceDisplacement->value();
-
-    int sliderPosition = nearbyint(100.*surfaceDisp/MAX_DISP);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-
-    ui->surfaceDisplacementSlider->setSliderPosition(sliderPosition);
-}
-
-void MainWindow::on_surfaceDisplacementSlider_valueChanged(int value)
-{
-    double sliderRatio;
-
-    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
-    sliderRatio = double(value)/100.0;
-
-    surfaceDisp = MAX_DISP * sliderRatio;
-
-    ui->surfaceDisplacement->setValue(surfaceDisp);
+    surfaceDisp = double(value)/1000.;
 
     systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
-
     this->doAnalysis();
     this->updateSystemPlot();
 }
 
-void MainWindow::on_Interface12_editingFinished()
+void MainWindow::on_Interface12Ctrl_valueChanged(int value)
 {
-    percentage12 = ui->Interface12->value()/100.00;
-
-    int sliderPosition = nearbyint(percentage12*100.0);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-
-    ui->Interface12Slider->setSliderPosition(sliderPosition);
-}
-
-void MainWindow::on_Interface12Slider_valueChanged(int value)
-{
-    double sliderRatio;
-
-    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
-    sliderRatio = double(value)/100.0;
-
-    percentage12 = sliderRatio;
-
-    ui->Interface12->setValue(percentage12*100.0);
+    percentage12 = double(value)/100.;
 
     systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
-
     this->doAnalysis();
     this->updateSystemPlot();
 }
 
-void MainWindow::on_Interface23_editingFinished()
+void MainWindow::on_Interface23Ctrl_valueChanged(int value)
 {
-    percentage23 = ui->Interface23->value()/100.0;
-
-    int sliderPosition = nearbyint(percentage23*100.0);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-
-    ui->Interface23Slider->setSliderPosition(sliderPosition);
-}
-
-void MainWindow::on_Interface23Slider_valueChanged(int value)
-{
-    double sliderRatio;
-
-    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
-    sliderRatio = double(value)/100.0;
-
-    percentage23 = sliderRatio;
-
-    ui->Interface23->setValue(percentage23*100.0);
+    percentage23 = double(value)/100.;
 
     systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
-
     this->doAnalysis();
     this->updateSystemPlot();
 }
 
-void MainWindow::on_BaseDisplacement_editingFinished()
+void MainWindow::on_BaseDisplacementCtrl_valueChanged(int value)
 {
-    percentageBase = ui->BaseDisplacement->value()/100.0;
-
-    int sliderPosition = nearbyint(percentageBase*100.0);
-    if (sliderPosition >  100) sliderPosition= 100;
-    if (sliderPosition < -100) sliderPosition=-100;
-
-    ui->BaseDisplacementSlider->setSliderPosition(sliderPosition);
-}
-
-void MainWindow::on_BaseDisplacementSlider_valueChanged(int value)
-{
-    double sliderRatio;
-
-    // slider moved -- the number of steps (100) is a parameter to the slider in mainwindow.ui
-    sliderRatio = double(value)/100.0;
-
-    percentageBase = sliderRatio;
-
-    ui->BaseDisplacement->setValue(percentageBase*100.0);
+    percentageBase = double(value)/100.;
 
     systemPlot->updateDispProfile(surfaceDisp, percentage12, percentage23, percentageBase);
-
     this->doAnalysis();
     this->updateSystemPlot();
+}
+
+
+
+void MainWindow::on_actionQuick_Tips_triggered()
+{
+    DialogQuickTips *dlg = new DialogQuickTips();
+
+    //
+    // adjust size of application window to the available display
+    //
+    QRect rec = QApplication::desktop()->screenGeometry();
+    int height = 0.50*rec.height();
+    int width  = 0.50*rec.width();
+    dlg->resize(width, height);
+
+    dlg->exec();
+    delete dlg;
 }
