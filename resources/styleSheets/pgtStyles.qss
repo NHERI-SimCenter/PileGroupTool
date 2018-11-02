@@ -163,7 +163,12 @@ QLabel#labelLayerProperties {
 }
 
 QLabel#label_about {
-    font-size: 24pt;
+    font-size: 20pt;
+    font-weight: bold;
+}
+
+QLabel#label_quickTips {
+    font-size: 20pt;
     font-weight: bold;
 }
 
