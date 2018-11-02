@@ -78,20 +78,6 @@ private slots:
     void on_btn_deletePile_clicked();
     void on_btn_newPile_clicked();
 
-    // material table slots
-
-    void on_HForceCtrl_valueChanged(int value);
-    //void on_horizontalForceSlider_valueChanged(int value);      // depricated
-    //void on_appliedHorizontalForce_valueChanged(double arg1);   // depricated
-
-    void on_VForceCtrl_valueChanged(int value);
-    //void on_verticalForceSlider_valueChanged(int value);        // depricated
-    //void on_appliedVerticalForce_editingFinished();             // depricated
-
-    void on_MomentCtrl_valueChanged(int value);
-    //void on_momentSlider_valueChanged(int value);               // depricated
-    //void on_appliedMoment_editingFinished();                    // depricated
-
     // layer selection slots
     void on_chkBox_layer1_clicked();
     void on_chkBox_layer2_clicked();
@@ -110,27 +96,20 @@ private slots:
     // Frank's network counter
     void replyFinished(QNetworkReply*);
 
+    // load control slots
     void on_forceTypeSelector_activated(int index);
+
+    void on_HForceCtrl_valueChanged(int value);
+    void on_VForceCtrl_valueChanged(int value);
+    void on_MomentCtrl_valueChanged(int value);
 
     void on_PushOverCtrl_valueChanged(int value);
     void on_PullOutCtrl_valueChanged(int value);
-    //void on_pushoverDisplacement_editingFinished();             // depricated
-    //void on_pulloutDisplacement_editingFinished();              // depricated
-    //void on_pushoverDisplacementSlider_valueChanged(int value); // depricated
-    //void on_pulloutDisplacementSlider_valueChanged(int value);  // depricated
 
     void on_SurfaceDisplacementCtrl_valueChanged(int value);
     void on_Interface12Ctrl_valueChanged(int value);
     void on_Interface23Ctrl_valueChanged(int value);
     void on_BaseDisplacementCtrl_valueChanged(int value);
-    //void on_surfaceDisplacement_editingFinished();              // depricated
-    //void on_surfaceDisplacementSlider_valueChanged(int value);  // depricated
-    //void on_Interface12_editingFinished();                      // depricated
-    //void on_Interface12Slider_valueChanged(int value);          // depricated
-    //void on_Interface23_editingFinished();                      // depricated
-    //void on_Interface23Slider_valueChanged(int value);          // depricated
-    //void on_BaseDisplacement_editingFinished();                 // depricated
-    //void on_BaseDisplacementSlider_valueChanged(int value);     // depricated
 
     // response to signals from systemPlot
     void onSystemPlot_pileSelected(int );
