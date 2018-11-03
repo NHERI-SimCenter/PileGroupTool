@@ -8,7 +8,8 @@
     <InstallerApplicationIcon>NHERI-PGT-Icon</InstallerApplicationIcon>
     <InstallerWindowIcon>NHERI-PGT-Icon</InstallerWindowIcon>
     <Logo>NHERI-PGT-Icon.png</Logo>
+    <WizardStyle>Modern</WizardStyle>
     <Background>SimCenterInstallerLogo.png</Background>
-    <StartMenuDir>SimCenter Apps</StartMenuDir>
-    <TargetDir>@HomeDir@/Applications/SimCenterPGT</TargetDir>
+    <StartMenuDir>SimCenter Apps\Pile Group Tool</StartMenuDir>
+    <TargetDir>@HomeDir@/Applications/SimCenterTools/PGT</TargetDir>
 </Installer>
