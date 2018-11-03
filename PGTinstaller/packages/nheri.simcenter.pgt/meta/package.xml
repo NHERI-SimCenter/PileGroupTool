@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Pile Group Tool</DisplayName>
+    <Description>Educational tool for the study of piles and pile groups interacting with layered soil.</Description>
+    <Version>2.1</Version>
+    <ReleaseDate>2018-11-05</ReleaseDate>
+    <Licenses>
+        <License name="BSD License Agreement" file="license.txt" />
+    </Licenses>
+    <Default>true</Default>
+    <Script>installPGT.qs</Script>
+</Package>
