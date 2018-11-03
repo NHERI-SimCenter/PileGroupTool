@@ -85,7 +85,10 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>About Version 2.1</string>
+      <string>About Pile Group Tool</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
      </property>
     </widget>
    </item>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>Pile Group Tool</Name>
+    <Version>2.1</Version>
+    <Title>Pile Group Tool Installer</Title>
+    <Publisher>NHERI SimCenter</Publisher>
+    <ProductUrl>https://simcenter.designsafe-ci.org/learning-tools/pile-group-tool</ProductUrl>
+    <InstallerApplicationIcon>NHERI-PGT-Icon</InstallerApplicationIcon>
+    <InstallerWindowIcon>NHERI-PGT-Icon</InstallerWindowIcon>
+    <Logo>NHERI-PGT-Icon.png</Logo>
+    <WizardStyle>Modern</WizardStyle>
+    <Background>SimCenterInstallerLogo.png</Background>
+    <StartMenuDir>SimCenter Apps\Pile Group Tool</StartMenuDir>
+    <TargetDir>@HomeDir@/Applications/SimCenterTools/PGT</TargetDir>
+</Installer>

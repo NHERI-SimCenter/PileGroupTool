@@ -38,6 +38,7 @@
 
 QT       += core gui
 unix: QT += svg opengl concurrent
+win32: QT += opengl printsupport
 
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport network
