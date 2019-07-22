@@ -58,11 +58,11 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 unix:  QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-variable -std=c++11
 win32: QMAKE_CXXFLAGS += /Y- -wd"4100"
 
-unix: DEPENDPATH += /usr/local/qwt-6.1.4-svn
+unix: DEPENDPATH += /usr/local/qwt-6.1.4
 win32: DEPENDPATH += C:\Qwt-6.1.3
 
 win32: include(C:\qwt-6.1.3\features\qwt.prf)
-unix: include(/usr/local/qwt-6.1.4-svn/features/qwt.prf)
+unix: include(/usr/local/qwt-6.1.4/features/qwt.prf)
 
 include(OPS_includes.pro)
 

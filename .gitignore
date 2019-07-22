@@ -71,3 +71,7 @@ qwt-6.2/lib/qwtmathml.pc
 *.dmg
 
 PGTinstaller/packages/nheri\.simcenter\.pgt/data/PileGroupTool/
+
+PileGroupTool\.pro\.user\.4\.8-pre1
+
+PileGroupTool\.pro\.user\.4\.9-pre1
