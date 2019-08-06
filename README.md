@@ -36,6 +36,11 @@ The soil-structure system is modeled using a finite-element platform. Piles are 
 * An (as-yet-incomplete) documentation of the code can be found at: [nheri-simcenter.github.io/PileGroupTool/docs/index.html](https://nheri-simcenter.github.io/PileGroupTool/docs/index.html)
 * view the source on [github.com/NHERI-SimCenter/PileGroupTool](https://github.com/NHERI-SimCenter/PileGroupTool)
 
+Please visit the [Pile Group Tool webpage](https://simcenter.designsafe-ci.org/learning-tools/pile-group-tool/)
+for more resources related to this tool. Additionally, this page
+provides more information on the NHERI SimCenter, including other SimCenter
+applications, FAQ, and how to collaborate.
+
 # References:
 
 1. Brinch Hansen, J. (1961). “The ultimate resistance of rigid piles against transversal forces.”Bulletin No. 12, Geoteknisk Institute, Copenhagen, 59.
