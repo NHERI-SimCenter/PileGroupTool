@@ -14,7 +14,7 @@ public:
     void refresh(void);
 
 protected:
-    QwtPlot *plot;
+    QwtPlot     *plot;
     QwtPlotGrid *grid;
 };
 
